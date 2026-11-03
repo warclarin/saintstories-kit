@@ -238,7 +238,7 @@ function scene10() {
 export const STORY = {
   slug: 'st_maximilian_kolbe', name: 'St_Maximilian_Kolbe',
   voice: 'am_michael', speed: 0.95,
-  thumb_hook: 'He took a stranger’s place', thumb_title: 'Take Me Instead', thumb_shift: -20,
+  thumb_hook: 'He took a stranger’s place', thumb_title: 'St. Maximilian Kolbe', thumb_shift: -20,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
   fix: {
     'wˈʌn θˈaʊzənd ˈeɪthˈʌndɹɪd': 'ˈeɪtiːn',         // 1894 -> eighteen ninety four
