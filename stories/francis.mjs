@@ -6,32 +6,32 @@ const SK = SKIN.priest;
 const glow = (x, y, r, op = 1) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#sunGlow)" opacity="${op}"/>`;
 
 // ---------------------------------------------------------------- props / overlays
-const tonsure = `<ellipse cx="0" cy="-289" rx="21" ry="8" fill="${SK}"/><ellipse cx="6" cy="-288" rx="10" ry="5" fill="${dark(SK, 0.2)}" opacity=".35"/>`;
-const mitre = `<path d="M-31 -282 L-35 -338 Q-20 -372 0 -384 Q20 -372 35 -338 L31 -282Z" fill="#f4ead2"/><path d="M8 -380 Q22 -368 35 -338 L31 -282 L14 -282Z" fill="#d9ccaa"/>`
+export const tonsure = `<ellipse cx="0" cy="-289" rx="21" ry="8" fill="${SK}"/><ellipse cx="6" cy="-288" rx="10" ry="5" fill="${dark(SK, 0.2)}" opacity=".35"/>`;
+export const mitre = `<path d="M-31 -282 L-35 -338 Q-20 -372 0 -384 Q20 -372 35 -338 L31 -282Z" fill="#f4ead2"/><path d="M8 -380 Q22 -368 35 -338 L31 -282 L14 -282Z" fill="#d9ccaa"/>`
   + `<path d="M0 -380 V-284 M-30 -300 H30" stroke="${GOLD}" stroke-width="7"/>`;
-const cope = `<path d="M-40 -206 Q-92 -110 -84 -2 L84 -2 Q92 -110 40 -206 Z" fill="#c9a24a"/><path d="M40 -206 Q92 -110 84 -2 L58 -2 Q66 -110 30 -200Z" fill="#a8822e" opacity=".7"/>`;
-const stole = `<path d="M-20 -206 L-24 -40 M20 -206 L24 -40" stroke="${GOLD}" stroke-width="12"/>`;
-const plumedCap = `<path d="M-44 -274 Q-40 -312 0 -314 Q40 -312 44 -274 Q0 -284 -44 -274Z" fill="#2f4a8a"/><path d="M-44 -274 Q0 -284 44 -274" stroke="#f2c46b" stroke-width="4" fill="none"/>`
+export const cope = `<path d="M-40 -206 Q-92 -110 -84 -2 L84 -2 Q92 -110 40 -206 Z" fill="#c9a24a"/><path d="M40 -206 Q92 -110 84 -2 L58 -2 Q66 -110 30 -200Z" fill="#a8822e" opacity=".7"/>`;
+export const stole = `<path d="M-20 -206 L-24 -40 M20 -206 L24 -40" stroke="${GOLD}" stroke-width="12"/>`;
+export const plumedCap = `<path d="M-44 -274 Q-40 -312 0 -314 Q40 -312 44 -274 Q0 -284 -44 -274Z" fill="#2f4a8a"/><path d="M-44 -274 Q0 -284 44 -274" stroke="#f2c46b" stroke-width="4" fill="none"/>`
   + `<path d="M28 -300 Q70 -330 54 -370" stroke="#f6f0e2" stroke-width="9" fill="none" stroke-linecap="round"/><path d="M30 -302 Q66 -330 52 -364" stroke="#d8644e" stroke-width="3" fill="none"/>`;
-const smallCross = `<g transform="translate(0,20)"><rect x="-5" y="-140" width="10" height="150" rx="4" fill="#7a5536"/><rect x="1" y="-140" width="4" height="150" fill="#5a3d22" opacity=".6"/><rect x="-30" y="-112" width="60" height="10" rx="4" fill="#7a5536"/></g>`;
-const stone = `<g transform="translate(0,-6)"><rect x="-26" y="-20" width="52" height="34" rx="6" fill="#c9b79a"/><rect x="6" y="-20" width="20" height="34" rx="5" fill="#a8977c"/><path d="M-18 -8 h20" stroke="#a8977c" stroke-width="3"/></g>`;
-const clothes = `<g><rect x="-30" y="-14" width="60" height="22" rx="6" fill="#b8323e"/><rect x="-26" y="-30" width="52" height="18" rx="6" fill="#2f4a8a"/><path d="M-26 -22 h52" stroke="#f2c46b" stroke-width="3"/></g>`;
+export const smallCross = `<g transform="translate(0,20)"><rect x="-5" y="-140" width="10" height="150" rx="4" fill="#7a5536"/><rect x="1" y="-140" width="4" height="150" fill="#5a3d22" opacity=".6"/><rect x="-30" y="-112" width="60" height="10" rx="4" fill="#7a5536"/></g>`;
+export const stone = `<g transform="translate(0,-6)"><rect x="-26" y="-20" width="52" height="34" rx="6" fill="#c9b79a"/><rect x="6" y="-20" width="20" height="34" rx="5" fill="#a8977c"/><path d="M-18 -8 h20" stroke="#a8977c" stroke-width="3"/></g>`;
+export const clothes = `<g><rect x="-30" y="-14" width="60" height="22" rx="6" fill="#b8323e"/><rect x="-26" y="-30" width="52" height="18" rx="6" fill="#2f4a8a"/><path d="M-26 -22 h52" stroke="#f2c46b" stroke-width="3"/></g>`;
 
-function bird(c = '#8a6a4a', s = 1, flipX = false) {
+export function bird(c = '#8a6a4a', s = 1, flipX = false) {
   return `<g transform="scale(${flipX ? -s : s},${s})"><path d="M-14 0 L-32 -8 L-30 6Z" fill="${dark(c, 0.25)}"/><ellipse cx="0" cy="0" rx="17" ry="13" fill="${c}"/>`
     + `<ellipse cx="3" cy="5" rx="10" ry="7" fill="${light(c, 0.5)}"/><circle cx="13" cy="-11" r="10" fill="${c}"/><path d="M22 -13 L31 -10 L22 -7Z" fill="#e2a33a"/>`
     + `<circle cx="16" cy="-13" r="2.3" fill="#2b1d14"/><circle cx="16.8" cy="-13.8" r=".8" fill="#fff"/><ellipse cx="-4" cy="-2" rx="11" ry="6.5" fill="${dark(c, 0.22)}" transform="rotate(-15)"/>`
     + `<path d="M-2 12 v7 M5 12 v7" stroke="#c98a3a" stroke-width="2.4"/></g>`;
 }
-const perched = (x, y, c, s = 1, fl = false, ph = 0) => `<g transform="translate(${x},${y})"><g${M.bob(5, 1.3 + ph, ph)}>${bird(c, s, fl)}</g></g>`;
-function flyer(x, y, c, s = 1, { dx = 120, dy = -60, ph = 0 } = {}) {
+export const perched = (x, y, c, s = 1, fl = false, ph = 0) => `<g transform="translate(${x},${y})"><g${M.bob(5, 1.3 + ph, ph)}>${bird(c, s, fl)}</g></g>`;
+export function flyer(x, y, c, s = 1, { dx = 120, dy = -60, ph = 0 } = {}) {
   return `<g${M.drift(dx, dy)}><g transform="translate(${x},${y}) scale(${s})"><g${M.bob(10, 2.4 + ph, ph)}>`
     + `<g${M.flap(0.4, ph)}><path d="M-4 -2 Q-26 -34 -44 -14 Q-24 -12 -4 4Z" fill="${dark(c, 0.15)}"/><path d="M4 -2 Q26 -34 44 -14 Q24 -12 4 4Z" fill="${c}"/></g>`
     + `<ellipse cx="0" cy="2" rx="14" ry="9" fill="${c}"/><circle cx="12" cy="-3" r="7" fill="${c}"/><path d="M18 -4 L25 -2 L18 0Z" fill="#e2a33a"/><circle cx="14" cy="-4" r="1.6" fill="#2b1d14"/></g></g></g>`;
 }
 
 // Hill town silhouette (Assisi): houses on a hill, a campanile, the Rocca fortress, the basilica
-function assisi(x, y, s = 1, { wall = '#d9c2a0', roof = '#c0623e', hillC = '#8fae6a', win = null, shade = 0.18 } = {}) {
+export function assisi(x, y, s = 1, { wall = '#d9c2a0', roof = '#c0623e', hillC = '#8fae6a', win = null, shade = 0.18 } = {}) {
   const r = rng(21); let b = '';
   b += `<path d="M-560 40 Q-320 -110 0 -175 Q320 -110 560 40Z" fill="${hillC}"/>`;
   for (let i = -9; i <= 9; i++) {
@@ -50,17 +50,17 @@ function assisi(x, y, s = 1, { wall = '#d9c2a0', roof = '#c0623e', hillC = '#8fa
   return `<g transform="translate(${x},${y}) scale(${s})">${b}</g>`;
 }
 
-function tree(x, y, s = 1, base = '#4b9a50') {
+export function tree(x, y, s = 1, base = '#4b9a50') {
   const blobs = [[0, -540, 190], [-110, -440, 140], [130, -450, 150], [10, -660, 130], [-60, -600, 110]];
   return `<g transform="translate(${x},${y}) scale(${s})"><path d="M-30 0 Q-20 -300 -10 -480 L22 -480 Q30 -300 34 0 Z" fill="#6b4a2a"/><path d="M10 0 Q14 -300 14 -470 L22 -480 Q30 -300 34 0Z" fill="#4e3420"/>`
     + `<path d="M0 -380 Q80 -420 150 -400" stroke="#6b4a2a" stroke-width="18" fill="none" stroke-linecap="round"/>`
     + `<g${M.sway(1.2, 5.5, 0, 0, -300)}>` + blobs.map(([bx, by, r], i) => { const c = i % 2 ? light(base, 0.08) : base; return `<circle cx="${bx}" cy="${by + 18}" r="${r}" fill="${dark(c, 0.25)}"/><circle cx="${bx - 8}" cy="${by}" r="${r * 0.94}" fill="${c}"/>`; }).join('')
     + `<circle cx="-40" cy="-640" r="60" fill="${light(base, 0.25)}" opacity=".55"/></g></g>`;
 }
-const olive = (x, y, s = 1) => `<g transform="translate(${x},${y}) scale(${s})"><path d="M-8 0 Q-14 -60 -4 -110 L8 -110 Q4 -60 10 0Z" fill="#7a5a3a"/><g${M.sway(1.5, 5, 0, 0, -100)}>`
+export const olive = (x, y, s = 1) => `<g transform="translate(${x},${y}) scale(${s})"><path d="M-8 0 Q-14 -60 -4 -110 L8 -110 Q4 -60 10 0Z" fill="#7a5a3a"/><g${M.sway(1.5, 5, 0, 0, -100)}>`
   + `<ellipse cx="-30" cy="-140" rx="60" ry="40" fill="#7f9a6a"/><ellipse cx="30" cy="-150" rx="58" ry="42" fill="#90aa78"/><ellipse cx="0" cy="-180" rx="50" ry="36" fill="#a2bb8a"/></g></g>`;
 
-function chapelRuin(x, y, s = 1) {
+export function chapelRuin(x, y, s = 1) {
   const r = rng(5); let blocks = '';
   for (let row = 0; row < 7; row++) for (let c = 0; c < 8; c++) {
     if ((row > 4 && (c === 1 || c === 6)) || (row === 6 && c > 2 && c < 6) || (row > 3 && c === 7 && r() > 0.3)) continue;
@@ -77,14 +77,14 @@ function chapelRuin(x, y, s = 1) {
     + `<g transform="translate(150,-10)"><rect x="-30" y="-30" width="50" height="34" rx="5" fill="#c9b79a"/><rect x="-14" y="-60" width="48" height="32" rx="5" fill="#d8c6a4"/><rect x="18" y="-28" width="46" height="32" rx="5" fill="#bfae8e"/></g></g>`;
 }
 
-function porziuncola(x, y, s = 1) {
+export function porziuncola(x, y, s = 1) {
   return `<g transform="translate(${x},${y}) scale(${s})"><rect x="-110" y="-200" width="220" height="200" fill="#4a3a4e"/><rect x="40" y="-200" width="70" height="200" fill="#3a2c40"/>`
     + `<path d="M-130 -200 L0 -300 L130 -200Z" fill="#5a3a3e"/><rect x="-14" y="-350" width="28" height="56" fill="#4a3a4e"/><path d="M-20 -350 L0 -372 L20 -350Z" fill="#5a3a3e"/>`
     + `<path d="M-40 0 V-90 A40 40 0 0 1 40 -90 V0Z" fill="#ffd98a" opacity=".85"/><circle cx="0" cy="-150" r="18" fill="#ffd98a" opacity=".85"/>`
     + `<ellipse cx="0" cy="-40" rx="120" ry="60" fill="#ffd98a" opacity=".18" filter="url(#blur14)"/></g>`;
 }
 
-function clothStall(x, y, s = 1) {
+export function clothStall(x, y, s = 1) {
   const rolls = ['#b8323e', '#2f4a8a', '#e2b448', '#6aa457', '#c97ab0', '#f6f0e2'];
   return `<g transform="translate(${x},${y}) scale(${s})"><rect x="-150" y="-260" width="10" height="260" fill="#6b4a2a"/><rect x="140" y="-260" width="10" height="260" fill="#6b4a2a"/>`
     + `<g${M.sway(1.2, 3, 0, 0, -270)}>` + [0, 1, 2, 3, 4, 5].map((i) => `<path d="M${-160 + i * 53.3} -270 h53.3 v34 q-26.6 16 -53.3 0Z" fill="${i % 2 ? '#f6f0e2' : '#c0623e'}"/>`).join('') + '</g>'
@@ -93,7 +93,7 @@ function clothStall(x, y, s = 1) {
     + `<path d="M-120 -110 q20 60 0 100" stroke="#2f4a8a" stroke-width="22" fill="none"/></g>`;
 }
 
-function bunting(y, { seed = 3 } = {}) {
+export function bunting(y, { seed = 3 } = {}) {
   const cs = ['#c0623e', '#f2c46b', '#2f4a8a', '#6aa457', '#f6f0e2'];
   let s = `<path d="M-40 ${y} Q540 ${y + 90} 1120 ${y}" stroke="#6b4a2a" stroke-width="3" fill="none"/>`;
   for (let i = 0; i < 16; i++) {
@@ -103,7 +103,7 @@ function bunting(y, { seed = 3 } = {}) {
   return s;
 }
 
-function wolf(x, y, s = 1) {
+export function wolf(x, y, s = 1) {
   const c = '#8a8a96', d = dark(c, 0.25), l = light(c, 0.45);
   return `<g transform="translate(${x},${y}) scale(${s})"><ellipse cx="0" cy="2" rx="70" ry="12" fill="#1a0f1a" opacity=".2" filter="url(#soft)"/><g${M.bob(2, 2.6)}>`
     + `<g transform="translate(46,-20)"><g${M.sway(12, 1.4, 0, 0, 0)}><path d="M0 0 Q50 -10 60 -60 Q40 -30 0 -18Z" fill="${c}"/><path d="M48 -40 Q60 -55 60 -60 Q52 -48 44 -42Z" fill="${l}"/></g></g>`
@@ -114,7 +114,7 @@ function wolf(x, y, s = 1) {
     + `<path d="M-8 20 Q0 27 8 20" stroke="#2b1d14" stroke-width="2.5" fill="none" stroke-linecap="round"/></g></g></g>`;
 }
 
-function rabbit(x, y, s = 1) {
+export function rabbit(x, y, s = 1) {
   const c = '#e9dccb', d = dark(c, 0.2);
   return `<g transform="translate(${x},${y}) scale(${s})"><ellipse cx="0" cy="2" rx="44" ry="9" fill="#1a0f1a" opacity=".2" filter="url(#soft)"/><g${M.bob(6, 1.1)}>`
     + `<ellipse cx="0" cy="-34" rx="38" ry="34" fill="${c}"/><circle cx="-34" cy="-30" r="10" fill="#fff"/><ellipse cx="20" cy="-6" rx="14" ry="8" fill="${d}"/>`
@@ -123,7 +123,7 @@ function rabbit(x, y, s = 1) {
     + `<ellipse cx="0" cy="6" rx="4" ry="3" fill="#e08a8a"/></g></g></g>`;
 }
 
-const francis = (x, y, s, o = {}) => person(x, y, s, { kind: 'friar', skin: SK, hair: '#5a3e2a', beard: '#5a3e2a', over: tonsure, ...o });
+export const francis = (x, y, s, o = {}) => person(x, y, s, { kind: 'friar', skin: SK, hair: '#5a3e2a', beard: '#5a3e2a', over: tonsure, ...o });
 
 // ---------------------------------------------------------------- scenes
 function scene0() {
