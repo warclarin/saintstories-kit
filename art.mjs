@@ -322,17 +322,37 @@ export function person(x, y, s, o = {}) {
   }
   if (beard) g.push(`<path d="M-35 -242 Q-33 -204 0 -201 Q33 -204 35 -242 Q25 -223 0 -225 Q-25 -223 -35 -242 Z" fill="${beard}"/><path d="M12 -232 Q24 -228 30 -238 Q28 -210 6 -203Z" fill="${dark(beard, 0.3)}" opacity=".5"/>`);
   if (k.crown) g.push(`<path d="M-31 -285 L-31 -314 L-15 -299 L0 -320 L15 -299 L31 -314 L31 -285 Z" fill="${GOLD}" stroke="#b08a3a" stroke-width="3"/><circle cx="0" cy="-296" r="4.5" fill="#c8323a"/>`);
-  // face
-  g.push(`<g data-blink="${f(ph * 3)} 0 -250"><ellipse cx="-14" cy="-250" rx="6.2" ry="8.2" fill="${INK}"/><ellipse cx="14" cy="-250" rx="6.2" ry="8.2" fill="${INK}"/>`
-    + '<circle cx="-16" cy="-253.5" r="2.5" fill="#fff"/><circle cx="12" cy="-253.5" r="2.5" fill="#fff"/><circle cx="-11.5" cy="-246.5" r="1.2" fill="#fff" opacity=".8"/><circle cx="16.5" cy="-246.5" r="1.2" fill="#fff" opacity=".8"/></g>');
-  g.push(`<path d="M-23 -266 q8 -5 15 0 M8 -266 q8 -5 15 0" stroke="${veil ? INK : dark(hair, 0.05)}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+  // face; mood: happy (default) | joy | sad | worried | determined | stern | surprised | peaceful (eyes closed, praying)
+  const mood = k.mood || 'happy', lc = beard ? '#3a2416' : INK, brC = veil ? INK : dark(hair, 0.05);
+  if (mood === 'peaceful') {
+    g.push(`<path d="M-21 -251 q7 6 14 0 M7 -251 q7 6 14 0" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+  } else {
+    const ry = mood === 'surprised' ? 9.8 : 8.2, rx = mood === 'surprised' ? 6.8 : 6.2;
+    g.push(`<g data-blink="${f(ph * 3)} 0 -250"><ellipse cx="-14" cy="-250" rx="${rx}" ry="${ry}" fill="${INK}"/><ellipse cx="14" cy="-250" rx="${rx}" ry="${ry}" fill="${INK}"/>`
+      + '<circle cx="-16" cy="-253.5" r="2.5" fill="#fff"/><circle cx="12" cy="-253.5" r="2.5" fill="#fff"/><circle cx="-11.5" cy="-246.5" r="1.2" fill="#fff" opacity=".8"/><circle cx="16.5" cy="-246.5" r="1.2" fill="#fff" opacity=".8"/></g>');
+  }
+  const brows = {
+    sad: 'M-23 -263 L-8 -270 M8 -270 L23 -263', worried: 'M-23 -264 Q-15 -266 -8 -271 M8 -271 Q15 -266 23 -264',
+    determined: 'M-23 -268 Q-15 -268 -8 -265 M8 -265 Q15 -268 23 -268', stern: 'M-23 -271 L-7 -263 M7 -263 L23 -271',
+    surprised: 'M-23 -273 q8 -7 15 0 M8 -273 q8 -7 15 0',
+  }[mood] || 'M-23 -266 q8 -5 15 0 M8 -266 q8 -5 15 0';
+  g.push(`<path d="${brows}" stroke="${brC}" stroke-width="3" fill="none" stroke-linecap="round"/>`
     + `<path d="M-3 -239 q3 3 6 0" stroke="${skSh}" stroke-width="2.5" fill="none" stroke-linecap="round"/>`
-    + '<ellipse cx="-25" cy="-236" rx="8" ry="5" fill="#ef6f6a" opacity=".32"/><ellipse cx="25" cy="-236" rx="8" ry="5" fill="#ef6f6a" opacity=".32"/>');
+    + `<ellipse cx="-25" cy="-236" rx="8" ry="5" fill="#ef6f6a" opacity="${mood === 'sad' || mood === 'stern' ? 0.18 : 0.32}"/><ellipse cx="25" cy="-236" rx="8" ry="5" fill="#ef6f6a" opacity="${mood === 'sad' || mood === 'stern' ? 0.18 : 0.32}"/>`);
   if (k.talk) {
     const [a, b] = Array.isArray(k.talk) ? k.talk : [0.3, 999];
     g.push(`<g data-talk="${a} ${b} 0 -231"><ellipse cx="0" cy="-231" rx="7.5" ry="6" fill="#5a2620"/><ellipse cx="0" cy="-228" rx="4.5" ry="2.4" fill="#d86a6a"/></g>`);
   } else {
-    g.push(`<path d="M-9 -233 Q0 -225 9 -233" stroke="${beard ? '#3a2416' : INK}" stroke-width="2.6" fill="none" stroke-linecap="round"/>`);
+    const st = `stroke="${lc}" stroke-width="2.6" fill="none" stroke-linecap="round"`;
+    g.push({
+      joy: '<path d="M-11 -236 Q0 -220 11 -236 Z" fill="#5a2620"/><path d="M-6 -229 Q0 -225 6 -229" stroke="#d86a6a" stroke-width="3" fill="none" stroke-linecap="round"/>',
+      sad: `<path d="M-8 -228 Q0 -235 8 -228" ${st}/>`,
+      worried: `<path d="M-8 -231 q4 -3 8 0 q4 3 8 0" ${st}/>`,
+      determined: `<path d="M-8 -233 Q0 -228 8 -233" ${st}/>`,
+      stern: `<path d="M-8 -231 H8" ${st}/>`,
+      surprised: `<ellipse cx="0" cy="-230" rx="5" ry="6.5" fill="#5a2620"/>`,
+      peaceful: `<path d="M-7 -233 Q0 -228 7 -233" ${st}/>`,
+    }[mood] || `<path d="M-9 -233 Q0 -225 9 -233" ${st}/>`);
   }
   if (k.over) g.push(k.over);
   g.push(arm(1, k.armR ?? 8, k.propR));

@@ -27,7 +27,7 @@ const armor = bob
 export const joan = (x, y, s, o = {}) => person(x, y, s, { kind: 'layman', top: '#c4ccd6', pants: '#9aa4b2', skin: SKJ, hair: HAIR, over: armor, ...o });
 const helmet = `<path d="M-44 -258 Q-44 -312 0 -312 Q44 -312 44 -258 L44 -248 L-44 -248Z" fill="#9aa4b2"/><path d="M-44 -252 H44" stroke="#6e7a8a" stroke-width="5"/><path d="M0 -312 V-252" stroke="#c4ccd6" stroke-width="4"/>`;
 const soldierArmor = `<path d="M-37 -207 Q0 -218 37 -207 L43 -101 Q0 -92 -43 -101 Z" fill="#9aa4b2"/><path d="M13 -212 L37 -207 L43 -101 L19 -95Z" fill="#6e7a8a" opacity=".5"/><path d="M-38 -104 L38 -104 L44 -64 Q0 -54 -44 -64Z" fill="#7a2e3a"/>`;
-const soldier = (x, y, s, o = {}) => person(x, y, s, { kind: 'layman', top: '#9aa4b2', pants: '#6e7a8a', skin: SKIN.priest, hair: '#4a3424', beard: '#4a3424', over: soldierArmor + helmet, ...o });
+const soldier = (x, y, s, o = {}) => person(x, y, s, { mood: 'joy', kind: 'layman', top: '#9aa4b2', pants: '#6e7a8a', skin: SKIN.priest, hair: '#4a3424', beard: '#4a3424', over: soldierArmor + helmet, ...o });
 const pennant = (c) => `<g><rect x="-4" y="-260" width="8" height="300" rx="3" fill="#7a5536"/><g transform="translate(4,-256)"><g${M.sway(6, 1.4, 0, 0, 0)}><path d="M0 0 L90 18 L0 40Z" fill="${c}"/></g></g></g>`;
 
 // French chateau / town silhouette with conical towers
@@ -70,7 +70,7 @@ function scene0() {
     + clouds(600, { color: '#ffc9b0', op: 0.45, drift: 40, seed: 5 })
     + chateau(540, 1235, 1.1, { wall: '#5e4466', roof: '#3a2a48', win: '#ffd98a', shade: 0.3 })
     + ground(1290, '#3e2a44', { rim: '#c07a7a' }) + tufts(1296, 10, '#2e1e34', { seed: 3 })
-    + `<g${M.in('pop', 0, 1.0, 540, 1250)}>${joan(540, 1262, 2.35, { halo: 0.6, armL: [22, 2, 3], armR: [18, 2, 3.4], propL: `<g transform="scale(-.82,.82)">${standard(270)}</g>`, propR: sword })}</g>`
+    + `<g${M.in('pop', 0, 1.0, 540, 1250)}>${joan(540, 1262, 2.35, { mood: 'determined', halo: 0.6, armL: [22, 2, 3], armR: [18, 2, 3.4], propL: `<g transform="scale(-.82,.82)">${standard(270)}</g>`, propR: sword })}</g>`
     + flyer(200, 780, '#f6f0e2', 1.0, { ph: 0.3 }) + flyer(880, 720, '#f6f0e2', 0.9, { dx: 80, ph: 1.1 })
     + motes(16, { y0: 520, y1: 1240, seed: 2 })
     + foliage('l', 1600, { color: '#2a1a34', seed: 6 }) + foliage('r', 1640, { color: '#2a1a34', seed: 1 });
@@ -92,9 +92,9 @@ function scene1() {
 function scene2() {
   const angel = `<path d="M-30 -200 Q-150 -260 -170 -120 Q-110 -150 -40 -140Z M30 -200 Q150 -260 170 -120 Q110 -150 40 -140Z" fill="#fff6e0" opacity=".9"/>`;
   const voices = `<g opacity=".72"${M.tw([{ at: 0.8, dur: 2, from: { opacity: 0 }, to: { opacity: 0.72 } }])}>`
-    + `<g${M.bob(10, 4)}>${person(540, 900, 1.15, { kind: 'layman', top: '#f6e6c0', pants: '#e2cf9c', skin: SKIN.fair, hair: '#c98a3a', under: angel, halo: true, armL: 20, armR: [60, 4, 3], propR: sword })}</g>`
-    + `<g${M.bob(10, 4.4, 0.6)}>${person(300, 960, 1.0, { kind: 'royal', girl: true, top: '#f2d6e2', skin: SKIN.fair, hair: '#8a5a32', halo: true, armL: 24, armR: 18, propR: palm(0.8) })}</g>`
-    + `<g${M.bob(10, 4.8, 1.2)}>${person(780, 960, 1.0, { kind: 'layman', girl: true, top: '#d6e6f2', skin: SKIN.fair, hair: '#c98a3a', halo: true, armL: 18, armR: [30, 3, 3], propR: smallCross })}</g></g>`;
+    + `<g${M.bob(10, 4)}>${person(540, 900, 1.15, { mood: 'peaceful', kind: 'layman', top: '#f6e6c0', pants: '#e2cf9c', skin: SKIN.fair, hair: '#c98a3a', under: angel, halo: true, armL: 20, armR: [60, 4, 3], propR: sword })}</g>`
+    + `<g${M.bob(10, 4.4, 0.6)}>${person(300, 960, 1.0, { mood: 'peaceful', kind: 'royal', girl: true, top: '#f2d6e2', skin: SKIN.fair, hair: '#8a5a32', halo: true, armL: 24, armR: 18, propR: palm(0.8) })}</g>`
+    + `<g${M.bob(10, 4.8, 1.2)}>${person(780, 960, 1.0, { mood: 'peaceful', kind: 'layman', girl: true, top: '#d6e6f2', skin: SKIN.fair, hair: '#c98a3a', halo: true, armL: 18, armR: [30, 3, 3], propR: smallCross })}</g></g>`;
   return sky(SKIES.sunrise)
     + glow(540, 800, 520, 0.8) + rays(540, 820, { op: 0.12, speed: 2 })
     + hill(1080, 50, '#b9cfa0', 4)
@@ -102,7 +102,7 @@ function scene2() {
     + voices
     + ground(1180, '#86b86a', { rim: '#b0dc8a' }) + flowers(1200, 1300, 12, { seed: 2 })
     + `<g transform="translate(560,1330)"><circle r="160" fill="url(#haloGlow)" opacity=".5" transform="translate(0,-260)"/></g>`
-    + person(560, 1335, 1.65, { kind: 'layman', girl: true, top: '#b8323e', pants: '#7a2e3a', skin: SKJ, hair: HAIR, armL: [62, 3, 3], armR: [62, 3, 3.2] })
+    + person(560, 1335, 1.65, { mood: 'surprised', kind: 'layman', girl: true, top: '#b8323e', pants: '#7a2e3a', skin: SKJ, hair: HAIR, armL: [62, 3, 3], armR: [62, 3, 3.2] })
     + motes(14, { y0: 700, y1: 1250, seed: 5 })
     + foliage('l', 1640, { color: '#2f5a35', seed: 7 });
 }
@@ -115,10 +115,10 @@ function scene3() {
     + chateau(540, 1170, 1.25, {})
     + ground(1170, '#cdb894') + `<path d="M-40 1240 H1120 M-40 1310 H1120" stroke="#b8a37e" stroke-width="3"/>`
     + `<g transform="translate(-20,1310)">${pennant('#2f4a8a')}</g>`
-    + person(330, 1320, 1.75, { kind: 'royal', top: '#2f4a8a', skin: SKIN.priest, hair: '#4a3424', beard: false, over: fleur(-14, -150, 0.8) + fleur(16, -90, 0.8), armR: [60, 6, 2.2], armL: 14 })
+    + person(330, 1320, 1.75, { mood: 'surprised', kind: 'royal', top: '#2f4a8a', skin: SKIN.priest, hair: '#4a3424', beard: false, over: fleur(-14, -150, 0.8) + fleur(16, -90, 0.8), armR: [60, 6, 2.2], armL: 14 })
     + person(140, 1325, 1.5, { kind: 'layman', top: '#7a2e5a', pants: '#3a3060', skin: SKIN.priest, hair: '#6b4a2a', armL: 10, armR: 10 })
-    + person(640, 1325, 1.6, { kind: 'layman', top: '#3a4a6a', pants: '#2a2a3a', skin: SKJ, hair: HAIR, over: bob, talk: true, armL: [70, 8, 1.8], armR: 18 })
-    + person(900, 1325, 1.55, { kind: 'elder', skin: SKIN.priest, armL: 12, armR: 20 })
+    + person(640, 1325, 1.6, { mood: 'determined', kind: 'layman', top: '#3a4a6a', pants: '#2a2a3a', skin: SKJ, hair: HAIR, over: bob, talk: true, armL: [70, 8, 1.8], armR: 18 })
+    + person(900, 1325, 1.55, { mood: 'worried', kind: 'elder', skin: SKIN.priest, armL: 12, armR: 20 })
     + foliage('r', 1650, { color: '#4a3a2a', seed: 3 });
 }
 
@@ -132,7 +132,7 @@ function scene4() {
     + soldier(150, 1300, 1.45, { armR: [110, 10, 1.4], propR: pennant('#c8323a'), armL: 10 })
     + soldier(330, 1310, 1.5, { armL: [120, 12, 1.2], armR: 14 })
     + soldier(900, 1300, 1.45, { flip: true, armR: [110, 10, 1.5], propR: pennant('#2f4a8a'), armL: 10 })
-    + joan(620, 1330, 1.8, { armL: [150, 6, 1.6], propL: `<g transform="scale(.9)">${standard(260)}</g>`, armR: [20, 3, 2], propR: sword })
+    + joan(620, 1330, 1.8, { mood: 'determined', armL: [150, 6, 1.6], propL: `<g transform="scale(.9)">${standard(260)}</g>`, armR: [20, 3, 2], propR: sword })
     + petals(14, { seed: 6, colors: ['#ffffff', '#f2c46b'] })
     + tufts(1180, 12, '#7a9a4a', { seed: 9 })
     + foliage('l', 1650, { color: '#3a4a2a', seed: 4 });
@@ -144,15 +144,15 @@ function scene5() {
     + rays(540, 600, { op: 0.12 }) + glow(540, 640, 460, 0.7)
     + gothic(540, 1180, 1.1)
     + ground(1180, '#b8a37e', { rim: '#d8c49a' }) + `<rect x="380" y="1180" width="320" height="400" fill="#9a2e3a"/><rect x="380" y="1180" width="12" height="400" fill="${GOLD}"/><rect x="688" y="1180" width="12" height="400" fill="${GOLD}"/>`
-    + person(330, 1320, 1.75, { kind: 'priest', top: '#f2ead8', beard: '#cfc8bc', hair: '#cfc8bc', collar: false, under: cope, over: mitre + stole, armL: 14, armR: [70, 4, 2.4] })
-    + person(540, 1320, 1.85, { kind: 'royal', top: '#2f4a8a', skin: SKIN.priest, hair: '#4a3424', crown: false, over: `<g${M.in('drop', 1.2, 0.8)}>${crown}</g>` + fleur(-14, -150, 0.8) + fleur(16, -90, 0.8), armL: 22, armR: 22 })
-    + joan(790, 1325, 1.7, { armL: [20, 2, 3], propL: `<g transform="scale(-.85,.85)">${standard(260)}</g>`, armR: 14 })
+    + person(330, 1320, 1.75, { mood: 'peaceful', kind: 'priest', top: '#f2ead8', beard: '#cfc8bc', hair: '#cfc8bc', collar: false, under: cope, over: mitre + stole, armL: 14, armR: [70, 4, 2.4] })
+    + person(540, 1320, 1.85, { mood: 'joy', kind: 'royal', top: '#2f4a8a', skin: SKIN.priest, hair: '#4a3424', crown: false, over: `<g${M.in('drop', 1.2, 0.8)}>${crown}</g>` + fleur(-14, -150, 0.8) + fleur(16, -90, 0.8), armL: 22, armR: 22 })
+    + joan(770, 1325, 1.65, { mood: 'joy', armR: [20, 2, 3], propR: `<g transform="scale(.7)">${standard(260)}</g>`, armL: 14 })
     + petals(22, { seed: 9 })
     + foliage('r', 1650, { color: '#4a3a2a', seed: 9 });
 }
 
 function scene6() {
-  const judges = [140, 300, 460, 620, 780, 940].map((x, i) => person(x, 940, 1.0, { kind: i === 2 ? 'priest' : 'friar', top: i % 2 ? '#3a2a40' : '#2a2030', skin: SKIN.priest, hair: '#5a4a3a', beard: i % 3 ? '#5a4a3a' : false, armL: 10, armR: 10, over: i === 2 ? mitre : '' })).join('');
+  const judges = [140, 300, 460, 620, 780, 940].map((x, i) => person(x, 940, 1.0, { mood: 'stern', kind: i === 2 ? 'priest' : 'friar', top: i % 2 ? '#3a2a40' : '#2a2030', skin: SKIN.priest, hair: '#5a4a3a', beard: i % 3 ? '#5a4a3a' : false, armL: 10, armR: 10, over: i === 2 ? mitre : '' })).join('');
   return sky([[0, '#2a2236'], [1, '#4a3a52']])
     + `<rect x="-200" y="300" width="${W + 400}" height="900" fill="#3a2e44"/>`
     + [180, 540, 900].map((x) => `<path d="M${x - 70} 780 V560 A70 70 0 0 1 ${x + 70} 560 V780Z" fill="#7a6a9a" opacity=".6"/>`).join('')
@@ -160,7 +160,7 @@ function scene6() {
     + `<rect x="-40" y="900" width="1160" height="120" fill="#5a3e2e"/><rect x="-40" y="900" width="1160" height="14" fill="#7a5536"/>`
     + ground(1180, '#2e2438')
     + `<g opacity=".9">${beam(470, 610, 380, 700, 1340, 0.5)}</g>`
-    + person(540, 1330, 1.7, { kind: 'layman', top: '#3a4a6a', pants: '#2a2a3a', skin: SKJ, hair: HAIR, over: bob, armL: [60, 3, 3], armR: [60, 3, 3.2] })
+    + person(540, 1330, 1.7, { mood: 'determined', kind: 'layman', top: '#3a4a6a', pants: '#2a2a3a', skin: SKJ, hair: HAIR, over: bob, armL: [60, 3, 3], armR: [60, 3, 3.2] })
     + motes(10, { x0: 400, x1: 700, y0: 700, y1: 1250, seed: 3, rise: 40 });
 }
 
@@ -176,7 +176,7 @@ function scene7() {
     + `<g transform="translate(330,1290)"><ellipse cx="0" cy="-40" rx="160" ry="90" fill="#ff9a4a" opacity=".35" filter="url(#blur14)"${M.flick(1.2, 0, 0.6)}/>`
     + `<path d="M-90 0 L-60 -60 L-20 -20 L0 -80 L30 -24 L60 -66 L90 0Z" fill="#5a3a2a"/><rect x="-10" y="-420" width="20" height="420" rx="6" fill="#6b4a2a"/><rect x="-60" y="-360" width="120" height="16" rx="6" fill="#6b4a2a"/></g>`
     + motes(16, { x0: 230, x1: 430, y0: 1050, y1: 1290, color: '#ffb060', seed: 12, rise: 260, size: [2, 5] })
-    + person(600, 1305, 1.8, { kind: 'layman', top: '#f2ece0', pants: '#d8d0c0', robe: true, skin: SKJ, hair: HAIR, over: bob, halo: 3.2, armL: [28, 2, 3], armR: [40, 2, 3.3], propR: smallCross })
+    + person(600, 1305, 1.8, { mood: 'peaceful', kind: 'layman', top: '#f2ece0', pants: '#d8d0c0', robe: true, skin: SKJ, hair: HAIR, over: bob, halo: 3.2, armL: [28, 2, 3], armR: [40, 2, 3.3], propR: smallCross })
     + foliage('r', 1650, { color: '#1e1626', seed: 4 });
 }
 
@@ -198,12 +198,12 @@ function scene8() {
 
 function scene9() {
   const kids = [[150, '#4b8bc4', SKINS[1], false], [290, '#e2b448', SKIN.fair, true], [790, '#d8644e', SKIN.s3, true], [930, '#6aa457', SKIN.priest, false]]
-    .map(([x, top, skin, girl], i) => person(x, 1330, 1.2, { kind: 'kid', top, skin, girl, flip: i > 1, hair: i === 1 ? '#c98a3a' : '#3a2a1a', pants: '#3a3a4a', armL: 14, armR: i % 2 ? [120, 14, 1.3] : 14 })).join('');
+    .map(([x, top, skin, girl], i) => person(x, 1330, 1.2, { mood: 'joy', kind: 'kid', top, skin, girl, flip: i > 1, hair: i === 1 ? '#c98a3a' : '#3a2a1a', pants: '#3a3a4a', armL: 14, armR: i % 2 ? [120, 14, 1.3] : 14 })).join('');
   return sky([[0, '#3a4a8a'], [0.42, '#a0a6d0'], [0.68, '#f8d0a0'], [1, '#fbe0a8']], { stars: 6, seed: 3 })
     + rays(540, 640, { op: 0.1 }) + glow(540, 1150, 540, 0.85)
     + hill(1120, 50, '#9ab07a', 4) + chateau(860, 1150, 0.45, { wall: '#d8cbb0' })
     + hill(1190, 34, '#7fa860', 7, { top: '#a8d088' })
-    + joan(540, 1262, 2.15, { halo: true, armL: [22, 2, 3], armR: [18, 2, 3.4], propL: `<g transform="scale(-.75,.75)">${standard(270)}</g>`, propR: sword })
+    + joan(540, 1262, 2.15, { mood: 'joy', halo: true, armL: [22, 2, 3], armR: [18, 2, 3.4], propL: `<g transform="scale(-.75,.75)">${standard(270)}</g>`, propR: sword })
     + kids
     + `<g transform="translate(70,1400)">${lily(0.9)}</g><g transform="translate(1010,1400)">${lily(0.9)}</g>`
     + flyer(230, 760, '#f6f0e2', 0.9, { ph: 0.2 }) + flyer(870, 820, '#f6f0e2', 0.8, { dx: 90, ph: 1.0 })
