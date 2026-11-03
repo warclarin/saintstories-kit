@@ -42,6 +42,14 @@ export const M = {
   tw:    (list) => ` data-tw='${JSON.stringify(list)}'`,  // [{at, dur, from:{}, to:{}, ease, origin:"x y"}]
 };
 
+// ------------------------------------------------------------- parallax depth layers
+// Wrap parts of a scene so camera moves (scene.cam = 'push'|'pull'|'pan-l'|'pan-r'|'tilt-up'|'tilt-down'|'drift-l'|'drift-r'
+// or {move, amt, ox, oy}) shift them by different amounts. Depth 1 = character plane (moves with the camera);
+// <1 = farther (sky 0, distant hills 0.3–0.5, set 0.7–0.85); >1 = nearer (foreground foliage 1.3–1.5).
+// Keep layers on their own <g> (no other motion on the same element).
+export const layer = (depth, svg) => `<g data-depth="${depth}">${svg}</g>`;
+export const FAR = (svg) => layer(0.15, svg), BACK = (svg) => layer(0.45, svg), MID = (svg) => layer(0.75, svg), NEAR = (svg) => layer(1.4, svg);
+
 // ------------------------------------------------------------- sky, light, atmosphere
 export function sky(stops, { stars = 0, seed = 1 } = {}) {
   const id = uid('sky');

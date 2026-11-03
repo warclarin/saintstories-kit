@@ -108,9 +108,16 @@ const ICON = (c = 'rgba(255,255,255,.75)') =>
 
 function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   const s = STORY.scenes[i];
+  // cam: [ox,oy,amt] (legacy slow push-in) | 'pan-r' | {move, amt, ox, oy}; moves live in reel.js (data-camv)
   const cam = s.cam || [540, 1150, 0.05];
+  let camAttr;
+  if (Array.isArray(cam)) camAttr = `data-cam="${cam.join(' ')}"`;
+  else {
+    const c = typeof cam === 'string' ? { move: cam } : cam;
+    camAttr = `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift}"`;
+  }
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
-    + `<svg viewBox="0 0 1080 1920"><g class="cam" data-cam="${cam.join(' ')}"><g transform="translate(0,${shift})">${s.art()}</g></g></svg>`
+    + `<svg viewBox="0 0 1080 1920"><g class="cam" ${camAttr}><g transform="translate(0,${shift})">${s.art()}</g></g></svg>`
     + (hud ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
     + '</div>';
 }

@@ -62,6 +62,32 @@
       const [ox = 540, oy = 1100, amt = 0.05] = nums(el.dataset.cam);
       tl.fromTo(el, { scale: 1, svgOrigin: `${ox} ${oy}` }, { scale: 1 + amt, svgOrigin: `${ox} ${oy}`, duration: D, ease: 'sine.inOut' }, C);
     });
+    // camera moves: data-camv="move amt ox oy shift" (push|pull|pan-l|pan-r|tilt-up|tilt-down|drift-l|drift-r)
+    // + parallax: every [data-depth] layer (0 far … 1 character plane … 1.5 foreground) moves (depth-1)× extra.
+    sc.querySelectorAll('.cam[data-camv]').forEach((el) => {
+      const [move, ...rest] = el.dataset.camv.trim().split(/\s+/);
+      const [amt = 0.07, ox = 540, oy = 1150, shift = 0] = rest.map(Number);
+      const s = 1 + amt, dx = 540 * amt * 0.85, dy = 960 * amt * 0.85, P = 0.7;
+      const o = { svgOrigin: `${ox} ${oy}` }, lo = { svgOrigin: `${ox} ${oy - shift}` };
+      const K = {   // [camera from, camera to, layer(k) from, layer(k) to]  (k = depth - 1)
+        push:  [{ scale: 1 }, { scale: s }, (k) => ({ scale: 1 }), (k) => ({ scale: 1 + k * amt * P })],
+        pull:  [{ scale: s }, { scale: 1 }, (k) => ({ scale: 1 + k * amt * P }), (k) => ({ scale: 1 })],
+        'pan-l': [{ scale: s, x: -dx }, { scale: s, x: dx }, (k) => ({ x: -k * dx * P }), (k) => ({ x: k * dx * P })],
+        'pan-r': [{ scale: s, x: dx }, { scale: s, x: -dx }, (k) => ({ x: k * dx * P }), (k) => ({ x: -k * dx * P })],
+        'tilt-up': [{ scale: s, y: -dy }, { scale: s, y: dy }, (k) => ({ y: -k * dy * P }), (k) => ({ y: k * dy * P })],
+        'tilt-down': [{ scale: s, y: dy }, { scale: s, y: -dy }, (k) => ({ y: k * dy * P }), (k) => ({ y: -k * dy * P })],
+        'drift-l': [{ scale: 1 + amt * 0.4, x: -dx * 0.6 }, { scale: s, x: dx * 0.6 }, (k) => ({ x: -k * dx * 0.6 * P }), (k) => ({ x: k * dx * 0.6 * P })],
+        'drift-r': [{ scale: 1 + amt * 0.4, x: dx * 0.6 }, { scale: s, x: -dx * 0.6 }, (k) => ({ x: k * dx * 0.6 * P }), (k) => ({ x: -k * dx * 0.6 * P })],
+      }[move] || null;
+      if (!K) return;
+      const span = { duration: D + 0.8, ease: 'sine.inOut' }, at = Math.max(0, C - 0.4);
+      tl.fromTo(el, { ...K[0], ...o }, { ...K[1], ...o, ...span }, at);
+      el.querySelectorAll('[data-depth]').forEach((ly) => {
+        const k = +ly.dataset.depth - 1;
+        if (!k) return;
+        tl.fromTo(ly, { ...K[2](k), ...lo }, { ...K[3](k), ...lo, ...span }, at);
+      });
+    });
     if (si > 0 && C < Z) tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: Z - C, ease: 'none' }, C);
   });
 
