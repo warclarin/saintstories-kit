@@ -12,8 +12,43 @@ cfg = json.load(open(os.path.join(D, "say.json")))
 KIT = os.path.dirname(os.path.abspath(__file__))
 k = Kokoro(os.path.join(KIT, "models/kokoro-v1.0.onnx"), os.path.join(KIT, "models/voices-v1.0.bin"))
 
+import re
+ONES = "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split()
+TENS = "_ _ twenty thirty forty fifty sixty seventy eighty ninety".split()
+ORD = ("_ first second third fourth fifth sixth seventh eighth ninth tenth eleventh twelfth thirteenth fourteenth fifteenth "
+       "sixteenth seventeenth eighteenth nineteenth twentieth").split()
+ROMAN = {"I": 1, "V": 5, "X": 10, "L": 50}
+
+def two(n):   # 0-99 in words
+    if n < 20: return ONES[n]
+    return TENS[n // 10] + ("" if n % 10 == 0 else "-" + ONES[n % 10])
+
+def year(y):  # the way people say years: 1930 nineteen thirty, 1904 nineteen oh four, 2012 twenty twelve
+    hi, lo = divmod(y, 100)
+    if lo == 0: return "two thousand" if y == 2000 else two(hi) + " hundred"
+    if 2000 < y < 2010: return "two thousand " + ONES[lo]
+    return two(hi) + " " + ("oh " + ONES[lo] if lo < 10 else two(lo))
+
+def ordinal(n):
+    if n <= 20: return ORD[n]
+    t, o = divmod(n, 10)
+    return TENS[t][:-1] + "ieth" if o == 0 else TENS[t] + "-" + ORD[o]
+
+def roman(r):
+    v = [ROMAN[c] for c in r]
+    return sum(-a if i + 1 < len(v) and a < v[i + 1] else a for i, a in enumerate(v))
+
+def spoken(s):
+    """Text the voice reads; captions keep the written form. A regnal numeral after a name becomes an ordinal
+    (Pope John Paul II -> Pope John Paul the Second) and 4-digit years are read as years (1930 -> nineteen thirty)."""
+    if cfg["lang"].startswith("en"):
+        s = re.sub(r"\b([A-Z][a-z]+) (X{0,3}(?:IX|IV|V?I{0,3}))\b(?=[\s,.;:!?'’]|$)",
+                   lambda m: m.group(0) if m.group(2) in ("", "I") else f"{m.group(1)} the {ordinal(roman(m.group(2))).capitalize()}", s)
+        s = re.sub(r"(?<![\d,.])\b(1[0-9]{3}|20[0-9]{2})\b(?!\d|[,.]\d)", lambda m: year(int(m.group(1))), s)
+    return s
+
 def phon(s):
-    ph = k.tokenizer.phonemize(s, cfg["lang"])
+    ph = k.tokenizer.phonemize(spoken(s), cfg["lang"])
     for a, b in cfg["fix"].items():
         ph = ph.replace(a, b)
     return ph
@@ -21,7 +56,8 @@ def phon(s):
 if "--check" in sys.argv:
     for say in cfg["scenes"]:
         for s in say:
-            print(s, "\n   ", phon(s))
+            sp = spoken(s)
+            print(s, "\n   ", ("spoken: " + sp + "\n    ") if sp != s else "", phon(s))
     sys.exit()
 
 SR, GAP = 24000, 0.28

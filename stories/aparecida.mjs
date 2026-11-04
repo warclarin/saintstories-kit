@@ -176,10 +176,10 @@ function scene4() {
     + `<g transform="translate(540,1040)">${glow(0, -80, 260, 0.9)}${aparecida(1.55, { mantle: false, crown: false })}</g>`
     + `<g transform="translate(420,1036)">${candle}</g><g transform="translate(660,1036)">${candle}</g>`
     + ground(1250, '#5a3a24', { rim: '#8a6040' })
-    + person(250, 1330, 1.5, { kind: 'layman', top: '#9ab0c8', pants: '#5a4a3a', skin: '#e0b08a', hair: '#3a2a1e', beard: '#3a2a1e', sitting: true, mood: 'peaceful', armL: [40, 2, 3], armR: [40, 2, 3.2], propR: rosary() })
-    + person(820, 1330, 1.4, { kind: 'layman', girl: true, robe: true, top: '#c9806a', skin: SKINS[0], hair: '#1a120c', sitting: true, flip: true, mood: 'peaceful', armL: [40, 2, 3], armR: [40, 2, 3.4], propR: rosary() })
-    + person(980, 1340, 1.05, { kind: 'kid', top: '#e2b448', skin: SKINS[1], sitting: true, flip: true, mood: 'happy', armL: [30, 4, 2.6] })
-    + person(100, 1340, 1.05, { kind: 'kid', top: '#6aa457', skin: SKINS[3], girl: true, sitting: true, mood: 'happy', armR: [30, 4, 2.6] })
+    + person(250, 1330, 1.5, { kind: 'layman', top: '#9ab0c8', pants: '#5a4a3a', skin: '#e0b08a', hair: '#3a2a1e', beard: '#3a2a1e', kneel: true, mood: 'peaceful', armL: [40, 2, 3], armR: [40, 2, 3.2], propR: rosary() })
+    + person(820, 1330, 1.4, { kind: 'layman', girl: true, robe: true, top: '#c9806a', skin: SKINS[0], hair: '#1a120c', kneel: true, flip: true, mood: 'peaceful', armL: [40, 2, 3], armR: [40, 2, 3.4], propR: rosary() })
+    + person(980, 1340, 1.05, { kind: 'kid', top: '#e2b448', skin: SKINS[1], kneel: true, flip: true, mood: 'happy', armL: [30, 4, 2.6] })
+    + person(100, 1340, 1.05, { kind: 'kid', top: '#6aa457', skin: SKINS[3], girl: true, kneel: true, mood: 'happy', armR: [30, 4, 2.6] })
     + motes(14, { x0: 360, x1: 720, y0: 760, y1: 1060, seed: 4 });
 }
 
@@ -245,7 +245,6 @@ export const STORY = {
   thumb_hook: 'Pulled from a river in a fishing net', thumb_title: 'Our Lady of Aparecida', thumb_shift: -20,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
   fix: {
-    'wˈʌn θˈaʊzənd sˈɛvənhˈʌndɹɪd': 'sˈɛvəntiːn',   // 1717 / 1737 -> seventeen ...
     'ɐpˈɛɹsɪdə': 'ˌæpɐɹɛsˈiːdə',                  // Aparecida -> ah-pah-reh-SEE-dah
     'ɡˌæɹɐɾɪŋtˈɑː': 'ɡwˌɑːɹɑːtʃˌiŋɡɛtˈɑː',         // Guaratinguetá
     'doʊmˈɪŋɡoʊz': 'doʊmˈiːŋɡʊs',                  // Domingos
@@ -269,9 +268,9 @@ export const STORY = {
     { kicker: '1737 · A CHAPEL ON THE HILL', title: 'A Growing Shrine', art: scene5, cam: { move: 'pan-l', amt: 0.07 },
       say: ['As crowds grew, and graces were reported, a chapel was built on a hill in 1737.', 'Later, a larger church rose in its place.'] },
     { kicker: '1904 – 1930', title: 'Crowned Patroness', art: scene6, cam: { move: 'pull', amt: 0.07, oy: 1000 },
-      say: ['In 1904, by order of Pope Saint Pius the Tenth, the little statue was crowned.', 'In 1930, Pope Pius the Eleventh declared her Patroness of Brazil.'] },
+      say: ['In 1904, by order of Pope Saint Pius X, the little statue was crowned.', 'In 1930, Pope Pius XI declared her Patroness of Brazil.'] },
     { kicker: '1980 · APARECIDA, BRAZIL', title: 'The Great Basilica', art: scene7, cam: { move: 'pan-r', amt: 0.07 },
-      say: ['In 1980, Saint John Paul the Second consecrated her vast new basilica.', 'Today, it is the second largest Catholic church in the world, after Saint Peter\'s.'] },
+      say: ['In 1980, Saint John Paul II consecrated her vast new basilica.', 'Today, it is the second largest Catholic church in the world, after Saint Peter\'s.'] },
     { kicker: 'FEAST DAY · OCTOBER 12', title: 'Mother of Brazil', art: scene8, cam: { move: 'push', amt: 0.07, oy: 1000 },
       say: ['Her feast is October 12, a national holiday in Brazil.', 'She is patroness of Brazil, of mothers and newborns, and of rivers.', 'Our Lady of Aparecida, pray for us.'] },
   ],
