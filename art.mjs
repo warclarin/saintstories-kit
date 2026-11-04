@@ -265,7 +265,7 @@ export function person(x, y, s, o = {}) {
   const g = [];
   g.push(`<g transform="translate(${f(x)},${f(y)}) scale(${f(k.flip ? -s : s)},${f(s)})">`);
   g.push(`<ellipse cx="0" cy="2" rx="60" ry="12" fill="#1a0f1a" opacity=".25" filter="url(#soft)"/>`);
-  g.push(`<g${M.bob(1.8, 2.3 + ph, ph)}><g transform="translate(0,${k.sitting ? 75 : k.kneel ? 46 : 0})">`);
+  g.push(`<g${M.bob(1.8, 2.3 + ph, ph)}><g transform="translate(0,${k.sitting ? 75 : k.kneel ? 84 : 0})">`);
   if (k.halo !== undefined && k.halo !== false && k.halo !== null) {
     const fade = typeof k.halo === 'number' ? M.in('fade', k.halo, 1.2) : '';
     g.push(`<g transform="translate(0,-256)"${fade}><g${M.pulse(0.045, 2.6)}><circle r="135" fill="url(#haloGlow)"/>`
@@ -274,11 +274,9 @@ export function person(x, y, s, o = {}) {
   if (k.under) g.push(k.under);
   if (veil) g.push(`<path d="M-50 -266 Q-66 -150 -56 -116 L56 -116 Q66 -150 50 -266 Z" fill="${veil}"/><path d="M20 -266 Q60 -200 56 -116 L34 -116 Q40 -200 20 -266Z" fill="${dark(veil, 0.3)}" opacity=".6"/>`);
   // legs / robe
-  if (k.kneel) {   // soles peeking out behind, then thighs coming toward the viewer, knees on the ground (y -46)
-    g.push('<ellipse cx="-46" cy="-50" rx="14" ry="8" fill="#3a2a20"/><ellipse cx="46" cy="-50" rx="14" ry="8" fill="#3a2a20"/>');
-    if (!robe) g.push(`<rect x="-28" y="-114" width="25" height="70" rx="11" fill="${pants}"/><rect x="3" y="-114" width="25" height="70" rx="11" fill="${pants}"/>`
-      + `<rect x="17" y="-114" width="11" height="70" rx="5" fill="${dark(pants, 0.3)}" opacity=".7"/>`
-      + `<ellipse cx="-16" cy="-50" rx="16" ry="8" fill="${dark(pants, 0.18)}"/><ellipse cx="16" cy="-50" rx="16" ry="8" fill="${dark(pants, 0.18)}"/>`);
+  if (k.kneel) {   // soles peeking out behind, lap and knees toward the viewer, knees on the ground (y -86, body dropped 84)
+    g.push('<ellipse cx="-66" cy="-92" rx="17" ry="10" fill="#3a2a20"/><ellipse cx="66" cy="-92" rx="17" ry="10" fill="#3a2a20"/>');
+    if (!robe) g.push(`<path d="M-43 -112 L-66 -96 Q0 -80 66 -96 L43 -112 Z" fill="${pants}"/><ellipse cx="-32" cy="-92" rx="35" ry="13" fill="${dark(pants, 0.1)}"/><ellipse cx="32" cy="-92" rx="35" ry="13" fill="${dark(pants, 0.18)}"/>`);
   } else if (k.sitting) {
     g.push(`<rect x="-48" y="-120" width="96" height="32" rx="16" fill="${robe ? top : pants}"/><ellipse cx="-50" cy="-104" rx="14" ry="9" fill="#3a2a20"/><ellipse cx="50" cy="-104" rx="14" ry="9" fill="#3a2a20"/>`);
   } else if (robe) {
@@ -290,11 +288,11 @@ export function person(x, y, s, o = {}) {
   }
   // torso
   if (robe && k.kneel) {
-    g.push(`<path d="M-37 -207 Q0 -218 37 -207 L52 -54 Q0 -44 -52 -54 Z" fill="${top}"/>`
-      + `<path d="M12 -212 Q30 -211 37 -207 L52 -54 Q38 -50 24 -50 Z" fill="${sh}" opacity=".55"/>`
-      + `<ellipse cx="-22" cy="-52" rx="26" ry="10" fill="${dark(top, 0.1)}"/><ellipse cx="22" cy="-52" rx="26" ry="10" fill="${dark(top, 0.16)}"/>`
-      + `<path d="M-30 -200 Q-34 -130 -44 -62" stroke="${light(top, 0.25)}" stroke-width="3" fill="none" opacity=".45"/>`);
-    if (k.cord) g.push('<path d="M-42 -120 Q0 -108 42 -120 M12 -115 v54" stroke="#efe3c6" stroke-width="5" fill="none" stroke-linecap="round"/>');
+    g.push(`<path d="M-37 -207 Q0 -218 37 -207 L66 -96 Q0 -80 -66 -96 Z" fill="${top}"/>`
+      + `<path d="M12 -212 Q30 -211 37 -207 L66 -96 Q48 -90 28 -87 Z" fill="${sh}" opacity=".55"/>`
+      + `<ellipse cx="-32" cy="-92" rx="35" ry="13" fill="${dark(top, 0.1)}"/><ellipse cx="32" cy="-92" rx="35" ry="13" fill="${dark(top, 0.16)}"/>`
+      + `<path d="M-30 -200 Q-36 -150 -54 -102" stroke="${light(top, 0.25)}" stroke-width="3" fill="none" opacity=".45"/>`);
+    if (k.cord) g.push('<path d="M-46 -132 Q0 -120 46 -132 M12 -126 v30" stroke="#efe3c6" stroke-width="5" fill="none" stroke-linecap="round"/>');
   } else if (robe && !k.sitting) {
     g.push(`<path d="M-37 -207 Q0 -218 37 -207 L56 -6 Q0 3 -56 -6 Z" fill="${top}"/>`
       + `<path d="M12 -212 Q30 -211 37 -207 L56 -6 Q38 -1 24 -2 Z" fill="${sh}" opacity=".55"/>`
