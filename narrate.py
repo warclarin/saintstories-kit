@@ -4,8 +4,14 @@
 Reads work/<slug>/say.json written by `node build.mjs <story> say`.
 """
 import json, os, sys
-import numpy as np, soundfile as sf
-from kokoro_onnx import Kokoro
+try:
+    import numpy as np, soundfile as sf
+    from kokoro_onnx import Kokoro
+except ImportError:   # setup.sh installs into .venv when the system Python can't run Kokoro (3.14+)
+    venv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".venv")
+    if os.path.abspath(sys.prefix) != venv and os.path.exists(os.path.join(venv, "bin/python")):
+        os.execv(os.path.join(venv, "bin/python"), [os.path.join(venv, "bin/python")] + sys.argv)
+    raise
 
 D = sys.argv[1]
 cfg = json.load(open(os.path.join(D, "say.json")))
