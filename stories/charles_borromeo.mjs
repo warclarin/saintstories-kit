@@ -169,7 +169,7 @@ function scene5() {
     + `<path d="M900 1050 V880 M868 930 H932" stroke="${GOLD}" stroke-width="11" stroke-linecap="round"/>`
     + `<g transform="translate(800,1050) scale(1.6)">${candle}</g><g transform="translate(1000,1050) scale(1.6)">${candle}</g>`;
   const silhouette = `<g transform="translate(120,1230)" fill="#0e0a14"><circle cy="-262" r="42"/><path d="M-62 0 Q-70 -190 0 -220 Q70 -190 62 0Z"/></g>`;
-  const household = person(300, 1255, 0.95, { kind: 'priest', top: '#26222c', kneel: true, beard: null, skin: SKC, hair: '#3a2a18', mood: 'peaceful', armL: 42, armR: 42 });
+  const household = person(285, 1255, 0.95, { kind: 'priest', top: '#26222c', kneel: true, beard: null, skin: SKC, hair: '#3a2a18', mood: 'peaceful', armL: -18, armR: -18 });
   return FAR(chapelRoom(1230) + `<rect x="-200" y="1230" width="${W + 400}" height="800" fill="#3a2a3e"/>`)
     + MID(altar)
     + `<ellipse cx="880" cy="1100" rx="460" ry="420" fill="#ffcf8a" opacity=".16" filter="url(#blur14)"/>`
@@ -177,7 +177,7 @@ function scene5() {
     + household
     + `<g${M.tw([{ at: S5B + 1.2, dur: 1.0, from: { opacity: 0 }, to: { opacity: 0.92 } }, { at: S5C, dur: 0.8, from: { opacity: 0.92 }, to: { opacity: 0 } }])}>${silhouette}</g>`
     + `<g${fadeIn(S5C, 1.0)}>${glow(600, 1040, 420, 0.8)}${sparkles(14, 400, 800, 800, 1300, { seed: 5, color: '#fff2c4' })}</g>`
-    + charles(600, 1345, 2.0, { mood: 'peaceful', kneel: true, armL: 42, armR: 42 })
+    + charles(600, 1345, 2.0, { mood: 'peaceful', kneel: true, armL: -18, armR: -18 })
     + motes(14, { x0: 620, x1: 1060, y0: 800, y1: 1200, color: '#ffe0a0', seed: 3 })
     + NEAR(foliage('l', 1700, { color: '#160f1e', seed: 5 }));
 }
