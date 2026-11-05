@@ -9,12 +9,18 @@ try:
     from kokoro_onnx import Kokoro
 except ImportError:   # setup.sh installs into .venv when the system Python can't run Kokoro (3.14+)
     venv = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".venv")
-    if os.path.abspath(sys.prefix) != venv and os.path.exists(os.path.join(venv, "bin/python")):
-        os.execv(os.path.join(venv, "bin/python"), [os.path.join(venv, "bin/python")] + sys.argv)
+    vpy = os.path.join(venv, "Scripts", "python.exe") if os.name == "nt" else os.path.join(venv, "bin", "python")
+    if os.path.abspath(sys.prefix) != venv and os.path.exists(vpy):
+        import subprocess   # os.execv on Windows detaches from the console and loses the exit code
+        sys.exit(subprocess.call([vpy] + sys.argv))
     raise
 
+# Windows defaults to cp1252, which can't print IPA and garbles the UTF-8 say.json.
+sys.stdout.reconfigure(encoding="utf-8")
+sys.stderr.reconfigure(encoding="utf-8")
+
 D = sys.argv[1]
-cfg = json.load(open(os.path.join(D, "say.json")))
+cfg = json.load(open(os.path.join(D, "say.json"), encoding="utf-8"))
 KIT = os.path.dirname(os.path.abspath(__file__))
 k = Kokoro(os.path.join(KIT, "models/kokoro-v1.0.onnx"), os.path.join(KIT, "models/voices-v1.0.bin"))
 

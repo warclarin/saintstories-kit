@@ -8,12 +8,13 @@
 //   node build.mjs <story.mjs> thumb          -> thumb_<slug>.png (1080x1920) + thumb_<slug>_square.png
 import fs from 'fs';
 import path from 'path';
-import { execFileSync } from 'child_process';
+import { execFileSync, execSync } from 'child_process';
 import { createRequire } from 'module';
 import { pathToFileURL, fileURLToPath } from 'url';
 
 const KIT = path.dirname(fileURLToPath(import.meta.url));
 const HF = 'hyperframes@0.9.4';
+const WIN = process.platform === 'win32';
 const [storyArg, cmd = 'html', ...rest] = process.argv.slice(2);
 const { STORY } = await import(pathToFileURL(path.resolve(storyArg)).href);
 const OUT = path.join(KIT, 'work', STORY.slug);
@@ -23,10 +24,16 @@ const BRAND = STORY.brand || 'SaintStories';
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // HyperFrames can't download its own headless shell in a sandbox: point it at an installed Chrome.
 if (!process.env.HYPERFRAMES_BROWSER_PATH) {
-  const c = ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser'].find((p) => fs.existsSync(p));
+  const pf = [process.env.ProgramFiles, process.env['ProgramFiles(x86)'], process.env.LOCALAPPDATA].filter(Boolean);
+  const c = (WIN ? pf.map((d) => path.join(d, 'Google', 'Chrome', 'Application', 'chrome.exe'))
+    : ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser']).find((p) => fs.existsSync(p));
   if (c) process.env.HYPERFRAMES_BROWSER_PATH = c;
 }
 const sh = (bin, args, opts = {}) => execFileSync(bin, args, { stdio: 'inherit', cwd: OUT, ...opts });
+// npx is npx.cmd on Windows, which only starts through a shell, so quote the arguments ourselves.
+const npx = (args) => (WIN
+  ? execSync(['npx', ...args].map((a) => (/\s/.test(a) ? `"${a}"` : a)).join(' '), { stdio: 'inherit', cwd: OUT })
+  : sh('npx', args));
 
 if (cmd === 'say') {
   fs.writeFileSync(path.join(OUT, 'say.json'), JSON.stringify({
@@ -212,7 +219,7 @@ function buildThumb() {
     + `while(s>70&&e.scrollWidth>980){s-=4;e.style.fontSize=s+'px';}const top=1440-s;e.style.top=top+'px';document.documentElement.style.setProperty('--hy',(top-74)+'px');})();</script>`;
   fs.writeFileSync(path.join(OUT, 'thumb.html'), page(body, { total: DUR[i], xf: XF, seek: t }));
   const require = createRequire(import.meta.url);
-  let pw; try { pw = require('playwright'); } catch { pw = require(execFileSync('bash', ['-lc', 'npm root -g']).toString().trim() + '/playwright'); }
+  let pw; try { pw = require('playwright'); } catch { pw = require(execSync('npm root -g').toString().trim() + '/playwright'); }
   return (async () => {
     const b = await pw.chromium.launch();
     const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
@@ -233,12 +240,12 @@ else if (cmd === 'preview') {
   const at = rest.length ? rest.join(',') : STARTS.map((s, i) => (s + 0.6 * DUR[i]).toFixed(2)).join(',');
   const dir = path.join(OUT, 'preview');
   fs.rmSync(dir, { recursive: true, force: true });
-  sh('npx', ['-y', HF, 'snapshot', '.', '--at', at, '--no-end', '-o', dir]);
+  npx(['-y', HF, 'snapshot', '.', '--at', at, '--no-end', '-o', dir]);
   console.log('contact sheet:', path.join(dir, 'contact-sheet.jpg'));
 } else if (cmd === 'render') {
   buildHtml();
   const name = `SaintStories_${STORY.name || STORY.slug}.mp4`;
-  sh('npx', ['-y', HF, 'render', '.', '-o', path.join(OUT, name), '--fps', String(FPS), '--quiet', ...rest]);
+  npx(['-y', HF, 'render', '.', '-o', path.join(OUT, name), '--fps', String(FPS), '--quiet', ...rest]);
   console.log(path.join(OUT, name));
 } else if (cmd === 'thumb') await buildThumb();
 else console.error('unknown command', cmd);

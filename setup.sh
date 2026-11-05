@@ -29,6 +29,13 @@ mkdir -p models work
 R=https://github.com/thewh1teagle/kokoro-onnx/releases/download/model-files-v1.0
 [ -s models/voices-v1.0.bin ] || curl -sSL -o models/voices-v1.0.bin $R/voices-v1.0.bin
 [ -s models/kokoro-v1.0.onnx ] || curl -sSL -o models/kokoro-v1.0.onnx $R/kokoro-v1.0.onnx   # ~325 MB
+# Fonts come from google/fonts (OFL) unless the system already has them.
+GF=https://raw.githubusercontent.com/google/fonts/main/ofl
+mkdir -p fonts
+fetch_font() { [ -f fonts/$1 ] || [ -f /usr/share/fonts/truetype/google-fonts/$1 ] || curl -fsSL -o fonts/$1 "$2" || rm -f fonts/$1; }
+fetch_font Lora-Variable.ttf "$GF/lora/Lora%5Bwght%5D.ttf"
+fetch_font Poppins-Medium.ttf "$GF/poppins/Poppins-Medium.ttf"
+fetch_font Poppins-Bold.ttf "$GF/poppins/Poppins-Bold.ttf"
 for f in Lora-Variable.ttf Poppins-Medium.ttf Poppins-Bold.ttf; do
   [ -f fonts/$f ] || [ -f /usr/share/fonts/truetype/google-fonts/$f ] || echo "WARN: font $f missing (falls back to DejaVu)"
 done
