@@ -1,6 +1,6 @@
 // St. Pio of Pietrelcina, Padre Pio (feast: September 23). Capuchin friar: brown habit with short cape, white cord, full beard, fingerless gloves, rosary.
-// Exports for later reels: pio, MITT, capuchinCape, crucifix, altar, confessional, ticket, graceFriary, gargano, stoneRoom, villager.
-// The stigmata are never drawn: the gloves and the light from the crucifix carry the story.
+// Exports for later reels: pio, MITT, STIGMA, capuchinCape, crucifix, altar, confessional, ticket, graceFriary, gargano, stoneRoom, villager.
+// The stigmata are shown only as small round marks on open palms, with a soft glow and no blood; gloves hide them afterwards.
 import { W, M, SKIES, SKIN, GOLD, sky, sun, rays, beam, clouds, hill, sparkles, motes, foliage, tufts, flowers,
   petals, person, rosary, cross_staff, basilica, ground, dark, light, FAR, BACK, MID, NEAR } from '../art.mjs';
 import { followers, candle, sheep, obelisk } from './peter.mjs';
@@ -17,6 +17,7 @@ const fadeOut = (at, dur = 0.6) => M.tw([{ at, dur, from: { opacity: 1 }, to: { 
 
 // ---------------------------------------------------------------- Padre Pio: habit, short cape, cord, beard, fingerless gloves
 export const MITT = `<g fill="${SK}"><ellipse cx="-7" cy="11" rx="3.8" ry="5.5"/><ellipse cx="0" cy="13" rx="3.8" ry="6"/><ellipse cx="7" cy="11" rx="3.8" ry="5.5"/></g><path d="M-12 7 A12.5 12.5 0 1 1 12 7 Q0 11 -12 7Z" fill="${GLOVE}"/><path d="M3 -11 A12.5 12.5 0 0 1 12 7 L7 9 Q9 -3 3 -11Z" fill="${dark(GLOVE, 0.3)}" opacity=".6"/>`;
+export const STIGMA = `<circle r="24" fill="url(#haloGlow)" opacity=".75"/><circle r="6.6" fill="#b8665c"/><circle r="4.6" fill="#7a2a30"/>`;
 export const capuchinCape = (c = HABIT) => `<path d="M-40 -211 Q0 -184 40 -211 Q53 -186 47 -158 Q0 -140 -47 -158 Q-53 -186 -40 -211Z" fill="${dark(c, 0.08)}"/>`
   + `<path d="M14 -196 Q30 -204 40 -211 Q53 -186 47 -158 Q32 -152 18 -149 Q28 -172 14 -196Z" fill="${dark(c, 0.3)}" opacity=".5"/><path d="M-44 -160 Q0 -142 44 -160" stroke="${light(c, 0.22)}" stroke-width="3" fill="none" opacity=".55"/>`;
 export const pio = (x, y, s, { age = 'old', gloves = true, propL = '', propR = '', over = '', ...o } = {}) => person(x, y, s, {
@@ -111,15 +112,16 @@ function scene2() {
     + NEAR(foliage('l', 1650, { color: '#4a3a2a', seed: 4 }));
 }
 
-// 3 · the choir, September 1918: light from the crucifix; on sentence 2 the gloves appear. The wounds themselves are not drawn.
-const S3B = 8.1;
+// 3 · the choir, September 1918: light from the crucifix; marks on the open palms on "he received the stigmata"; on sentence 2 the gloves appear.
+const S3A = 4.6, S3B = 8.1;
 function scene3() {
   return FAR(stoneRoom('#3a2c2c', '#443432'))
     + MID(choirStalls(1200) + floorAt(1200, '#2c2024', '#5a4640'))
     + `<g${M.in('fade', 0.8, 2.2)}>${rays(340, 800, { op: 0.14, speed: 1.6 })}${glow(340, 800, 560, 0.95)}</g>`
     + `<g transform="translate(340,1200)">${crucifix(1.32)}</g>`
     + `<g${M.in('fade', 2.6, 1.6)}>${beam(250, 430, 600, 880, 1230, 0.42)}</g>`
-    + `<g${fadeOut(S3B)}>${pio(700, 1325, 2.0, { age: 'young', gloves: false, kneel: true, mood: 'surprised', armL: -18, armR: -18 })}</g>`
+    + `<g${fadeOut(S3A)}>${pio(700, 1325, 2.0, { age: 'young', gloves: false, kneel: true, mood: 'peaceful', armL: -18, armR: -18 })}</g>`
+    + `<g${fadeIn(S3A)}><g${fadeOut(S3B)}>${pio(700, 1325, 2.0, { age: 'young', gloves: false, kneel: true, mood: 'surprised', armL: 58, armR: 58, propL: STIGMA, propR: STIGMA })}</g></g>`
     + `<g${fadeIn(S3B)}>${pio(700, 1325, 2.0, { age: 'young', kneel: true, mood: 'peaceful', armL: -18, armR: -18 })}${sparkles(14, 560, 840, 980, 1300, { seed: 5, color: '#ffe9b0' })}</g>`
     + motes(20, { x0: 120, x1: 900, y0: 620, y1: 1200, color: '#ffe0a0', seed: 3 });
 }
