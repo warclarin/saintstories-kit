@@ -215,8 +215,9 @@ function buildThumb() {
     + `<div class="t chip" style="z-index:70">${ICON('#f2c46b')}<span>${esc(BRAND)}</span></div>`
     + (hook ? `<div class="t hook" style="z-index:70;top:var(--hy)">${esc(hook.toUpperCase())}</div>` : '')
     + `<div class="t ttitle" id="tt" style="z-index:70">${esc(title)}</div></div>`
-    + `<script>(function(){const e=document.getElementById('tt');let s=132;e.style.fontSize=s+'px';`
-    + `while(s>70&&e.scrollWidth>980){s-=4;e.style.fontSize=s+'px';}const top=1440-s;e.style.top=top+'px';document.documentElement.style.setProperty('--hy',(top-74)+'px');})();</script>`;
+    + `<script>(function(){const e=document.getElementById('tt'),r=document.createRange();r.selectNodeContents(e);`
+    + `const fit=()=>{let s=240;e.style.fontSize=s+'px';while(s>70&&r.getBoundingClientRect().width>980){s-=2;e.style.fontSize=s+'px';}const top=1440-s;e.style.top=top+'px';document.documentElement.style.setProperty('--hy',(top-74)+'px');};`
+    + `fit();document.fonts.ready.then(fit);})();</script>`;
   fs.writeFileSync(path.join(OUT, 'thumb.html'), page(body, { total: DUR[i], xf: XF, seek: t }));
   const require = createRequire(import.meta.url);
   let pw; try { pw = require('playwright'); } catch { pw = require(execSync('npm root -g').toString().trim() + '/playwright'); }
