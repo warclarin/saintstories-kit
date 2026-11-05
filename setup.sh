@@ -11,7 +11,9 @@ pip_install() {
   py_ok && python3 -m pip --version >/dev/null 2>&1 || return 1
   python3 -m pip install --break-system-packages -q $PKGS >/dev/null 2>&1 || python3 -m pip install -q $PKGS >/dev/null 2>&1
 }
-if [ -x .venv/bin/python ] && .venv/bin/python -c 'import kokoro_onnx, soundfile' 2>/dev/null; then
+# The venv's Python lives in Scripts/ on Windows (Git Bash).
+VPY=.venv/bin/python; case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) VPY=.venv/Scripts/python.exe ;; esac
+if [ -x $VPY ] && $VPY -c 'import kokoro_onnx, soundfile' 2>/dev/null; then
   echo "voice: using .venv"
 elif python3 -c 'import kokoro_onnx, soundfile' 2>/dev/null; then
   echo "voice: using system Python"
@@ -21,7 +23,7 @@ else
   export PATH="$HOME/.local/bin:$PATH"
   command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | env UV_NO_MODIFY_PATH=1 sh >/dev/null 2>&1
   uv venv -q --allow-existing --python 3.13 .venv
-  uv pip install -q --python .venv/bin/python $PKGS
+  uv pip install -q --python $VPY $PKGS
   echo "voice: installed in .venv (Python 3.13, via uv)"
 fi
 
