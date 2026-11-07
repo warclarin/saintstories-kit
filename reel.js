@@ -7,11 +7,14 @@
   const org = (el, ox = 0, oy = 0) => (el instanceof SVGElement ? { svgOrigin: `${ox} ${oy}` } : { transformOrigin: '50% 50%' });
 
   document.querySelectorAll('.scene').forEach((sc, si) => {
-    const C = +sc.dataset.start;               // clip start (crossfade begins)
-    const Z = +(sc.dataset.zero ?? C);          // scene "zero" (narration lead-in starts)
+    // fx.loop: the last clip is a copy of scene 0 (data-loop) whose "zero" is the very end of the video, so its
+    // motions are anchored exactly like scene 0's at t=0 and the end frame matches the first frame.
+    const LOOP = sc.hasAttribute('data-loop');
+    const Z = +(sc.dataset.zero ?? sc.dataset.start);  // scene "zero" (narration lead-in starts)
+    const C = LOOP ? Z : +sc.dataset.start;           // clip start (crossfade begins); loop copy anchors on Z
     const D = +sc.dataset.duration;             // clip length
     const END = D + 1;
-    const st = (ph) => Math.max(0, C - 0.8 - ph);
+    const st = (ph) => (LOOP ? Z : Math.max(0, C - 0.8 - ph));
     const reps = (half) => Math.ceil((END + 1) / half) + 2;
     const each = (a, fn) => sc.querySelectorAll(`[${a}]`).forEach((el) => fn(el, nums(el.getAttribute(a))));
 
@@ -78,15 +81,30 @@
         'tilt-down': [{ scale: s, y: dy }, { scale: s, y: -dy }, (k) => ({ y: k * dy * P }), (k) => ({ y: -k * dy * P })],
         'drift-l': [{ scale: 1 + amt * 0.4, x: -dx * 0.6 }, { scale: s, x: dx * 0.6 }, (k) => ({ x: -k * dx * 0.6 * P }), (k) => ({ x: k * dx * 0.6 * P })],
         'drift-r': [{ scale: 1 + amt * 0.4, x: dx * 0.6 }, { scale: s, x: -dx * 0.6 }, (k) => ({ x: k * dx * 0.6 * P }), (k) => ({ x: -k * dx * 0.6 * P })],
+        // quick push that eases out and settles (hooks): same framing as push, most of the move in the first ~half
+        'push-fast': [{ scale: 1 }, { scale: s }, (k) => ({ scale: 1 }), (k) => ({ scale: 1 + k * amt * P }), { ease: 'power3.out', f: 0.55 }],
+        // dolly zoom (vertigo): the subject barely grows while the background looms in behind them
+        dolly: [{ scale: 1 }, { scale: 1 + amt * 0.35 }, (k) => ({ scale: 1 }), (k) => ({ scale: 1 - k * amt * 2.6 })],
+        // arc / orbit: a slow pan with a slight roll, like circling the character
+        'arc-l': [{ scale: s, x: -dx, rotation: 0.9 }, { scale: s, x: dx, rotation: -0.9 }, (k) => ({ x: -k * dx * P }), (k) => ({ x: k * dx * P })],
+        'arc-r': [{ scale: s, x: dx, rotation: -0.9 }, { scale: s, x: -dx, rotation: 0.9 }, (k) => ({ x: k * dx * P }), (k) => ({ x: -k * dx * P })],
       }[move] || null;
       if (!K) return;
-      const span = { duration: D + 0.8, ease: 'sine.inOut' }, at = Math.max(0, C - 0.4);
+      const opt = K[4] || {}, span = { duration: (D + 0.8) * (opt.f || 1), ease: opt.ease || 'sine.inOut' }, at = LOOP ? Z : Math.max(0, C - 0.4);
       tl.fromTo(el, { ...K[0], ...o }, { ...K[1], ...o, ...span }, at);
       el.querySelectorAll('[data-depth]').forEach((ly) => {
         const k = +ly.dataset.depth - 1;
         if (!k) return;
         tl.fromTo(ly, { ...K[2](k), ...lo }, { ...K[3](k), ...lo, ...span }, at);
       });
+    });
+    // rack focus: data-rack="at dur blur" on .cam; layers farther than depth 0.9 blur from 0 to `blur` (scene-own filter)
+    sc.querySelectorAll('.cam[data-rack]').forEach((el) => {
+      const [at = 1, dur = 2, b = 6] = nums(el.dataset.rack);
+      const f = sc.querySelector('filter.rack'), fe = f && f.querySelector('feGaussianBlur');
+      if (!fe) return;
+      el.querySelectorAll('[data-depth]').forEach((ly) => { if (+ly.dataset.depth < 0.9) ly.setAttribute('filter', `url(#${f.id})`); });
+      tl.fromTo(fe, { attr: { stdDeviation: 0 } }, { attr: { stdDeviation: b }, duration: dur, ease: 'sine.inOut' }, Z + at);
     });
     // fx.handheld: three slow, out-of-step sine loops (x, y, roll) read as a gentle hand-held camera
     sc.querySelectorAll('.hh[data-hh]').forEach((el) => {
@@ -95,7 +113,9 @@
       tl.fromTo(el, { y: -3.5 * a }, { y: 3.5 * a, duration: 2.05, ease: 'sine.inOut', yoyo: true, repeat: n(2.05) }, st(1.1));
       tl.fromTo(el, { rotation: -0.3 * a, ...o }, { rotation: 0.3 * a, ...o, duration: 3.35, ease: 'sine.inOut', yoyo: true, repeat: n(3.35) }, st(0.7));
     });
-    if (si > 0 && C < Z) tl.fromTo(sc,{ opacity: 0 }, { opacity: 1, duration: Z - C, ease: 'none' }, C);
+    const C0 = +sc.dataset.start;   // real clip start (the loop copy fades in before its zero)
+    // (the loop copy is fully in 0.1 s before the end, so the very last frames already equal the first frame)
+    if (si > 0 && C0 < Z) tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: Z - C0 - (LOOP ? 0.1 : 0), ease: LOOP ? 'sine.inOut' : 'none' }, C0);
   });
 
   // captions: pill pops in, current word turns gold
@@ -112,8 +132,10 @@
     tl.fromTo(w, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'none' }, s);
     tl.to(w, { opacity: 0, duration: 0.4, ease: 'none' }, s + d - 0.4);
   });
-  document.querySelectorAll('.endcard').forEach((e) =>
-    tl.fromTo(e, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, +e.dataset.start));
+  document.querySelectorAll('.endcard').forEach((e) => {
+    tl.fromTo(e, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, +e.dataset.start);
+    if (e.dataset.fo) tl.to(e, { opacity: 0, duration: 0.35, ease: 'power1.in' }, +e.dataset.start + +e.dataset.duration - 0.35);
+  });
   // fx.leak: golden light-leak over a scene change (peaks at data-leak, drifts sideways)
   document.querySelectorAll('.leak[data-leak]').forEach((e) => {
     const p = +e.dataset.leak;

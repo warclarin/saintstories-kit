@@ -23,6 +23,7 @@ const LEAD = 0.4, TAIL = 0.6, XF = 0.4, FPS = 30;
 const BRAND = STORY.brand || 'SaintStories';
 // Opt-in finishing effects: STORY.fx = { handheld: true|amount, leak: true, grain: true } (all off by default).
 const FX = STORY.fx || {};
+const LOOPXF = 0.6;   // fx.loop: length of the end-to-start crossfade
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // HyperFrames can't download its own headless shell in a sandbox: point it at an installed Chrome.
 if (!process.env.HYPERFRAMES_BROWSER_PATH) {
@@ -121,16 +122,22 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   const s = STORY.scenes[i];
   // cam: [ox,oy,amt] (legacy slow push-in) | 'pan-r' | {move, amt, ox, oy}; moves live in reel.js (data-camv)
   const cam = s.cam || [540, 1150, 0.05];
-  let camAttr;
+  let camAttr, rackDef = '';
   if (Array.isArray(cam)) camAttr = `data-cam="${cam.join(' ')}"`;
   else {
     const c = typeof cam === 'string' ? { move: cam } : cam;
     camAttr = `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift}"`;
+    // rack focus: cam.rack = { at, dur, blur } blurs the background layers (depth < 0.9) while the characters stay sharp
+    if (c.rack) {
+      const r = c.rack === true ? {} : c.rack;
+      camAttr += ` data-rack="${r.at ?? 1} ${r.dur ?? 2} ${r.blur ?? 6}"`;
+      rackDef = `<defs><filter class="rack" id="rack${i}" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="0"/></filter></defs>`;
+    }
   }
   // fx.handheld: a slow hand-held wobble on top of the camera move (own <g>, so it never fights the move's transform)
   const hh = FX.handheld ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
-    + `<svg viewBox="0 0 1080 1920"><g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g></svg>`
+    + `<svg viewBox="0 0 1080 1920">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g></svg>`
     + (hud ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
     + '</div>';
 }
@@ -174,6 +181,9 @@ function buildHtml() {
     const dur = DUR[i] + (i ? XF : 0) + (i === STORY.scenes.length - 1 ? 0 : 0.02);
     parts.push(sceneDiv(i, { start, zero: STARTS[i], dur, z: i + 1, shift }));
   });
+  // fx.loop: crossfade the ending into an exact copy of the first frame, so the replay continues seamlessly
+  if (FX.loop) parts.push(sceneDiv(0, { start: TOTAL - LOOPXF, zero: TOTAL, dur: LOOPXF, z: STORY.scenes.length + 1, shift })
+    .replace('class="clip scene" id="s0"', 'class="clip scene" id="sloop" data-loop').replace('id="rack0"', 'id="rackloop"'));
   parts.push(`<div class="clip vig" data-start="0" data-duration="${TOTAL}" style="z-index:50"></div>`);
   // fx.leak: a warm golden light-leak blooms over each scene change
   if (FX.leak) STARTS.forEach((s, i) => {
@@ -188,7 +198,9 @@ function buildHtml() {
     const chunks = captionChunks(i);
     chunks.forEach((c, k) => {
       const last = k === chunks.length - 1;
-      const end = Math.min(c.e + (last ? 0.6 : 0), STARTS[i] + DUR[i] - 0.05);
+      // with fx.loop the final caption leaves before the end-to-start crossfade, so the seam is clean
+      const lim = FX.loop && i === STORY.scenes.length - 1 ? TOTAL - LOOPXF : STARTS[i] + DUR[i] - 0.05;
+      const end = Math.min(c.e + (last ? 0.6 : 0), lim);
       const chars = c.words.join(' ').length;
       let t = c.s, words = '';
       c.words.forEach((w) => {
@@ -206,9 +218,12 @@ function buildHtml() {
     const pos = side === 'r' ? `right:${1080 - x}px;top:${y - 6}px` : `left:${x}px;top:${y - 6}px`;
     parts.push(`<div class="clip wm ${side}" data-start="${k * 6}" data-duration="${d.toFixed(3)}" style="z-index:75;${pos}">${ICON()}<span>${esc(BRAND)}</span></div>`);
   }
-  parts.push(`<div class="clip t endcard" data-start="${(TOTAL - 2.2).toFixed(3)}" data-duration="2.2" style="z-index:80">Follow ${esc(BRAND)} for more saints</div>`);
-  parts.push(`<div class="clip black" id="fadein" data-start="0" data-duration="0.4" style="z-index:100"></div>`);
-  parts.push(`<div class="clip black" id="fadeout" data-start="${(TOTAL - 0.5).toFixed(3)}" data-duration="0.5" style="z-index:100;opacity:0"></div>`);
+  const ecEnd = FX.loop ? TOTAL - LOOPXF : TOTAL;   // with fx.loop the end card fades out before the seam
+  parts.push(`<div class="clip t endcard"${FX.loop ? ' data-fo="1"' : ''} data-start="${(ecEnd - 2.2).toFixed(3)}" data-duration="2.2" style="z-index:80">Follow ${esc(BRAND)} for more saints</div>`);
+  if (!FX.loop) {   // a looping reel starts on the hook and never dips to black
+    parts.push(`<div class="clip black" id="fadein" data-start="0" data-duration="0.4" style="z-index:100"></div>`);
+    parts.push(`<div class="clip black" id="fadeout" data-start="${(TOTAL - 0.5).toFixed(3)}" data-duration="0.5" style="z-index:100;opacity:0"></div>`);
+  }
   parts.push(`<audio id="vo" class="clip" data-start="0" data-duration="${TOTAL}" src="narration.wav"></audio>`);
   const body = `<div id="root" data-composition-id="main" data-start="0" data-duration="${TOTAL}" data-width="1080" data-height="1920">\n${parts.join('\n')}\n</div>`;
   fs.writeFileSync(path.join(OUT, 'index.html'), page(body, { total: TOTAL, xf: XF }));
