@@ -11,7 +11,7 @@ python3 narrate.py work/<slug> --check          # phonemes, fix names in STORY.f
 python3 narrate.py work/<slug>                  # timings.json + narration.wav
 node build.mjs stories/<x>.mjs preview          # contact sheet, one frame per scene
 node build.mjs stories/<x>.mjs render --workers 2
-node build.mjs stories/<x>.mjs thumb            # reel cover + square grid crop
+node build.mjs stories/<x>.mjs thumb            # vertical reel/Shorts cover (square crop: thumb_square: true)
 ```
 
 ## Camera moves and parallax
@@ -29,6 +29,14 @@ Wrap parts of a scene in depth layers so camera moves create parallax: `FAR(sky�
 `MID(set…)`, characters unwrapped (depth 1), `NEAR(foliage…)`, or `layer(depth, svg)` for a custom depth.
 Layers only move during the new moves, so stories without them render exactly as before.
 `stories/kolbe.mjs` is the first story that uses both.
+
+## Finishing effects (opt-in)
+
+`STORY.fx = { handheld: true, leak: true }`: a gentle hand-held wobble on top of every camera move
+(`handheld: 1.5` for more) and a warm golden light-leak over each scene change. `NEAR(bokeh(6))` adds
+soft out-of-focus light discs at the frame edges (gradients, no blur filter, so they render fast).
+Stories without `fx` render exactly as before. `fx.grain` (moving film grain) exists but makes the MP4
+about 6× bigger, so leave it off. Avoid objects sweeping across the lens: they distract from the story.
 
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
 helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `narrate.py`, `vendor/` (GSAP, grain).

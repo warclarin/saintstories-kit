@@ -195,6 +195,20 @@ export function petals(n, { seed = 12, colors = ['#f6d36b', '#ffffff', '#f2a0b0'
   return out;
 }
 
+// Bokeh: big soft out-of-focus light discs drifting near the lens (gradient discs, no blur filter, so they render fast).
+// Put them in NEAR(...) or layer(1.6, ...). sides: keep them in the left/right bands, clear of faces.
+export function bokeh(n = 8, { seed = 21, x0 = 0, x1 = W, y0 = 380, y1 = 1450, r = [40, 110], op = [0.35, 0.75], sides = true, drift = 60 } = {}) {
+  const R = rng(seed); let out = '';
+  for (let i = 0; i < n; i++) {
+    let x = x0 + R() * (x1 - x0);
+    if (sides) x = i % 2 ? 20 + R() * 230 : W - 250 + R() * 230;
+    const y = y0 + R() * (y1 - y0), rad = r[0] + R() * (r[1] - r[0]), o = op[0] + R() * (op[1] - op[0]);
+    out += `<g${M.drift(f((R() - 0.5) * drift), f(-drift * (0.4 + R())))}><g${M.flick(3 + R() * 3, R() * 3, 0.45)}>`
+      + `<circle cx="${f(x)}" cy="${f(y)}" r="${f(rad)}" fill="url(#bokehG)" opacity="${f(o)}"/></g></g>`;
+  }
+  return out;
+}
+
 // ------------------------------------------------------------- props (drawn at the hand)
 export function book(open = true) {
   if (open) return '<g transform="translate(0,6)">'

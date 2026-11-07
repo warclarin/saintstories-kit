@@ -21,6 +21,8 @@ const OUT = path.join(KIT, 'work', STORY.slug);
 fs.mkdirSync(OUT, { recursive: true });
 const LEAD = 0.4, TAIL = 0.6, XF = 0.4, FPS = 30;
 const BRAND = STORY.brand || 'SaintStories';
+// Opt-in finishing effects: STORY.fx = { handheld: true|amount, leak: true, grain: true } (all off by default).
+const FX = STORY.fx || {};
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // HyperFrames can't download its own headless shell in a sandbox: point it at an installed Chrome.
 if (!process.env.HYPERFRAMES_BROWSER_PATH) {
@@ -77,6 +79,7 @@ const SHARED_DEFS = `<svg width="0" height="0" style="position:absolute"><defs>
 <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff2c4" stop-opacity=".85"/><stop offset="1" stop-color="#fff2c4" stop-opacity="0"/></linearGradient>
 <linearGradient id="seaG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a7fab"/><stop offset="1" stop-color="#173a5c"/></linearGradient>
 <linearGradient id="seaDusk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6a5486"/><stop offset="1" stop-color="#1f1a3a"/></linearGradient>
+<radialGradient id="bokehG"><stop offset="0" stop-color="#fff0c8" stop-opacity=".22"/><stop offset=".72" stop-color="#ffe4a8" stop-opacity=".3"/><stop offset=".9" stop-color="#ffe9b8" stop-opacity=".48"/><stop offset="1" stop-color="#ffe9b8" stop-opacity="0"/></radialGradient>
 <filter id="soft" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3"/></filter>
 <filter id="blur6" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="6"/></filter>
 <filter id="blur14" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
@@ -101,6 +104,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
 .wm{bottom:auto;right:auto;display:flex;align-items:center;gap:10px;font:500 30px Poppins;color:rgba(255,255,255,.62);text-shadow:0 2px 3px rgba(0,0,0,.45)}
 .wm.r{left:auto;flex-direction:row}
 .grain{background:url(grain.png);background-size:540px 960px;mix-blend-mode:overlay;opacity:.16;pointer-events:none}
+.leak{pointer-events:none;mix-blend-mode:screen;opacity:0;background:radial-gradient(ellipse 60% 42% at var(--lx) 38%,rgba(255,222,150,.95) 0,rgba(255,176,96,.55) 30%,rgba(255,140,80,0) 70%),linear-gradient(var(--la),rgba(255,200,120,0) 30%,rgba(255,226,170,.5) 48%,rgba(255,200,120,0) 66%)}
 .vig{background:radial-gradient(ellipse 75% 62% at 50% 46%,rgba(0,0,0,0) 58%,rgba(12,4,22,.45) 100%);pointer-events:none}
 .endcard{top:1594px;bottom:auto;font:500 30px Poppins;color:#ffe2a0;text-shadow:0 2px 8px rgba(0,0,0,.6)}
 .black{background:#000}
@@ -123,8 +127,10 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
     const c = typeof cam === 'string' ? { move: cam } : cam;
     camAttr = `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift}"`;
   }
+  // fx.handheld: a slow hand-held wobble on top of the camera move (own <g>, so it never fights the move's transform)
+  const hh = FX.handheld ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
-    + `<svg viewBox="0 0 1080 1920"><g class="cam" ${camAttr}><g transform="translate(0,${shift})">${s.art()}</g></g></svg>`
+    + `<svg viewBox="0 0 1080 1920"><g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g></svg>`
     + (hud ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
     + '</div>';
 }
@@ -169,7 +175,13 @@ function buildHtml() {
     parts.push(sceneDiv(i, { start, zero: STARTS[i], dur, z: i + 1, shift }));
   });
   parts.push(`<div class="clip vig" data-start="0" data-duration="${TOTAL}" style="z-index:50"></div>`);
-  parts.push(`<div class="clip grain" data-start="0" data-duration="${TOTAL}" style="z-index:60"></div>`);
+  // fx.leak: a warm golden light-leak blooms over each scene change
+  if (FX.leak) STARTS.forEach((s, i) => {
+    if (!i) return;
+    const lx = i % 2 ? '30%' : '70%', la = i % 2 ? '115deg' : '65deg';
+    parts.push(`<div class="clip leak" data-leak="${(s - XF / 2).toFixed(3)}" data-start="${(s - 0.7).toFixed(3)}" data-duration="1.5" style="z-index:49;--lx:${lx};--la:${la}"></div>`);
+  });
+  parts.push(`<div class="clip grain"${FX.grain ? ' data-jit="12"' : ''} data-start="0" data-duration="${TOTAL}" style="z-index:60"></div>`);
   parts.push(`<div class="clip t brand" data-start="0" data-duration="${TOTAL}" style="z-index:70;bottom:auto">${esc(BRAND)}</div>`);
   // captions with per-word highlight
   STORY.scenes.forEach((_, i) => {
@@ -230,8 +242,9 @@ function buildThumb() {
     const png = path.join(OUT, `thumb_${STORY.slug}.png`);
     await p.screenshot({ path: png });
     await b.close();
-    sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'crop=1080:1080:0:420', path.join(OUT, `thumb_${STORY.slug}_square.png`)]);
-    console.log(png, path.join(OUT, `thumb_${STORY.slug}_square.png`));
+    // Square grid crop only on request (STORY.thumb_square): covers are for Reels/Shorts.
+    if (STORY.thumb_square) sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'crop=1080:1080:0:420', path.join(OUT, `thumb_${STORY.slug}_square.png`)]);
+    console.log(png);
   })();
 }
 

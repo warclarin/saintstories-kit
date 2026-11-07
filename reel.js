@@ -88,7 +88,14 @@
         tl.fromTo(ly, { ...K[2](k), ...lo }, { ...K[3](k), ...lo, ...span }, at);
       });
     });
-    if (si > 0 && C < Z) tl.fromTo(sc, { opacity: 0 }, { opacity: 1, duration: Z - C, ease: 'none' }, C);
+    // fx.handheld: three slow, out-of-step sine loops (x, y, roll) read as a gentle hand-held camera
+    sc.querySelectorAll('.hh[data-hh]').forEach((el) => {
+      const a = +el.dataset.hh || 1, o = { svgOrigin: '540 1000' }, n = (p) => Math.ceil((END + 2) / p) + 1;
+      tl.fromTo(el, { x: -5 * a }, { x: 5 * a, duration: 2.65, ease: 'sine.inOut', yoyo: true, repeat: n(2.65) }, st(0.3));
+      tl.fromTo(el, { y: -3.5 * a }, { y: 3.5 * a, duration: 2.05, ease: 'sine.inOut', yoyo: true, repeat: n(2.05) }, st(1.1));
+      tl.fromTo(el, { rotation: -0.3 * a, ...o }, { rotation: 0.3 * a, ...o, duration: 3.35, ease: 'sine.inOut', yoyo: true, repeat: n(3.35) }, st(0.7));
+    });
+    if (si > 0 && C < Z) tl.fromTo(sc,{ opacity: 0 }, { opacity: 1, duration: Z - C, ease: 'none' }, C);
   });
 
   // captions: pill pops in, current word turns gold
@@ -107,6 +114,20 @@
   });
   document.querySelectorAll('.endcard').forEach((e) =>
     tl.fromTo(e, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, +e.dataset.start));
+  // fx.leak: golden light-leak over a scene change (peaks at data-leak, drifts sideways)
+  document.querySelectorAll('.leak[data-leak]').forEach((e) => {
+    const p = +e.dataset.leak;
+    tl.fromTo(e, { opacity: 0, x: -60 }, { opacity: 0.7, x: 0, duration: 0.45, ease: 'power2.out' }, p - 0.45);
+    tl.to(e, { opacity: 0, x: 60, duration: 0.8, ease: 'power1.in' }, p);
+  });
+  // fx.grain: the grain jumps to a new (deterministic) offset 12 times a second, like real film
+  document.querySelectorAll('.grain[data-jit]').forEach((g) => {
+    const step = 1 / (+g.dataset.jit || 12);
+    for (let k = 0, t = 0; t < R.total; k++, t += step) {
+      const x = Math.round(((k * 7919) % 541)), y = Math.round(((k * 104729) % 961));
+      tl.set(g, { backgroundPosition: `${x}px ${y}px` }, t);
+    }
+  });
   const fi = document.getElementById('fadein'), fo = document.getElementById('fadeout');
   if (fi) tl.fromTo(fi, { opacity: 1 }, { opacity: 0, duration: 0.35, ease: 'none' }, 0);
   if (fo) tl.fromTo(fo, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'none' }, R.total - 0.5);
