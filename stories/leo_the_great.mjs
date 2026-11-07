@@ -81,7 +81,7 @@ const hunRiders = (y, s = 0.3, c = '#2a1e30') => [620, 760, 900, 1040].map((x, i
   + `<g transform="translate(${x - 8},${y - 218 * s + (i % 2) * 10})" fill="${c}"><circle cy="-58" r="14"/><path d="M-16 0 Q-14 -40 0 -44 Q14 -40 16 0Z"/></g>`).join('');
 
 // ---------------------------------------------------------------- scene timing (sentence starts from timings.json + ~0.5 s)
-const S1B = 6.0, S2B = 7.4, S3B = 5.6, S4B = 8.7, S6B = 4.0, S7B = 5.8, S7C = 11.6;
+const S1B = 2.8, S2B = 6.6, S4B = 8.0, S6B = 2.7, S7B = 5.0, S7C = 9.0;
 
 // ---------------------------------------------------------------- scenes
 // 0 · hook: one man, no army
@@ -138,7 +138,7 @@ function scene3() {
     + ground(1230, '#c0a07a', { rim: '#e8cca0' }) + tufts(1236, 10, '#8a6a4a', { seed: 2 })
     + elder + mom + kid
     + leo(640, 1310, 2.05, { mood: 'happy', talk: true, armL: [40, 3, 2.6], armR: [112, 6, 2.6], propL: book(true) })
-    + `<g${fadeIn(S3B, 1.0)}>${sparkles(12, 520, 760, 560, 900, { seed: 5, color: '#fff2c4' })}</g>`
+    + `<g${fadeIn(1.5, 1.0)}>${sparkles(12, 520, 760, 560, 900, { seed: 5, color: '#fff2c4' })}</g>`
     + motes(12, { y0: 520, y1: 1200, seed: 3 })
     + NEAR(bokeh(6, { seed: 7 }) + foliage('l', 1640, { color: '#5a3a2a', seed: 4 }));
 }
@@ -241,7 +241,7 @@ function scene9() {
 
 export const STORY = {
   slug: 'st_leo_the_great', name: 'St_Leo_the_Great',
-  voice: 'am_michael', speed: 0.95,
+  voice: 'am_michael', speed: 1.0,
   fx: { handheld: true, leak: true },
   thumb_hook: 'He stood before Attila the Hun', thumb_title: 'St. Leo the Great', thumb_shift: 40, thumb_t: 3,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
@@ -253,24 +253,24 @@ export const STORY = {
   },
   scenes: [
     { kicker: '452 · NORTHERN ITALY', title: 'No Army, Only Faith', art: scene0, cam: 'push-fast',
-      say: ['Attila the Hun was marching on Rome, and one man walked out to meet him, with no army at all.', 'This is Saint Leo the Great.'] },
+      say: ['Attila the Hun was marching on Rome, and one man went out to meet him, with no army.', 'This is Saint Leo the Great.'] },
     { kicker: 'TUSCANY · ITALY', title: 'A Son of Tuscany', art: scene1, cam: 'drift-r',
-      say: ['Leo was born in Tuscany, in Italy, while the Roman Empire was growing weak.', 'He served the Church in Rome, and his wisdom became known far beyond the city.'] },
+      say: ['Leo was born in Tuscany, in Italy, and grew up to serve the Church in Rome.'] },
     { kicker: '440 · GAUL', title: 'Called to Lead', art: scene2, cam: 'pan-r',
-      say: ['In 440, the emperor sent him to Gaul, to make peace between two quarreling generals.', 'While he was away, the pope died, and Rome chose Leo as the new pope.'] },
+      say: ['In 440, he was making peace between two generals in Gaul when the pope died.', 'Rome chose Leo as the new pope.'] },
     { kicker: '440 · ROME', title: 'Shepherd of Rome', art: scene3, cam: 'drift-l',
-      say: ['As pope, he preached to the people, cared for the poor, and taught the faith clearly.', 'Nearly a hundred of his sermons still survive today.'] },
+      say: ['As pope, he preached, cared for the poor, and taught the faith clearly.'] },
     { kicker: '451 · CHALCEDON', title: 'Peter Has Spoken', art: scene4, cam: { move: 'pull', amt: 0.07, oy: 1000 },
-      say: ['In 451, bishops gathered at Chalcedon, to defend the truth that Jesus is fully God and fully man.', "When Leo's letter was read aloud, they cried out, Peter has spoken through Leo!"] },
+      say: ['In 451, bishops met at Chalcedon to defend the truth that Jesus is fully God and fully man.', "When Leo's letter was read, they cried out, Peter has spoken through Leo!"] },
     { kicker: '452 · MINCIO RIVER', title: 'Face to Face', art: scene5, cam: { move: 'push', amt: 0.08, ox: 560, oy: 1000 },
-      say: ['In 452, Attila the Hun swept into Italy, destroying city after city on his way to Rome.', 'Leo went out to meet him with two Roman senators, by the Mincio River.'] },
+      say: ['In 452, Attila swept into Italy, destroying city after city.', 'Leo went out to meet him by the Mincio River.'] },
     { kicker: '452 · ITALY SPARED', title: 'The Hun Turns Back', art: scene6, cam: 'dolly',
-      say: ['After they spoke, Attila turned back, and left Italy.', 'One famous story says he saw Saints Peter and Paul standing guard beside the pope.'] },
+      say: ['Attila turned back and left Italy.', 'One famous story says he saw Saints Peter and Paul beside the pope.'] },
     { kicker: '455 · ROME', title: 'Mercy at the Gates', art: scene7, cam: 'pan-l',
-      say: ['In 455, the Vandal king Genseric reached the gates of Rome.', 'Leo could not stop the attack, but he persuaded the king to spare the great basilicas, and thousands sheltering inside were saved.'] },
+      say: ['In 455, the Vandal king Genseric reached Rome.', 'Leo could not stop the attack, but he saved the great basilicas, and the thousands sheltering inside.'] },
     { kicker: 'NOVEMBER 10, 461 · ROME', title: 'Home to God', art: scene8, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
-      say: ['Leo died in Rome on November 10, 461, after 21 years as pope.', "He was the first pope to be buried in Saint Peter's Basilica."] },
+      say: ["Leo died on November 10, 461, and was the first pope buried in Saint Peter's."] },
     { kicker: 'FEAST DAY · NOVEMBER 10', title: 'Doctor of the Church', art: scene9, cam: 'arc-r',
-      say: ['He was the first pope to be called the Great, and in 1754, he was named a Doctor of the Church.', 'His feast day is November 10.', 'Saint Leo the Great, pray for us.'] },
+      say: ['The first pope called the Great, he was named a Doctor of the Church in 1754.', 'His feast day is November 10.', 'Saint Leo the Great, pray for us.'] },
   ],
 };
