@@ -92,7 +92,7 @@ function scene0() {
     + MID(hill(1220, 16, '#4e3458', 6))
     + ground(1250, '#5a3a4c', { rim: '#c07a7a' })
     + `<ellipse cx="540" cy="1300" rx="300" ry="40" fill="#ffcf8a" opacity=".25" filter="url(#blur14)"/>` + tufts(1260, 10, '#3a2438', { seed: 7 })
-    + `<g${M.in('pop', 0, 1.0, 540, 1250)}>${leo(540, 1305, 2.2, { mood: 'determined', halo: 0.6, armL: [46, 2, 3], armR: [100, 6, 2.6], propL: ferula(230) })}</g>`
+    + leo(540, 1305, 2.2, { mood: 'determined', halo: true, armL: [46, 2, 3], armR: [100, 6, 2.6], propL: ferula(230) })
     + motes(18, { y0: 520, y1: 1240, seed: 4 })
     + NEAR(bokeh(6, { seed: 11 }) + foliage('l', 1600, { color: '#2a1a34' }) + foliage('r', 1640, { color: '#2a1a34', seed: 5 }));
 }
@@ -242,7 +242,7 @@ function scene9() {
 export const STORY = {
   slug: 'st_leo_the_great', name: 'St_Leo_the_Great',
   voice: 'am_michael', speed: 1.0,
-  fx: { handheld: true, leak: true },
+  fx: { handheld: true, leak: true, loop: true },
   thumb_hook: 'He stood before Attila the Hun', thumb_title: 'St. Leo the Great', thumb_shift: 40, thumb_t: 3,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
   fix: {
