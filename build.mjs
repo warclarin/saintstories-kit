@@ -6,7 +6,10 @@
 //   node build.mjs <story.mjs> preview [t..]  -> contact sheet of frames (default: each scene at 60%)
 //   node build.mjs <story.mjs> render         -> SaintStories_<Name>.mp4 (HyperFrames render)
 //   node build.mjs <story.mjs> thumb          -> thumb_<slug>.png (1080x1920) + thumb_<slug>_square.png
+//   node build.mjs <story.mjs> clean          -> remove previews and check frames from work/<slug>
+// The MP4 and cover go to FINAL: $SAINTSTORIES_OUT, else ~/Videos/SaintStories if it exists, else work/<slug>.
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { execFileSync, execSync } from 'child_process';
 import { createRequire } from 'module';
@@ -19,6 +22,11 @@ const [storyArg, cmd = 'html', ...rest] = process.argv.slice(2);
 const { STORY } = await import(pathToFileURL(path.resolve(storyArg)).href);
 const OUT = path.join(KIT, 'work', STORY.slug);
 fs.mkdirSync(OUT, { recursive: true });
+const VIDEOS = path.join(os.homedir(), 'Videos', 'SaintStories');
+const FINAL = process.env.SAINTSTORIES_OUT || (fs.existsSync(VIDEOS) ? VIDEOS : OUT);
+fs.mkdirSync(FINAL, { recursive: true });
+// Intermediate files that are safe to drop once the reel is rendered (narration, timings and html stay for re-renders).
+const clean = () => { for (const d of ['preview', 'chk', 'render.log']) fs.rmSync(path.join(OUT, d), { recursive: true, force: true }); };
 const LEAD = 0.4, TAIL = 0.6, XF = 0.4, FPS = 30;
 const BRAND = STORY.brand || 'SaintStories';
 // Opt-in finishing effects: STORY.fx = { handheld: true|amount, leak: true, grain: true } (all off by default).
@@ -254,11 +262,11 @@ function buildThumb() {
     await p.goto(pathToFileURL(path.join(OUT, 'thumb.html')).href);
     await p.evaluate(() => document.fonts.ready);
     await p.waitForTimeout(300);
-    const png = path.join(OUT, `thumb_${STORY.slug}.png`);
+    const png = path.join(FINAL, `thumb_${STORY.slug}.png`);
     await p.screenshot({ path: png });
     await b.close();
     // Square grid crop only on request (STORY.thumb_square): covers are for Reels/Shorts.
-    if (STORY.thumb_square) sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'crop=1080:1080:0:420', path.join(OUT, `thumb_${STORY.slug}_square.png`)]);
+    if (STORY.thumb_square) sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'crop=1080:1080:0:420', path.join(FINAL, `thumb_${STORY.slug}_square.png`)]);
     console.log(png);
   })();
 }
@@ -274,7 +282,9 @@ else if (cmd === 'preview') {
 } else if (cmd === 'render') {
   buildHtml();
   const name = `SaintStories_${STORY.name || STORY.slug}.mp4`;
-  npx(['-y', HF, 'render', '.', '-o', path.join(OUT, name), '--fps', String(FPS), '--quiet', ...rest]);
-  console.log(path.join(OUT, name));
+  npx(['-y', HF, 'render', '.', '-o', path.join(FINAL, name), '--fps', String(FPS), '--quiet', ...rest]);
+  if (!rest.some((a) => /^--(start|end)/.test(a))) clean();   // full render: drop previews
+  console.log(path.join(FINAL, name));
 } else if (cmd === 'thumb') await buildThumb();
+else if (cmd === 'clean') { clean(); console.log('cleaned', OUT); }
 else console.error('unknown command', cmd);
