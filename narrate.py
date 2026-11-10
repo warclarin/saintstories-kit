@@ -65,9 +65,12 @@ def phon(s):
         ph = ph.replace(a, b)
     return ph
 
+# A say line is a string, or (opt-in) {"text": ..., "beat": extra silence in s before the line, "speed": voice speed}
+# for the climax: a held breath before the miracle line, read a little slower.
+line = lambda s: s if isinstance(s, str) else s["text"]
 if "--check" in sys.argv:
     for say in cfg["scenes"]:
-        for s in say:
+        for s in map(line, say):
             sp = spoken(s)
             print(s, "\n   ", ("spoken: " + sp + "\n    ") if sp != s else "", phon(s))
     sys.exit()
@@ -77,7 +80,12 @@ out, wavs = [], []
 for i, say in enumerate(cfg["scenes"]):
     chunks, tim, t = [], [], 0.0
     for s in say:
-        audio, _ = k.create(phon(s), voice=cfg["voice"], speed=cfg["speed"], is_phonemes=True)
+        beat, spd = (0, cfg["speed"]) if isinstance(s, str) else (s.get("beat", 0), s.get("speed", cfg["speed"]))
+        s = line(s)
+        if beat:
+            chunks.append(np.zeros(int(beat * SR), dtype=np.float32))
+            t += beat
+        audio, _ = k.create(phon(s), voice=cfg["voice"], speed=spd, is_phonemes=True)
         nz = np.where(np.abs(audio) > 0.01)[0]
         audio = audio[max(0, nz[0] - 600): nz[-1] + 1200]
         d = len(audio) / SR

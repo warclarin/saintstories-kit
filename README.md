@@ -77,6 +77,11 @@ pictures cut on the line where the story moves on. The first scene keeps a 0.3 s
 `@<seconds from scene start> (<seconds in the reel>)`, the times to use for `M.in` / `M.tw` events. In flow
 mode those times are about 0.3 s earlier than with the default lead-in. Stories without `flow` time exactly as before.
 
+**Climax beat (opt-in, one line per reel):** a `say` line can be `{ text, beat, speed }` instead of a string, e.g.
+`{ text: 'But he was still breathing.', beat: 0.9, speed: 0.85 }`: `beat` adds that many seconds of silence before
+the line (a held breath before the miracle) and `speed` reads just that line slower. Captions and `info` times
+follow automatically. Plain string lines voice exactly as before.
+
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
 helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `fastrender.mjs` (standard renderer),
 `narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader only for the experiment in `experiments/three/`).
