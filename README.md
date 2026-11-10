@@ -10,7 +10,6 @@ node build.mjs stories/<x>.mjs say              # export narration script
 python3 narrate.py work/<slug> --check          # phonemes, fix names in STORY.fix
 python3 narrate.py work/<slug>                  # timings.json + narration.wav
 node build.mjs stories/<x>.mjs preview          # contact sheet, one frame per scene
-node build.mjs stories/<x>.mjs studio           # live studio at localhost:3002: scrub, scene timeline, reloads on save
 node build.mjs stories/<x>.mjs render --workers 2
 node build.mjs stories/<x>.mjs thumb            # vertical reel/Shorts cover (square crop: thumb_square: true)
 ```
