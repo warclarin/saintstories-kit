@@ -122,7 +122,7 @@ function scene1() {
     + ground(1240, '#2a2230', { rim: '#4a3c56' })
     + person(300, 1300, 1.45, { kind: 'layman', robe: true, top: '#8a7a66', skin: '#d9a47e', hair: '#2a1e16', beard: '#2a1e16', sitting: true, mood: 'sad', armL: 20, armR: 20 })
     + person(820, 1300, 1.45, { kind: 'layman', robe: true, top: '#7a6a5a', skin: '#e2b48f', hair: '#4a3424', beard: '#4a3424', sitting: true, flip: true, mood: 'sad', armL: 20, armR: 20 })
-    + `<g${fadeIn(SW + 3.2, 0.6)}>${person(300, 1300, 1.45, { kind: 'layman', robe: true, top: '#8a7a66', skin: '#d9a47e', hair: '#2a1e16', beard: '#2a1e16', sitting: true, mood: 'happy', armL: 20, armR: 20 })}`
+    + `<g${fadeIn(SW + 2.3, 0.6)}>${person(300, 1300, 1.45, { kind: 'layman', robe: true, top: '#8a7a66', skin: '#d9a47e', hair: '#2a1e16', beard: '#2a1e16', sitting: true, mood: 'happy', armL: 20, armR: 20 })}`
     + `${person(820, 1300, 1.45, { kind: 'layman', robe: true, top: '#7a6a5a', skin: '#e2b48f', hair: '#4a3424', beard: '#4a3424', sitting: true, flip: true, mood: 'happy', armL: 20, armR: 20 })}</g>`
     + sebastianArmor(530, 1320, 2.0, { helmet: false, mood: 'happy', talk: [SW, SW + 4.8], armL: [26, 2, 3], armR: [60, 4, 2.6], propL: handLamp })
     + motes(10, { x0: 600, x1: 900, y0: 560, y1: 1200, seed: 6 });
@@ -155,7 +155,7 @@ function scene2() {
 
 // 3 · night: Irene comes with a lamp to bury him — and finds him breathing (dolly zoom)
 function scene3() {
-  const K = 2.1, B = 4.15;
+  const K = 2.1, B = 5.1;
   const walkIn = M.tw([{ at: 0.1, dur: 1.7, from: { x: -320 }, to: { x: 0 }, ease: 'power2.out' }, { at: K - 0.2, dur: 0.4, from: { opacity: 1 }, to: { opacity: 0 } }]);
   return FAR(sky(SKIES.night, { stars: 46, seed: 3 }) + moon(820, 560, 50))
     + BACK(romeSkyline(540, 1100, 0.85, { c: '#1e2240', win: '#f6d98a' }) + hill(1140, 22, '#242a4a', 2))
@@ -172,17 +172,24 @@ function scene3() {
     + NEAR(foliage('l', 1640, { color: '#12142a', seed: 4 }) + foliage('r', 1660, { color: '#12142a', seed: 2 }));
 }
 
-// 4 · healed in Irene's house; friends beg him to flee; he puts on his cloak to go back
+// 4 · Irene's house: he lies badly wounded (the human beat); friends urge him to run; he stands, cloak on, to go back
+// Low Roman bed seen from the front: blanket over the lap, wooden front rail (drawn in front of the sitter)
+function bedFront(x, y, s = 1) {
+  return `<g transform="translate(${x},${y}) scale(${s})"><path d="M-250 -96 Q-120 -118 0 -110 Q130 -116 250 -96 L262 -40 L-262 -40Z" fill="#e2d4b4"/>`
+    + `<path d="M-250 -96 Q-120 -118 0 -110 Q130 -116 250 -96" stroke="#f4ead2" stroke-width="8" fill="none"/><path d="M-40 -108 Q-30 -76 -36 -42 M120 -106 Q126 -74 118 -42" stroke="#c8b896" stroke-width="4" fill="none"/>`
+    + `<rect x="-280" y="-48" width="560" height="44" rx="10" fill="#8a5a3a"/><rect x="-280" y="-48" width="560" height="10" rx="5" fill="#a87a52"/>`
+    + `<rect x="-270" y="-6" width="26" height="12" fill="#5a3a24"/><rect x="244" y="-6" width="26" height="12" fill="#5a3a24"/></g>`;
+}
 function scene4() {
-  const C = 4.3;
+  const C = 6.4;
   return FAR(sky([[0, '#141428'], [1, '#2a2240']]))
     + BACK(domusWall({ win: 'night', winX: 540, nightTint: 0.4 }))
     + MID(oilLamp(240, 640, 380, 0.3) + oilLamp(860, 640, 380, 0.8))
     + ground(1290, '#5a3a32', { rim: '#8a6a4a' })
-    + irene(200, 1320, 1.75, { mood: 'happy', armL: 12, armR: [30, 3, 2.6] })
-    + friend(820, 1300, 1.55, 0, { flip: true, mood: 'worried', armL: 10, armR: [64, 8, 1.2] })
-    + friend(970, 1300, 1.5, 1, { flip: true, mood: 'worried', armL: [40, 6, 1.4], armR: 12 })
-    + `<g${fadeOut(C, 0.5)}>${sebastian(530, 1330, 2.1, { mood: 'happy', armL: 10, armR: 10 })}</g>`
+    + irene(200, 1320, 1.75, { mood: 'worried', armL: 12, armR: [44, 3, 2.6] })
+    + friend(830, 1300, 1.55, 0, { flip: true, mood: 'worried', armL: 10, armR: [64, 8, 1.2] })
+    + friend(980, 1300, 1.5, 1, { flip: true, mood: 'worried', armL: [40, 6, 1.4], armR: 12 })
+    + `<g${fadeOut(C, 0.5)}>${sebastian(470, 1300, 2.0, { sitting: true, mood: 'sad', armL: 14, armR: 14 })}${bedFront(510, 1330)}</g>`
     + `<g${fadeIn(C, 0.5)}>${sebastian(530, 1330, 2.1, { cloak: true, mood: 'determined', armL: 12, armR: [20, 2, 3] })}</g>`
     + motes(8, { x0: 160, x1: 920, y0: 600, y1: 1100, seed: 2 })
     + NEAR(`<rect x="-200" y="1560" width="${W + 400}" height="500" fill="#140e1a" opacity=".55" filter="url(#blur14)"/>`);
@@ -190,7 +197,7 @@ function scene4() {
 
 // 5 · the palace step: the emperor freezes; Sebastian speaks
 function scene5() {
-  const F = 3.3;
+  const F = 3.1;
   const procession = [820, 960, 1060].map((x, i) => guard(x, 1110, 0.95, { mood: i === 1 ? 'surprised' : 'stern', skin: ['#d9a47e', '#e2b48f', '#c48a5f'][i] })).join('');
   return FAR(sky(GOLDSKY) + glow(700, 640, 360, 0.6))
     + BACK(clouds(460, { color: '#fff0d8', op: 0.7, seed: 8 }) + romeSkyline(540, 980, 0.8, { c: '#c89a7a', win: '#fff0c0' }))
@@ -201,7 +208,7 @@ function scene5() {
     + `<g${fadeOut(F, 0.35)}>${diocletian(780, 1330, 1.8, { flip: true, mood: 'stern', armL: 10, armR: 10 })}</g>`
     + `<g${M.tw([{ at: F, dur: 0.35, from: { opacity: 0 }, to: { opacity: 1 } }, { at: F, dur: 0.6, from: { x: 0 }, to: { x: 50 }, ease: 'power2.out' }])}>`
     + diocletian(780, 1330, 1.8, { flip: true, mood: 'surprised', talk: [F + 0.4, 7.6], armL: 14, armR: [70, 4, 1.4] }) + '</g>'
-    + sebastian(330, 1195, 2.05, { cloak: true, mood: 'determined', talk: [7.75, 12.6], armL: 12, armR: [52, 5, 2.2] })
+    + sebastian(330, 1195, 2.05, { cloak: true, mood: 'determined', talk: [7.7, 14.0], armL: 12, armR: [52, 5, 2.2] })
     + NEAR(foliage('l', 1650, { color: '#5a3a2a', seed: 7 }));
 }
 
@@ -249,18 +256,18 @@ export const STORY = {
     { kicker: 'ROME · ABOUT 288', title: 'He Came Back', art: scene0, cam: { move: 'push-fast', oy: 1000 },
       say: ['Everyone knows the saint shot full of arrows.', 'Almost no one knows what he did next.', 'This is Saint Sebastian.'] },
     { kicker: 'THE EMPEROR’S GUARD', title: 'A Secret Christian', art: scene1, cam: 'pan-r',
-      say: ['Tradition says he was a captain in Diocletian’s own guard.', 'But in secret, he was a Christian, giving courage to believers in prison.'] },
+      say: ['Tradition says he was a captain in Diocletian’s own guard.', 'But he was secretly a Christian.', 'He gave courage to believers in prison.'] },
     { kicker: 'BETRAYED', title: 'Left for Dead', art: scene2, cam: { move: 'push', amt: 0.07, oy: 1000 },
-      say: ['When Diocletian found out, he raged: I made you master of my palace!', 'He had him tied to a stake, shot with arrows, and left for dead.'] },
+      say: ['When Diocletian found out, he raged: I made you master of my palace!', 'He had him tied to a stake and shot with arrows.', 'Then the archers left him for dead.'] },
     { kicker: 'THAT NIGHT', title: 'Still Breathing', art: scene3, cam: { move: 'dolly', amt: 0.08, ox: 600, oy: 1050 },
-      say: ['That night, a Christian widow named Irene came to bury him.', 'But he was still breathing.'] },
-    { kicker: 'HEALED', title: 'He Didn’t Run', art: scene4, cam: 'drift-r',
-      say: ['She nursed him back to health. His friends begged him to flee Rome.', 'Instead, he went back to face the emperor.'] },
+      say: ['That night, a Christian widow named Irene came to bury him.', { text: 'But he was still breathing.', beat: 0.9, speed: 0.85 }] },
+    { kicker: 'IRENE’S HOUSE', title: 'He Didn’t Run', art: scene4, cam: 'drift-r',
+      say: ['She took him home. For days, he lay badly wounded.', 'His friends urged him to run from Rome.', 'Instead, he went back to face the emperor.'] },
     { kicker: 'THE PALACE STEP', title: 'Face to Face', art: scene5, cam: { move: 'push', amt: 0.07, ox: 560, oy: 1000 },
-      say: ['He stood on a palace step as Diocletian passed.', 'The emperor froze. Aren’t you Sebastian, whom we had shot to death?',
-        'Sebastian said God had spared him, to condemn his cruelty to Christians.'] },
+      say: ['He stood on a palace step as the emperor passed.', 'Diocletian froze. Aren’t you Sebastian, whom we had shot to death?',
+        'Sebastian said God spared him for one reason: to tell the emperor to stop hurting Christians.'] },
     { kicker: 'MARTYR OF ROME', title: 'Untouched Faith', art: scene6, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
-      say: ['This time, the emperor had him beaten to death.', 'Arrows could wound his body, but never his faith.'] },
+      say: ['This time, the emperor had him beaten to death.', 'Rome’s arrows wounded his body. They never touched his faith.'] },
     { kicker: 'FEAST DAY · JANUARY 20', title: 'Patron of Soldiers', art: scene7, cam: { move: 'arc-l', amt: 0.06, oy: 1000 },
       say: ['His feast day is January 20.', 'He is patron of soldiers, athletes and archers. Saint Sebastian, pray for us.'] },
   ],
