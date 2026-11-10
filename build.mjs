@@ -284,14 +284,28 @@ function buildThumb() {
   const require = createRequire(import.meta.url);
   let pw; try { pw = require('playwright'); } catch { pw = require(execSync('npm root -g').toString().trim() + '/playwright'); }
   return (async () => {
-    const b = await pw.chromium.launch();
+    // STORY.bg3d: ES modules don't load from file://, so serve the folder over local http and draw the 3D canvas at thumb_t
+    let srv = null, url = pathToFileURL(path.join(OUT, 'thumb.html')).href;
+    if (STORY.bg3d) {
+      const http = (await import('http')).default;
+      srv = http.createServer((q, s) => {
+        const fp = path.join(OUT, decodeURIComponent(q.url.split('?')[0]).replace(/^\/+/, ''));
+        if (!fp.startsWith(path.resolve(OUT))) { s.writeHead(403); s.end(); return; }
+        fs.readFile(fp, (e, buf) => { if (e) { s.writeHead(404); s.end(); return; } s.writeHead(200, { 'content-type': { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.ttf': 'font/ttf', '.png': 'image/png' }[path.extname(fp)] || 'application/octet-stream' }); s.end(buf); });
+      });
+      await new Promise((r) => srv.listen(0, '127.0.0.1', r));
+      url = `http://127.0.0.1:${srv.address().port}/thumb.html`;
+    }
+    const chrome = process.env.HYPERFRAMES_BROWSER_PATH;
+    const b = await pw.chromium.launch(STORY.bg3d ? { ...(chrome ? { executablePath: chrome } : {}), args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=d3d11'] } : {});
     const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
-    await p.goto(pathToFileURL(path.join(OUT, 'thumb.html')).href);
+    await p.goto(url);
     await p.evaluate(() => document.fonts.ready);
+    if (STORY.bg3d) await p.evaluate(async (T) => { await window.__hf?.buildReady?.bg3d; window.dispatchEvent(new CustomEvent('hf-seek', { detail: { time: T, waitUntil() {} } })); }, t);
     await p.waitForTimeout(300);
     const png = path.join(FINAL, `thumb_${STORY.slug}.png`);
     await p.screenshot({ path: png });
-    await b.close();
+    await b.close(); if (srv) srv.close();
     // Square grid crop only on request (STORY.thumb_square): covers are for Reels/Shorts.
     if (STORY.thumb_square) sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'crop=1080:1080:0:420', path.join(FINAL, `thumb_${STORY.slug}_square.png`)]);
     console.log(png);
