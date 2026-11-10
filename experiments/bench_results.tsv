@@ -1,0 +1,13 @@
+1	svg	none	83286	65969	8553	 8 "captureMode":"screenshot" 	FAST_CAPTURE=true to override. {|Fast capture: default-on drawElement disabled for this render: parallel capture has no runti|
+1	vec	none	95966	76153	9225	 8 "captureMode":"screenshot" 	FAST_CAPTURE=true to override. {|Fast capture: default-on drawElement disabled for this render: parallel capture has no runti|
+1	svg	fast	63225	31895	20387	 7 "captureMode":"drawelement" 	fast capture falls back to screenshot capture: mix-blend-mode detected (drawElementImage can|fast-capture-limitations.md)|
+1	vec	fast	61704	33543	20791	 7 "captureMode":"drawelement" 	fast capture falls back to screenshot capture: mix-blend-mode detected (drawElementImage can|fast-capture-limitations.md)|
+2	svg	none	45162	33383	3656	 7 "captureMode":"screenshot" 	FAST_CAPTURE=true to override. {|Fast capture: default-on drawElement disabled for this render: parallel capture has no runti|
+2	vec	none	51660	40843	3531	 7 "captureMode":"screenshot" 	FAST_CAPTURE=true to override. {|Fast capture: default-on drawElement disabled for this render: parallel capture has no runti|
+2	svg	fast	60234	31168	20546	 7 "captureMode":"drawelement" 	fast capture falls back to screenshot capture: mix-blend-mode detected (drawElementImage can|fast-capture-limitations.md)|
+2	vec	fast	59405	32072	20576	 7 "captureMode":"drawelement" 	fast capture falls back to screenshot capture: mix-blend-mode detected (drawElementImage can|fast-capture-limitations.md)|
+3	svg	none	44801	34272	3490	 7 "captureMode":"screenshot" 	FAST_CAPTURE=true to override. {|Fast capture: default-on drawElement disabled for this render: parallel capture has no runti|
+3	vec	none	49459	39068	3626	 7 "captureMode":"screenshot" 	FAST_CAPTURE=true to override. {|Fast capture: default-on drawElement disabled for this render: parallel capture has no runti|
+3	svg	fast	59143	30773	20389	 7 "captureMode":"drawelement" 	fast capture falls back to screenshot capture: mix-blend-mode detected (drawElementImage can|fast-capture-limitations.md)|
+3	vec	fast	58700	31663	20391	 7 "captureMode":"drawelement" 	fast capture falls back to screenshot capture: mix-blend-mode detected (drawElementImage can|fast-capture-limitations.md)|
+DONE

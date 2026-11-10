@@ -10,9 +10,28 @@ node build.mjs stories/<x>.mjs say              # export narration script
 python3 narrate.py work/<slug> --check          # phonemes, fix names in STORY.fix
 python3 narrate.py work/<slug>                  # timings.json + narration.wav
 node build.mjs stories/<x>.mjs preview          # contact sheet, one frame per scene
-node build.mjs stories/<x>.mjs render --workers 2
+node build.mjs stories/<x>.mjs fast             # the MP4 (standard render, ~2.3x faster than `render`)
+node build.mjs stories/<x>.mjs render --workers 10   # fallback: same MP4 through HyperFrames (adds --browser-gpu)
 node build.mjs stories/<x>.mjs thumb            # vertical reel/Shorts cover (square crop: thumb_square: true)
 ```
+
+## Rendering: `fast` (standard) and `render` (fallback)
+
+`fast` (fastrender.mjs) opens the same `work/<slug>/index.html` in one headless Chrome page, seeks the GSAP
+timeline frame by frame, draws each frame into a canvas (scene SVG serialized with its live GSAP state, so
+filters, gradients and rack focus work; titles, captions, watermark and end card take fonts, colours, shadows
+and positions from the page's computed CSS) and encodes it on the GPU with WebCodecs H.264 (software H.264 if
+the GPU encoder is missing). ffmpeg then adds the narration at 48 kHz with HyperFrames' −3 dB peak limit.
+Measured on a 24-core laptop with an RTX 5060: St. Jude (78 s) ~45 s vs ~96 s with `render`; Calungsod (63 s)
+38 s vs 88 s; frames match `render` (SSIM 0.96–0.97, identical by eye), audio identical. Files are ~25% bigger
+(fixed 10 Mbps). The vignette, light-leak and grain drawing in fastrender.mjs mirrors the `.vig`/`.leak`/`.grain`
+CSS in build.mjs: change both together. Validate the MP4 as usual (frame from every scene, ffprobe, volumedetect).
+
+`render` is HyperFrames' screenshot capture: ~75% of its time is capturing frames, so drawing faster does not
+help it. It now passes `--browser-gpu` (HyperFrames' auto probe picks SwiftShader on Windows; the GPU is ~17%
+faster, same frames); `--no-browser-gpu` turns it off. Use about 10 workers on 24 cores. Don't pass `--gpu`
+(NVENC: ~6% faster, ~70% bigger files) or `--experimental-fast-capture` (slower overall here, 59 s vs 45 s).
+Benchmarks and the three.js experiment: `experiments/README.md`.
 
 ## Camera moves and parallax
 
@@ -48,4 +67,5 @@ Stories without `fx` render exactly as before. `fx.grain` (moving film grain) ex
 about 6× bigger, so leave it off. Avoid objects sweeping across the lens: they distract from the story.
 
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
-helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `narrate.py`, `vendor/` (GSAP, grain).
+helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `fastrender.mjs` (standard renderer),
+`narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader only for the experiment in `experiments/three/`).

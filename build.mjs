@@ -4,7 +4,13 @@
 //   node build.mjs <story.mjs> html           -> work/<slug>/index.html (+ assets)   [default]
 //   node build.mjs <story.mjs> info           -> total length + scene times + preview times
 //   node build.mjs <story.mjs> preview [t..]  -> contact sheet of frames (default: each scene at 60%)
-//   node build.mjs <story.mjs> render         -> SaintStories_<Name>.mp4 (HyperFrames render)
+//   node build.mjs <story.mjs> fast           -> SaintStories_<Name>.mp4, the standard render: one Chrome page draws every
+//                                                frame to a canvas and encodes it on the GPU (WebCodecs), see fastrender.mjs.
+//                                                ~2.3x faster than `render` (St. Jude 78 s: ~45 s vs ~96 s; Calungsod 63 s:
+//                                                38 s vs 88 s), same frames and audio. [--pages N] splits it (no gain seen).
+//   node build.mjs <story.mjs> render         -> the same MP4 through HyperFrames' screenshot capture (fallback; slower).
+//                                                Adds --browser-gpu (Chrome draws on the GPU, ~17% faster) unless you pass
+//                                                --no-browser-gpu. Pass --workers N (10 on a 24-core PC).
 //   node build.mjs <story.mjs> thumb          -> thumb_<slug>.png (1080x1920) + thumb_<slug>_square.png
 //   node build.mjs <story.mjs> clean          -> remove previews and check frames from work/<slug>
 // The MP4 and cover go to FINAL: $SAINTSTORIES_OUT, else ~/Videos/SaintStories if it exists, else work/<slug>.
@@ -80,6 +86,14 @@ function assets() {
     else console.warn('missing font', f, '- falling back to system serif/sans');
   }
   fs.writeFileSync(path.join(OUT, 'hyperframes.json'), '{}\n');
+  // STORY.bg3d (opt-in, EXPERIMENTAL, not used by any reel; see experiments/README.md): a browser module that draws a
+  // three.js background on a canvas behind each scene's SVG (scene.bg3d names the scene's builder). Needs vendor/three.module.min.js.
+  if (STORY.bg3d) {
+    fs.copyFileSync(path.join(KIT, 'vendor', 'three.module.min.js'), path.join(OUT, 'three.module.min.js'));
+    fs.copyFileSync(path.resolve(path.dirname(path.resolve(storyArg)), STORY.bg3d), path.join(OUT, 'bg3d.mjs'));
+    // extra browser modules: { 'name.js': '<path relative to the story file or kit/vendor/...>' }
+    for (const [dst, src] of Object.entries(STORY.bg3d_extra || {})) fs.copyFileSync(path.resolve(path.dirname(path.resolve(storyArg)), src), path.join(OUT, dst));
+  }
 }
 
 const SHARED_DEFS = `<svg width="0" height="0" style="position:absolute"><defs>
@@ -102,7 +116,7 @@ const CSS = `
 html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
 #root{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Poppins,'DejaVu Sans',sans-serif}
 .clip{position:absolute;inset:0}
-.scene svg{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.scene svg,.scene canvas.bg3d{position:absolute;left:0;top:0;width:1080px;height:1920px}
 .t{position:absolute;left:0;right:0;text-align:center}
 .brand{top:86px;font:500 28px Poppins;color:rgba(255,255,255,.6);letter-spacing:.05em}
 .kicker{top:146px;font:500 32px Poppins;letter-spacing:.14em;color:#ffe2a0;text-shadow:0 3px 10px rgba(0,0,0,.55)}
@@ -145,6 +159,7 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   // fx.handheld: a slow hand-held wobble on top of the camera move (own <g>, so it never fights the move's transform)
   const hh = FX.handheld ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
+    + (s.bg3d && STORY.bg3d ? `<canvas class="bg3d" data-bg3d="${s.bg3d}" width="1080" height="1920"></canvas>` : '')
     + `<svg viewBox="0 0 1080 1920">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g></svg>`
     + (hud ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
     + '</div>';
@@ -176,7 +191,7 @@ function page(body, reel) {
 <title>${esc(BRAND)} - ${esc(STORY.scenes[0].title)}</title><script src="gsap.min.js"></script><style>${CSS}</style></head><body>
 ${SHARED_DEFS}
 ${body}
-<script>window.REEL=${JSON.stringify(reel)};</script><script src="reel.js"></script>
+<script>window.REEL=${JSON.stringify(reel)};</script><script src="reel.js"></script>${STORY.bg3d ? '<script>window.BG3D_VARS=' + JSON.stringify(STORY.bg3d_vars || {}) + ';window.__hf=window.__hf||{};window.__hf.buildReady=window.__hf.buildReady||{};window.__hf.buildReady.bg3d=new Promise((r)=>{window.__bg3dDone=r;});</script><script type="module" src="bg3d.mjs"></script>' : ''}
 </body></html>`;
 }
 
@@ -282,8 +297,18 @@ else if (cmd === 'preview') {
 } else if (cmd === 'render') {
   buildHtml();
   const name = `SaintStories_${STORY.name || STORY.slug}.mp4`;
-  npx(['-y', HF, 'render', '.', '-o', path.join(FINAL, name), '--fps', String(FPS), '--quiet', ...rest]);
+  // HyperFrames' auto GPU probe still picks SwiftShader on Windows; --browser-gpu makes Chrome draw on the GPU (~17% faster)
+  const gpu = rest.some((a) => /^--(no-)?browser-gpu$/.test(a)) ? [] : ['--browser-gpu'];
+  npx(['-y', HF, 'render', '.', '-o', path.join(FINAL, name), '--fps', String(FPS), '--quiet', ...gpu, ...rest]);
   if (!rest.some((a) => /^--(start|end)/.test(a))) clean();   // full render: drop previews
+  console.log(path.join(FINAL, name));
+} else if (cmd === 'fast') {   // standard render: same MP4, ~2.3x faster (in-browser canvas + WebCodecs, see fastrender.mjs)
+  buildHtml();
+  const name = `SaintStories_${STORY.name || STORY.slug}.mp4`;
+  const { fastRender } = await import('./fastrender.mjs');
+  const pi = rest.indexOf('--pages');
+  await fastRender({ dir: OUT, out: path.join(FINAL, name), pages: pi >= 0 ? +rest[pi + 1] : 1 });
+  clean();
   console.log(path.join(FINAL, name));
 } else if (cmd === 'thumb') await buildThumb();
 else if (cmd === 'clean') { clean(); console.log('cleaned', OUT); }
