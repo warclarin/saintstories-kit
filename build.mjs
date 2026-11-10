@@ -4,6 +4,7 @@
 //   node build.mjs <story.mjs> html           -> work/<slug>/index.html (+ assets)   [default]
 //   node build.mjs <story.mjs> info           -> total length + scene times + preview times
 //   node build.mjs <story.mjs> preview [t..]  -> contact sheet of frames (default: each scene at 60%)
+//   node build.mjs <story.mjs> studio [args]  -> live HyperFrames Studio (timeline scrubber; rebuilds on save)
 //   node build.mjs <story.mjs> render         -> SaintStories_<Name>.mp4 (HyperFrames render)
 //   node build.mjs <story.mjs> thumb          -> thumb_<slug>.png (1080x1920) + thumb_<slug>_square.png
 //   node build.mjs <story.mjs> clean          -> remove previews and check frames from work/<slug>
@@ -11,7 +12,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { execFileSync, execSync } from 'child_process';
+import { execFileSync, execSync, spawn } from 'child_process';
 import { createRequire } from 'module';
 import { pathToFileURL, fileURLToPath } from 'url';
 
@@ -285,6 +286,24 @@ else if (cmd === 'preview') {
   npx(['-y', HF, 'render', '.', '-o', path.join(FINAL, name), '--fps', String(FPS), '--quiet', ...rest]);
   if (!rest.some((a) => /^--(start|end)/.test(a))) clean();   // full render: drop previews
   console.log(path.join(FINAL, name));
+} else if (cmd === 'studio') {
+  // Live HyperFrames Studio (scrub the reel on its scene timeline). Saving the story, art.mjs or reel.js rebuilds
+  // index.html and the studio reloads. Extra args go to `hyperframes preview` (e.g. --port 3003 --no-open).
+  buildHtml();
+  fs.rmSync(path.join(OUT, 'thumb.html'), { force: true });   // one root composition, or the narration can play twice
+  let timer = null;
+  const rebuild = () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      try { execFileSync(process.execPath, [fileURLToPath(import.meta.url), storyArg, 'html'], { stdio: 'inherit' }); }
+      catch { console.error('rebuild failed: fix the story and save again'); }
+    }, 300);
+  };
+  for (const p of [path.join(KIT, 'stories'), path.join(KIT, 'art.mjs'), path.join(KIT, 'reel.js')]) fs.watch(p, rebuild);
+  const args = ['-y', HF, 'preview', '.', '--foreground', ...rest];
+  const child = WIN ? spawn(['npx', ...args].join(' '), { shell: true, stdio: 'inherit', cwd: OUT })
+    : spawn('npx', args, { stdio: 'inherit', cwd: OUT });
+  child.on('exit', (code) => process.exit(code ?? 0));
 } else if (cmd === 'thumb') await buildThumb();
 else if (cmd === 'clean') { clean(); console.log('cleaned', OUT); }
 else console.error('unknown command', cmd);
