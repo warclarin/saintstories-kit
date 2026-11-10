@@ -34,6 +34,13 @@ fs.mkdirSync(FINAL, { recursive: true });
 // Intermediate files that are safe to drop once the reel is rendered (narration, timings and html stay for re-renders).
 const clean = () => { for (const d of ['preview', 'chk', 'render.log']) fs.rmSync(path.join(OUT, d), { recursive: true, force: true }); };
 const LEAD = 0.4, TAIL = 0.6, XF = 0.4, FPS = 30;
+// STORY.flow (opt-in): one continuous voiceover. Scene changes get a short breath (lead 0.1 + tail 0.3 s) instead of
+// the default 1 s of silence, so the narration runs on and the pictures cut on the line where the story moves on.
+// true | { lead, tail, first (lead of scene 1), last (tail of the last scene, room for the end card and loop seam), gap }.
+const FLOW = STORY.flow ? { lead: 0.1, tail: 0.3, first: 0.3, last: 0.9, ...(STORY.flow === true ? {} : STORY.flow) } : null;
+const NS = STORY.scenes.length;
+const LEADS = STORY.scenes.map((_, i) => (!FLOW ? LEAD : i ? FLOW.lead : FLOW.first));
+const TAILS = STORY.scenes.map((_, i) => (!FLOW ? TAIL : i < NS - 1 ? FLOW.tail : FLOW.last));
 const BRAND = STORY.brand || 'SaintStories';
 // Opt-in finishing effects: STORY.fx = { handheld: true|amount, leak: true, grain: true } (all off by default).
 const FX = STORY.fx || {};
@@ -55,20 +62,25 @@ const npx = (args) => (WIN
 if (cmd === 'say') {
   fs.writeFileSync(path.join(OUT, 'say.json'), JSON.stringify({
     voice: STORY.voice || 'am_michael', speed: STORY.speed || 0.95, lang: STORY.lang || 'en-us',
-    fix: STORY.fix || {}, lead: LEAD, tail: TAIL, fps: FPS, scenes: STORY.scenes.map((s) => s.say),
+    fix: STORY.fix || {}, lead: LEADS, tail: TAILS, fps: FPS,
+    ...(FLOW?.gap ? { gap: FLOW.gap } : {}), scenes: STORY.scenes.map((s) => s.say),
   }, null, 1));
   console.log(path.join(OUT, 'say.json'));
   process.exit(0);
 }
 
 const TIM = JSON.parse(fs.readFileSync(path.join(OUT, 'timings.json'), 'utf8'));
-const DUR = TIM.map((t) => t.length + LEAD + TAIL);
+const DUR = TIM.map((t, i) => t.length + LEADS[i] + TAILS[i]);
 const STARTS = DUR.map((_, i) => DUR.slice(0, i).reduce((a, b) => a + b, 0));
 const TOTAL = Math.round(DUR.reduce((a, b) => a + b, 0) * FPS) / FPS;
 
 if (cmd === 'info') {
   console.log('total', TOTAL.toFixed(2), 's');
-  STORY.scenes.forEach((s, i) => console.log(i, STARTS[i].toFixed(2), DUR[i].toFixed(2), s.title));
+  STORY.scenes.forEach((s, i) => {
+    console.log(i, STARTS[i].toFixed(2), DUR[i].toFixed(2), s.title);
+    // each line's start in seconds from the scene start (use these for M.in / M.tw delays) and in the whole reel
+    (TIM[i]?.sentences || []).forEach((l) => console.log(`   @${(LEADS[i] + l.start).toFixed(2)}  (${(STARTS[i] + LEADS[i] + l.start).toFixed(2)})  ${l.text.slice(0, 60)}`));
+  });
   console.log('preview at', STARTS.map((s, i) => (s + 0.6 * DUR[i]).toFixed(2)).join(','));
   process.exit(0);
 }
@@ -179,7 +191,7 @@ function captionChunks(i) {
     let t = s.start;
     for (const g of groups) {
       const d = ((s.end - s.start) * g.join(' ').length) / total;
-      out.push({ s: STARTS[i] + LEAD + t, e: STARTS[i] + LEAD + t + d, words: g });
+      out.push({ s: STARTS[i] + LEADS[i] + t, e: STARTS[i] + LEADS[i] + t + d, words: g });
       t += d;
     }
   }

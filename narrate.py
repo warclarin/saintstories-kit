@@ -72,7 +72,7 @@ if "--check" in sys.argv:
             print(s, "\n   ", ("spoken: " + sp + "\n    ") if sp != s else "", phon(s))
     sys.exit()
 
-SR, GAP = 24000, 0.28
+SR, GAP = 24000, cfg.get("gap", 0.28)
 out, wavs = [], []
 for i, say in enumerate(cfg["scenes"]):
     chunks, tim, t = [], [], 0.0
@@ -90,13 +90,16 @@ for i, say in enumerate(cfg["scenes"]):
     print(i, round(len(wav) / SR, 2), "s")
 json.dump(out, open(os.path.join(D, "timings.json"), "w"), indent=1)
 
-lead, tail, fps = cfg["lead"], cfg["tail"], cfg["fps"]
-dur = [o["length"] + lead + tail for o in out]
+fps = cfg["fps"]
+# lead/tail: one value for every scene, or one per scene (STORY.flow: short breaths between scenes)
+per = lambda v: v if isinstance(v, list) else [v] * len(out)
+lead, tail = per(cfg["lead"]), per(cfg["tail"])
+dur = [o["length"] + lead[i] + tail[i] for i, o in enumerate(out)]
 total = round(sum(dur) * fps) / fps
 track = np.zeros(int(total * SR) + SR, dtype=np.float32)
 start = 0.0
 for i, w in enumerate(wavs):
-    s = int((start + lead) * SR)
+    s = int((start + lead[i]) * SR)
     track[s:s + len(w)] += w
     start += dur[i]
 track = track[:int(total * SR)]

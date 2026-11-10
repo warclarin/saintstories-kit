@@ -66,6 +66,17 @@ soft out-of-focus light discs at the frame edges (gradients, no blur filter, so 
 Stories without `fx` render exactly as before. `fx.grain` (moving film grain) exists but makes the MP4
 about 6× bigger, so leave it off. Avoid objects sweeping across the lens: they distract from the story.
 
+## Continuous narration (opt-in)
+
+`STORY.flow: true` makes the voiceover one continuous read: a scene change gets a short breath (0.1 s lead +
+0.3 s tail, close to the 0.28 s gap between sentences) instead of the default 0.4 + 0.6 s of silence, and the
+pictures cut on the line where the story moves on. The first scene keeps a 0.3 s lead and the last a 0.9 s tail
+(room for the end card and the loop seam). Tune with `flow: { lead, tail, first, last, gap }`. Saves about
+0.6 s per scene (St. Jude: 78.3 s -> 73.7 s). Write the script as one voiceover first (link scenes with
+"Then", "But", "Years later"), voice it, then run `info`: under each scene it lists every line as
+`@<seconds from scene start> (<seconds in the reel>)`, the times to use for `M.in` / `M.tw` events. In flow
+mode those times are about 0.3 s earlier than with the default lead-in. Stories without `flow` time exactly as before.
+
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
 helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `fastrender.mjs` (standard renderer),
 `narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader only for the experiment in `experiments/three/`).
