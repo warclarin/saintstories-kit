@@ -119,6 +119,9 @@ function lake(base, { c = '#3e6a5a' } = {}) {
     + waves(base + 90, 12, 340, 6, light(c, 0.08), { phase: 0.8, foam: light(c, 0.4) });
 }
 const mist = (y, seed = 3) => clouds(y, { color: '#a8c8a8', op: 0.32, drift: 50, seed, n: 3 });
+// Near water drawn in SVG over the 3D lake (hides a wading dragon's feet); colours match the lit 3D water
+const WATER3D = { murk: ['#3a5c52', '#7aa292'], shore: ['#40665a', '#86ac9a'] };
+const waveBand = (base, [c, foam]) => waves(base, 7, 240, 8, c, { foam, op: 0.95 }) + waves(base + 34, 8, 280, 6, light(c, 0.06), { phase: 0.5, foam, op: 0.95 });
 
 // ---------------------------------------------------------------- scenes
 // 0 · hook: the end of the legend — the princess leads the meek dragon through Silene's gate; George beside them
@@ -152,9 +155,9 @@ function scene1() {
 // 2 · Silene: a dragon in the lake poisons the land; two sheep a day; then children chosen by lot (worried townsfolk)
 function scene2() {
   const S = T.s2b, K = T.s2c;
-  return FAR(sky(MURK) + glow(300, 600, 300, 0.25))
-    + BACK(silene(1000, { stone: '#a8987a', open: false, h: 240 }) + mist(760, 3))
-    + MID(lake(1030) + `<g${M.tw([{ at: 0.2, dur: 1.6, from: { y: 160 }, to: { y: 0 }, ease: 'power2.out' }])}>${dragon(620, 1150, 1.05, { mood: 'fierce', flip: true })}</g>`)
+  // sky, Silene, hills, mist and the lake are 3D (bg3d 'lakeMurk'); a near wave band hides the dragon's feet
+  return MID(`<g${M.tw([{ at: 0.2, dur: 1.6, from: { y: 160 }, to: { y: 0 }, ease: 'power2.out' }])}>${dragon(620, 1150, 1.05, { mood: 'fierce', flip: true })}</g>`
+      + waveBand(1124, WATER3D.murk))
     + ground(1200, '#5a6a4a', { rim: '#8a9a6a' }) + tufts(1206, 12, '#3a4a2a', { seed: 5 })
     + `<g${fadeIn(S, 0.5)}><g${fadeOut(K, 0.5)}>${sheep(170, 1300, 1.1, 0.2)}${sheep(330, 1320, 1.0, 0.6)}</g></g>`
     + `<g${fadeIn(K, 0.6)}>${folk(130, 1320, 1.55, 1, { mood: 'sad', armL: 20, armR: 20 })}${folk(300, 1335, 1.65, 0, { mood: 'worried', armL: 14, armR: [40, 3, 2] })}</g>`
@@ -184,9 +187,9 @@ function scene4() {
   const mounted = `${horse(hx, hy, hs, { flip: true, walk: true })}${rider(george, hx, hy, hs, ps, { flip: true, mood: 'determined', armL: 20, armR: [24, 2, 3], propR: lance(300), propL: signCross(X) })}`;
   const arrive = M.tw([{ at: R - 0.4, dur: 1.6, from: { x: 560 }, to: { x: 0 }, ease: 'power2.out' }]);
   const charge = M.tw([{ at: X + 1.6, dur: 1.4, from: { x: 0 }, to: { x: -420 }, ease: 'power2.in' }]);
-  return FAR(sky(MURK) + glow(700, 640, 320, 0.3))
-    + BACK(mist(700, 6) + hill(1020, 20, '#4a5a4a', 7))
-    + MID(lake(1060) + `<g${fadeIn(X + 0.9, 0.6)}><g${M.tw([{ at: X + 0.9, dur: 1.2, from: { y: 120 }, to: { y: 0 }, ease: 'power2.out' }])}>${dragon(445, 1070, 0.5, { mood: 'fierce' })}</g></g>`)
+  // background is 3D (bg3d 'lakeShore')
+  return MID(`<g${fadeIn(X + 0.9, 0.6)}><g${M.tw([{ at: X + 0.9, dur: 1.2, from: { y: 120 }, to: { y: 0 }, ease: 'power2.out' }])}>${dragon(445, 1070, 0.5, { mood: 'fierce' })}</g></g>`
+      + waveBand(1056, WATER3D.shore))
     + ground(1190, '#5a6a4a', { rim: '#8a9a6a' }) + tufts(1196, 10, '#3a4a2a', { seed: 8 })
     + `<g${fadeOut(G - 0.3, 0.45)}>${princess(220, 1320, 2.0, { mood: 'sad', armL: 14, armR: 14 })}</g>`
     + `<g${fadeIn(G - 0.3, 0.45)}><g${fadeOut(X, 0.4)}>${princess(220, 1320, 2.0, { mood: 'worried', talk: [G, X - 0.3], armL: 14, armR: [62, 4, 1.4] })}</g></g>`
@@ -200,10 +203,8 @@ function scene4() {
 function scene5() {
   const Q = T.s5b, C = T.s5c;
   const dX = 870, dY = 1260, dS = 1.0, pA = 64;
-  return FAR(sky(MURK) + glow(560, 700, 420, 0.5) + rays(560, 700, { op: 0.07 }))
-    + BACK(mist(720, 2) + hill(1010, 16, '#4a5a4a', 2))
-    + MID(lake(1050))
-    + ground(1170, '#5e6e4c', { rim: '#94a46c' })
+  // background is 3D (bg3d 'lakeLight': a real dolly zoom toward the light)
+  return ground(1170, '#5e6e4c', { rim: '#94a46c' })
     + `<g${fadeOut(C, 0.5)}>${dragon(dX, dY, dS, { mood: 'meek', pose: 'lie', flip: true })}</g>`
     + george(220, 1300, 1.8, { mood: 'happy', talk: [Q, C - 0.4], armL: 22, armR: [40, 3, 2], propL: lance(300) })
     + swap(princess(470, 1320, 2.0, { mood: 'surprised', armL: 14, armR: [40, 3, 2] }),
@@ -247,6 +248,8 @@ function scene7() {
 
 export const STORY = {
   slug: 'st_george_dragon', name: 'St_George_Dragon_on_a_Leash',
+  // three.js backgrounds for the three lake scenes (characters stay SVG); helpers come from the Bakhita module
+  bg3d: './george_dragon.bg3d.js', bg3d_extra: { 'bakhita.bg3d.js': './bakhita_freedom.bg3d.js' },
   voice: 'am_michael', speed: 0.95, flow: true,
   fx: { handheld: true, leak: true, loop: true },
   thumb_hook: 'A dragon on a leash', thumb_title: 'St. George', thumb_shift: -20,
@@ -269,18 +272,18 @@ export const STORY = {
     { kicker: 'A REAL SOLDIER · ABOUT 303', title: 'Soldier and Legend', art: scene1, cam: 'drift-r',
       tone: { speed: 1.0, gap: 0.26 },
       say: ['George was a real Roman soldier, killed for Christ around 303.', 'Centuries later, Christians told this famous legend about him.'] },
-    { kicker: 'SILENE, LIBYA', title: 'A City in Terror', art: scene2, cam: 'pan-l',
+    { kicker: 'SILENE, LIBYA', title: 'A City in Terror', art: scene2, bg3d: 'lakeMurk', cam: 'pan-l',
       tone: { speed: 0.93, gap: 0.3, gain: -1, voice: { am_michael: 0.8, am_onyx: 0.2 } },
       say: ['In the city of Silene, a dragon lived in a lake, and its breath poisoned the land.', 'The people fed it two sheep a day.', 'When the sheep ran out, they chose children by lot.'] },
     { kicker: 'THE KING’S DAUGHTER', title: 'Take My Gold', art: scene3, cam: { move: 'push', amt: 0.07, ox: 540, oy: 1000 },
       tone: { speed: 0.92, gap: 0.32, gain: -1.5 },
       say: ['Then the lot fell on the king’s own daughter.', { text: 'Take my gold and silver, all I have. Just let me keep my daughter!', who: 'king' },
         'The people said no. So she was dressed like a bride and sent to the lake.'] },
-    { kicker: 'THE LAKE', title: 'Go Away, Young Man', art: scene4, cam: 'pan-r',
+    { kicker: 'THE LAKE', title: 'Go Away, Young Man', art: scene4, bg3d: 'lakeShore', cam: 'pan-r',
       tone: { speed: 1.0, gap: 0.24, gain: 1 },
       say: ['She waited there alone.', 'Then George rode by. She cried out:', { text: 'Go away, good young man, or you will die too!', who: 'princess' },
         'But George made the sign of the cross and charged.'] },
-    { kicker: 'THE BELT', title: 'Gentle as a Lamb', art: scene5, cam: { move: 'dolly', amt: 0.08, ox: 560, oy: 1000 },
+    { kicker: 'THE BELT', title: 'Gentle as a Lamb', art: scene5, bg3d: 'lakeLight', cam: { move: 'dolly', amt: 0.08, ox: 560, oy: 1000 },
       tone: { speed: 0.93, gap: 0.32 },
       say: ['His spear threw the dragon to the ground.', { text: 'Give me your belt. Tie it around its neck, and do not be afraid.', who: 'george' },
         { text: 'And the dragon followed her, as gentle as a lamb.', beat: 0.9, speed: 0.85 }] },
