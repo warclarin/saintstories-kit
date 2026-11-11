@@ -24,7 +24,7 @@ const DUSKG = [[0, '#3a2a4a'], [0.4, '#8a5a6a'], [0.75, '#d8a07a'], [1, '#f0c890
 const HALL = [[0, '#2a1a26'], [0.4, '#5a3440'], [1, '#8a5a50']];
 
 // Line starts (s from scene start), from `node build.mjs stories/george_dragon.mjs info`
-const T = { s0c: 8.8, s1b: 5.11, s2b: 5.62, s2c: 7.85, s3b: 2.68, s3c: 6.82, s4b: 1.67, s4c: 4.3, s4d: 6.86, s5b: 2.71, s5c: 6.95, s6b: 3.05, s6c: 6.22, s6d: 9.13 };
+const T = { s0c: 8.8, s1b: 5.11, s2b: 5.62, s2c: 7.85, s3b: 2.68, s3c: 6.82, s4b: 1.67, s4c: 4.3, s4d: 6.86, s5b: 2.71, s5c: 6.95, s6b: 3.05, s6c: 6.22, s6d: 8.86 };
 
 // ---------------------------------------------------------------- characters
 export const SKG = '#d9a47e', HAIRG = '#2a1a12', REDX = '#c8323a';
@@ -123,15 +123,15 @@ const mist = (y, seed = 3) => clouds(y, { color: '#a8c8a8', op: 0.32, drift: 50,
 // ---------------------------------------------------------------- scenes
 // 0 · hook: the end of the legend — the princess leads the meek dragon through Silene's gate; George beside them
 function scene0() {
-  const dX = 860, dY = 1300, dS = 1.05, pA = 62;
+  const dX = 900, dY = 1300, dS = 1.0, pA = 62;
   return FAR(sky(DUSKG) + glow(540, 760, 420, 0.55) + rays(540, 760, { op: 0.08 }))
     + BACK(clouds(520, { color: '#f0b8a0', op: 0.4, seed: 2 }) + silene(1140))
     + MID(hill(1180, 8, '#a87a5a', 3))
     + ground(1180, '#c8a074', { rim: '#ecc898' })
     + dragon(dX, dY, dS, { mood: 'meek', flip: true, leash: true })
-    + george(190, 1310, 1.8, { mood: 'determined', halo: T.s0c, armL: 14, armR: 24, propR: lance(320) })
-    + princess(440, 1320, 2.0, { mood: 'happy', armL: 14, armR: pA })
-    + leashLine(handR(440, 1320, 2.0, pA), dragonNeck(dX, dY, dS, { flip: true }))
+    + princess(520, 1320, 1.9, { mood: 'happy', armL: 14, armR: pA })
+    + leashLine(handR(520, 1320, 1.9, pA), dragonNeck(dX, dY, dS, { flip: true }))
+    + george(205, 1320, 2.05, { mood: 'determined', halo: T.s0c, armL: 14, armR: 24, propR: lance(300) })
     + motes(14, { y0: 560, y1: 1240, seed: 4 })
     + NEAR(foliage('l', 1650, { color: '#3a2a24' }) + foliage('r', 1660, { color: '#3a2a24', seed: 5 }));
 }
@@ -156,8 +156,8 @@ function scene2() {
     + BACK(silene(1000, { stone: '#a8987a', open: false, h: 240 }) + mist(760, 3))
     + MID(lake(1030) + `<g${M.tw([{ at: 0.2, dur: 1.6, from: { y: 160 }, to: { y: 0 }, ease: 'power2.out' }])}>${dragon(620, 1150, 1.05, { mood: 'fierce', flip: true })}</g>`)
     + ground(1200, '#5a6a4a', { rim: '#8a9a6a' }) + tufts(1206, 12, '#3a4a2a', { seed: 5 })
-    + `<g${fadeIn(S, 0.5)}>${sheep(170, 1300, 1.1, 0.2)}${sheep(330, 1320, 1.0, 0.6)}</g>`
-    + `<g${fadeIn(K, 0.6)}>${folk(820, 1330, 1.6, 0, { flip: true, mood: 'worried', armL: 14, armR: [40, 3, 2] })}${folk(960, 1310, 1.45, 1, { flip: true, mood: 'sad', armL: 20, armR: 20 })}</g>`
+    + `<g${fadeIn(S, 0.5)}><g${fadeOut(K, 0.5)}>${sheep(170, 1300, 1.1, 0.2)}${sheep(330, 1320, 1.0, 0.6)}</g></g>`
+    + `<g${fadeIn(K, 0.6)}>${folk(130, 1320, 1.55, 1, { mood: 'sad', armL: 20, armR: 20 })}${folk(300, 1335, 1.65, 0, { mood: 'worried', armL: 14, armR: [40, 3, 2] })}</g>`
     + motes(16, { y0: 700, y1: 1260, seed: 5, color: '#b8e0b0', size: [3, 9] })
     + NEAR(mist(1500, 8));
 }
@@ -180,16 +180,17 @@ function scene3() {
 // 4 · alone by the lake; George rides by; "Go away…"; the sign of the cross; he charges
 function scene4() {
   const R = T.s4b, G = T.s4c, X = T.s4d;
-  const hs = 1.12, ps = 1.3, hx = 770, hy = 1330;
+  const hs = 1.12, ps = 1.3, hx = 830, hy = 1330;
   const mounted = `${horse(hx, hy, hs, { flip: true, walk: true })}${rider(george, hx, hy, hs, ps, { flip: true, mood: 'determined', armL: 20, armR: [24, 2, 3], propR: lance(300), propL: signCross(X) })}`;
   const arrive = M.tw([{ at: R - 0.4, dur: 1.6, from: { x: 560 }, to: { x: 0 }, ease: 'power2.out' }]);
   const charge = M.tw([{ at: X + 1.6, dur: 1.4, from: { x: 0 }, to: { x: -420 }, ease: 'power2.in' }]);
   return FAR(sky(MURK) + glow(700, 640, 320, 0.3))
     + BACK(mist(700, 6) + hill(1020, 20, '#4a5a4a', 7))
-    + MID(lake(1060) + `<g${fadeIn(X + 1.2, 0.6)}>${dragon(300, 1110, 0.7, { mood: 'fierce' })}</g>`)
+    + MID(lake(1060) + `<g${fadeIn(X + 0.9, 0.6)}><g${M.tw([{ at: X + 0.9, dur: 1.2, from: { y: 120 }, to: { y: 0 }, ease: 'power2.out' }])}>${dragon(445, 1070, 0.5, { mood: 'fierce' })}</g></g>`)
     + ground(1190, '#5a6a4a', { rim: '#8a9a6a' }) + tufts(1196, 10, '#3a4a2a', { seed: 8 })
-    + swap(princess(260, 1320, 2.0, { mood: 'sad', armL: 14, armR: 14 }),
-      princess(260, 1320, 2.0, { mood: 'worried', talk: [G, X - 0.3], armL: 14, armR: [70, 4, 1.4] }), G - 0.3)
+    + `<g${fadeOut(G - 0.3, 0.45)}>${princess(220, 1320, 2.0, { mood: 'sad', armL: 14, armR: 14 })}</g>`
+    + `<g${fadeIn(G - 0.3, 0.45)}><g${fadeOut(X, 0.4)}>${princess(220, 1320, 2.0, { mood: 'worried', talk: [G, X - 0.3], armL: 14, armR: [62, 4, 1.4] })}</g></g>`
+    + `<g${fadeIn(X, 0.4)}>${princess(220, 1320, 2.0, { mood: 'worried', armL: [30, 2, 2], armR: [24, 2, 2.4] })}</g>`
     + `<g${charge}><g${arrive}>${mounted}</g></g>`
     + motes(12, { y0: 700, y1: 1260, seed: 9, color: '#b8e0b0', size: [3, 9] })
     + NEAR(mist(1520, 4));
@@ -208,7 +209,7 @@ function scene5() {
     + swap(princess(470, 1320, 2.0, { mood: 'surprised', armL: 14, armR: [40, 3, 2] }),
       princess(470, 1320, 2.0, { mood: 'happy', belt: false, armL: 14, armR: pA }), C)
     + `<g${fadeIn(C, 0.5)}>${dragon(dX, dY, dS, { mood: 'meek', leash: true, flip: true })}${leashLine(handR(470, 1320, 2.0, pA), dragonNeck(dX, dY, dS, { flip: true }))}</g>`
-    + dust(620, 1260, 1.25, { at: 0, hold: 0.9, c: '#e8f0d0' })
+    + dust(860, 1250, 1.2, { at: 0, hold: 0.9, c: '#e8f0d0' })
     + sparkles(10, 520, 980, 760, 1180, { seed: 3, size: 0.9 })
     + NEAR(mist(1520, 6));
 }
@@ -216,16 +217,16 @@ function scene5() {
 // 6 · the people flee in fear; "Don't be afraid! Believe in Christ…"; fifteen thousand baptized (tilt-up + rack focus)
 function scene6() {
   const P = T.s6b, B = T.s6c, Q = T.s6d;
-  const dX = 950, dY = 1310, dS = 0.75;
+  const dX = 975, dY = 1310, dS = 0.72;
   return FAR(sky(GOLDSKY) + rays(540, 620, { op: 0.12 }) + glow(540, 700, 480, 0.75))
     + BACK(silene(1120))
     + MID(swap(followers(1170, 12, { color: '#5a3a3a' }), followers(1170, 12, { color: '#7a5a4a' }), B, 0.6)
-      + `<g${fadeIn(B, 0.6)}>${font(120, 1190, 0.9)}</g>`)
+      + `<g${fadeIn(B, 0.6)}>${font(290, 1185, 1.1)}</g>`)
     + ground(1180, '#c8a074', { rim: '#f0d0a0' })
     + dragon(dX, dY, dS, { mood: 'meek', leash: true, flip: true })
-    + princess(720, 1320, 1.6, { mood: 'happy', armL: 14, armR: 40 }) + leashLine(handR(720, 1320, 1.6, 40), dragonNeck(dX, dY, dS, { flip: true }))
-    + george(430, 1310, 2.1, { mood: 'happy', talk: [P, B - 0.3], halo: Q, armL: [128, 4, 2], armR: 20 })
-    + `<g${fadeIn(B + 0.3, 0.6)}>${folk(170, 1330, 1.35, 2, { kneel: true, mood: 'joy', armL: 20, armR: 20 })}</g>`
+    + princess(760, 1320, 1.6, { mood: 'happy', armL: 14, armR: 40 }) + leashLine(handR(760, 1320, 1.6, 40), dragonNeck(dX, dY, dS, { flip: true }))
+    + george(490, 1310, 2.05, { mood: 'happy', talk: [P, B - 0.3], halo: Q, armL: [128, 4, 2], armR: 20 })
+    + `<g${fadeIn(B + 0.3, 0.6)}>${folk(150, 1335, 1.35, 2, { kneel: true, mood: 'joy', armL: 20, armR: 20 })}</g>`
     + motes(16, { y0: 520, y1: 1240, seed: 6, color: '#fff2c4' })
     + NEAR(bokeh(6, { seed: 17 }));
 }
@@ -286,7 +287,7 @@ export const STORY = {
     { kicker: 'THE CITY GATES', title: 'Set Free', art: scene6, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
       tone: { speed: 0.95, gap: 0.28, gain: 0.5 },
       say: ['When the people ran in fear, George called out:', { text: 'Do not be afraid! Believe in Christ, and be baptized.', who: 'george' },
-        'That day, fifteen thousand men were baptized.', 'A city ruled by fear was set free by faith.'] },
+        'Then fifteen thousand men were baptized.', 'A city ruled by fear was set free by faith.'] },
     { kicker: 'FEAST DAY · APRIL 23', title: 'Patron of Soldiers', art: scene7, cam: { move: 'arc-l', amt: 0.06, oy: 1000 },
       tone: { speed: 0.95, gap: 0.28 },
       say: ['His feast day is April 23.', 'He is a patron of soldiers, scouts and England. Saint George, pray for us.'] },
