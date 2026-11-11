@@ -64,6 +64,8 @@ if (cmd === 'say') {
     voice: STORY.voice || 'am_michael', speed: STORY.speed || 0.95, lang: STORY.lang || 'en-us',
     fix: STORY.fix || {}, lead: LEADS, tail: TAILS, fps: FPS,
     ...(FLOW?.gap ? { gap: FLOW.gap } : {}), scenes: STORY.scenes.map((s) => s.say),
+    // opt-in: character voices for quoted lines (STORY.cast + say {text, who}) and per-scene narrator tone (scene.tone)
+    ...(STORY.cast ? { cast: STORY.cast } : {}), ...(STORY.scenes.some((s) => s.tone) ? { tones: STORY.scenes.map((s) => s.tone || null) } : {}),
   }, null, 1));
   console.log(path.join(OUT, 'say.json'));
   process.exit(0);

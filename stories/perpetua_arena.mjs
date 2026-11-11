@@ -24,7 +24,7 @@ const LATE = [[0, '#5a2a4a'], [0.34, '#c0604a'], [0.7, '#f0a46a'], [1, '#f6c48a'
 const SAND = '#e2c08a';
 
 // Line starts (s from scene start), from `node build.mjs stories/perpetua_arena.mjs info`
-const T = { s0c: 6.5, s1b: 5.04, s2b: 3.04, s2c: 7.06, s2d: 8.3, s3b: 5.32, s3c: 7.7, s3d: 11.49, s4b: 3.89, s4c: 7.57, s5b: 4.53, s5c: 9.61 };
+const T = { s0c: 6.24, s1b: 4.92, s2b: 3.08, s2q: 5.19, s2c: 7.35, s2d: 8.71, s3f: 3.59, s3b: 5.46, s3c: 7.82, s3j: 9.29, s3d: 11.75, s3p: 12.89, s4b: 3.74, s4c: 7.32, s5q: 1.69, s5b: 4.42, s5c: 9.54 };
 
 // ---------------------------------------------------------------- characters
 export const SKP = '#d4a07a', HAIRP = '#2a1a12', TUNIC_P = '#f4ede0', PALLA_P = '#2f7a84';
@@ -215,7 +215,7 @@ const butterfliesSafe = () => '';
 
 // 2 · prison: her father begs; she points to a water jar; "I am a Christian"
 function scene2() {
-  const P = T.s2b, N = T.s2c, C = T.s2d;
+  const P = T.s2b, Q = T.s2q, N = T.s2c, C = T.s2d;
   return FAR(sky([[0, '#1e1626'], [1, '#2e2434']]))
     + BACK(prisonVault({ winX: 470 }))
     + `<path d="M475 600 L615 600 L780 1300 L340 1300Z" fill="url(#beam)" opacity=".38" filter="url(#blur6)"/>`
@@ -224,21 +224,21 @@ function scene2() {
       pFather(260, 1320, 1.95, { mood: 'worried', talk: [N, N + 0.9], armL: 14, armR: 20 }), N - 0.3)
     + waterJar(545, 1310, 1.15)
     + `<g${fadeOut(P - 0.3, 0.3)}>${perpetua(820, 1320, 2.15, { flip: true, mood: 'sad', armL: 12, armR: 12 })}</g>`
-    + `<g${fadeIn(P - 0.3, 0.3)}><g${fadeOut(C, 0.4)}>${perpetua(820, 1320, 2.15, { flip: true, mood: 'happy', talk: [P, N - 0.2], armL: 12, armR: [42, 2, 2] })}</g></g>`
+    + `<g${fadeIn(P - 0.3, 0.3)}><g${fadeOut(C, 0.4)}>${perpetua(820, 1320, 2.15, { flip: true, mood: 'happy', talk: [Q, N - 0.2], armL: 12, armR: [42, 2, 2] })}</g></g>`
     + `<g${fadeIn(C, 0.4)}>${perpetua(820, 1320, 2.15, { flip: true, mood: 'determined', talk: [C + 0.1, C + 4], armL: 12, armR: [30, 2, 3] })}</g>`
     + motes(10, { x0: 380, x1: 760, y0: 640, y1: 1200, seed: 6, color: '#dfe6ff' });
 }
 
 // 3 · the trial: father holds up her baby (human beat), the judge demands a sacrifice, she refuses
 function scene3() {
-  const H = T.s3b, J = T.s3c, A = T.s3d;
+  const F = T.s3f, H = T.s3b, J = T.s3c, JQ = T.s3j, A = T.s3d, PQ = T.s3p;
   return FAR(sky([[0, '#3a2430'], [0.5, '#8a5a4a'], [1, '#c89a7a']]) + glow(540, 700, 380, 0.4))
     + BACK(followers(1010, 13, { color: '#5a3a3e' }) + colonnade(1080, { c: '#e2d2b4', n: 6, h: 600 }))
-    + MID(tribunal(310, 1150, 0.85) + judge(310, 955, 1.45, { talk: [J, J + 2.8], armL: 10, armR: [J > 0 ? 70 : 10, 4, 1.4] }))
+    + MID(tribunal(310, 1150, 0.85) + judge(310, 955, 1.45, { talk: [JQ, A - 0.3], armL: 10, armR: [J > 0 ? 70 : 10, 4, 1.4] }))
     + ground(1150, '#b89a7a', { rim: '#d8bc98' })
-    + pFather(560, 1330, 1.6, { kneel: true, mood: 'sad', talk: [0.1, H - 0.3], armL: [30, 3, 1.8], armR: [78, 4, 2], propR: babyBundle })
+    + pFather(560, 1330, 1.6, { kneel: true, mood: 'sad', talk: [F, H - 0.3], armL: [30, 3, 1.8], armR: [78, 4, 2], propR: babyBundle })
     + swap(perpetua(860, 1330, 2.1, { flip: true, mood: 'sad', armL: 12, armR: 12 }),
-      perpetua(860, 1330, 2.1, { flip: true, mood: 'determined', talk: [A + 0.3, A + 3], armL: 12, armR: [28, 2, 3] }), J)
+      perpetua(860, 1330, 2.1, { flip: true, mood: 'determined', talk: [PQ, PQ + 2.4], armL: 12, armR: [28, 2, 3] }), J)
     + NEAR(`<rect x="-200" y="1570" width="${W + 400}" height="500" fill="#2a1a1a" opacity=".45" filter="url(#blur14)"/>`);
 }
 
@@ -264,14 +264,14 @@ function scene4() {
 
 // 5 · last words to her brother; a young gladiator with a trembling, lowered sword; she reaches out to steady his hand (dolly)
 function scene5() {
-  const G = T.s5b, B = T.s5c;
+  const Q = T.s5q, G = T.s5b, B = T.s5c;
   const enter = M.tw([{ at: G + 0.2, dur: 1.4, from: { x: 300, opacity: 0 }, to: { x: 0, opacity: 1 }, ease: 'power2.out' }]);   // single tween: from-state renders at once
   return FAR(sky(LATE) + glow(540, 760, 420, 0.5))
     + BACK(arenaStands(1150, { top: 500, seed: 11, dim: 0.18 }))
     + ground(1150, '#d8b080', { rim: '#f0cc98' })
     + brother(150, 1250, 1.45, { mood: 'worried', armL: 10, armR: [40, 3, 2] })
     + `<g${enter}>${roman(850, 1320, 2.0, { flip: true, skin: '#e2b48f', mood: 'worried', armL: 10, armR: [14, 3, 0.22], propR: gladiusDown })}</g>`
-    + swap(perpetua(470, 1320, 2.2, { flip: true, mood: 'happy', talk: [0.15, G - 0.3], armL: 12, armR: [52, 3, 2.2] }),
+    + swap(perpetua(470, 1320, 2.2, { flip: true, mood: 'happy', talk: [Q, G - 0.3], armL: 12, armR: [52, 3, 2.2] }),
       perpetua(470, 1320, 2.2, { mood: 'peaceful', armL: 12, armR: [B > 0 ? 72 : 12, 2, 3] }), B - 0.2, 0.6)
     + motes(10, { y0: 700, y1: 1240, seed: 12, color: '#ffd8a0' })
     + NEAR(`<rect x="-200" y="1570" width="${W + 400}" height="500" fill="#2a1418" opacity=".5" filter="url(#blur14)"/>`);
@@ -310,6 +310,12 @@ export const STORY = {
   fx: { handheld: true, leak: true, loop: true },
   thumb_hook: 'Rome sent beasts to break her', thumb_title: 'St. Perpetua', thumb_shift: -20,
   wm_spots: [[56, 520, 'l'], [1024, 520, 'r'], [56, 1300, 'l']],
+  // Character voices: nearest accent to each speaker (Kokoro has no Latin/North African voice: Italian for Roman Carthage)
+  cast: {
+    perpetua: { voice: 'if_sara', speed: 0.95 },
+    father: { voice: 'im_nicola', speed: 0.9 },
+    judge: { voice: { im_nicola: 0.55, am_onyx: 0.45 }, speed: 0.85 },
+  },
   fix: {
     'pɚpˈɛɾuːə': 'pɚpˈɛtʃuːə',            // Perpetua -> per-PET-choo-uh
     'tˈuːhˈʌndɹɪd θɹˈiː': 'tˈuː ˈoʊ θɹˈiː',   // 203 -> two oh three
@@ -318,24 +324,32 @@ export const STORY = {
   },
   scenes: [
     { kicker: 'CARTHAGE · 203', title: 'Thrown to the Beasts', art: scene0, cam: { move: 'push-fast', oy: 1000, ox: 470 },
+      tone: { speed: 1.0, gap: 0.24, gain: 1 },
       say: ['Rome threw a young mother to the wild beasts, sure she would beg for mercy.', 'She never did.', 'This is Saint Perpetua.'] },
     { kicker: 'ROMAN AFRICA', title: 'A Young Mother', art: scene1, cam: 'pan-r',
+      tone: { speed: 1.0, gap: 0.26 },
       say: ['She was twenty-two, from a noble family in Carthage, with a baby boy.', 'In 203, she was arrested for her faith, with a pregnant slave named Felicity.'] },
     { kicker: 'THE PRISON', title: 'A Water Jar', art: scene2, cam: 'drift-l',
-      say: ['In prison, her father begged her to give it up.', 'She pointed to a water jar. Can this be called anything else?',
-        'He said no.', 'Then I can’t call myself anything but what I am: a Christian.'] },
+      tone: { speed: 0.92, gap: 0.32, gain: -1.5, voice: { am_michael: 0.8, am_onyx: 0.2 } },
+      say: ['In prison, her father begged her to give it up.', 'She pointed to a water jar.', { text: 'Can this be called anything else?', who: 'perpetua' },
+        'He said no.', { text: 'Then I can’t call myself anything but what I am: a Christian.', who: 'perpetua' }] },
     { kicker: 'THE TRIAL', title: 'Have Pity', art: scene3, cam: { move: 'push', amt: 0.07, ox: 760, oy: 1000 },
-      say: ['At her trial, her father held up her baby and cried: Have pity on your child!', 'It broke her heart to see him grieve.',
-        'The judge ordered: Offer a sacrifice for the emperors.', 'She answered: I will not. I am a Christian.'] },
+      tone: { speed: 0.95, gap: 0.26 },
+      say: ['At her trial, her father held up her baby and cried:', { text: 'Have pity on your child!', who: 'father' }, 'It broke her heart to see him grieve.',
+        'The judge ordered:', { text: 'Offer a sacrifice for the emperors.', who: 'judge' }, 'She answered:', { text: 'I will not. I am a Christian.', who: 'perpetua' }] },
     { kicker: 'THE ARENA', title: 'Still Standing', art: scene4, cam: 'pan-l',
+      tone: { speed: 1.0, gap: 0.24, gain: 1 },
       say: ['On the day of the games, she walked in calmly, singing a psalm.', 'A fierce wild cow charged and threw her to the ground.',
         'She got up, fixed her torn tunic and her hair, and helped Felicity stand.'] },
     { kicker: 'THE LAST MOMENT', title: 'Steady Hands', art: scene5, cam: { move: 'dolly', amt: 0.08, ox: 520, oy: 1000 },
-      say: ['She told her brother: Stand fast in the faith, and love one another.', 'Then a young gladiator came to end her life. His hand shook.',
+      tone: { speed: 0.92, gap: 0.32, gain: -1, voice: { am_michael: 0.8, am_onyx: 0.2 } },
+      say: ['She told her brother:', { text: 'Stand fast in the faith, and love one another.', who: 'perpetua' }, 'Then a young gladiator came to end her life. His hand shook.',
         { text: 'So she guided his trembling hand herself.', beat: 0.9, speed: 0.85 }] },
     { kicker: 'MARTYR OF CARTHAGE', title: 'Her True Name', art: scene6, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
+      tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
       say: ['She died for Christ that day, and her prison diary still tells her story.', 'Rome took her life. It never took her name: Christian.'] },
     { kicker: 'FEAST DAY · MARCH 7', title: 'Patron of Mothers', art: scene7, cam: { move: 'arc-r', amt: 0.06, oy: 1000 },
+      tone: { speed: 0.95, gap: 0.28 },
       say: ['Her feast day, with Saint Felicity, is March 7.', 'She is a patron of mothers. Saint Perpetua, pray for us.'] },
   ],
 };

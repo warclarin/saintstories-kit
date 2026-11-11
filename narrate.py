@@ -67,31 +67,68 @@ def phon(s):
 
 # A say line is a string, or (opt-in) {"text": ..., "beat": extra silence in s before the line, "speed": voice speed}
 # for the climax: a held breath before the miracle line, read a little slower.
+# Opt-in character voices: {"text": ..., "who": "<cast key>"} (or "voice": a name) reads a quoted line in that
+# character's voice; STORY.cast = {key: "voice" | {"voice", "speed"}}; a voice is a name or a blend {name: weight}.
+# Character lines are levelled to the narrator's loudness. Opt-in scene tone (scene.tone): {"speed", "gap" (s between
+# lines), "gain" (dB), "voice" (the narrator's voice or blend for that scene)}. Stories without these voice as before.
 line = lambda s: s if isinstance(s, str) else s["text"]
+CAST = cfg.get("cast") or {}
+TONES = cfg.get("tones") or [None] * len(cfg["scenes"])
+_blends = {}
+def voice_of(v):
+    if isinstance(v, str): return v
+    key = json.dumps(v, sort_keys=True)
+    if key not in _blends:
+        tot = sum(v.values())
+        _blends[key] = sum(k.get_voice_style(n) * (w / tot) for n, w in v.items()).astype(np.float32)
+    return _blends[key]
+def spec(s, tone):
+    """(text, voice, speed, beat, is_character) for one say line in a scene with this tone."""
+    s = {"text": s} if isinstance(s, str) else s
+    c = CAST.get(s.get("who"), {}) if s.get("who") else {}
+    c = {"voice": c} if isinstance(c, str) else c
+    tone = tone or {}
+    voice = s.get("voice") or c.get("voice") or tone.get("voice") or cfg["voice"]
+    spd = s.get("speed") or c.get("speed") or tone.get("speed") or cfg["speed"]
+    return s["text"], voice, spd, s.get("beat", 0), bool(s.get("who") or s.get("voice"))
+
 if "--check" in sys.argv:
-    for say in cfg["scenes"]:
-        for s in map(line, say):
+    for say, tone in zip(cfg["scenes"], TONES):
+        for raw in say:
+            s, voice, spd, _, ch = spec(raw, tone)
             sp = spoken(s)
-            print(s, "\n   ", ("spoken: " + sp + "\n    ") if sp != s else "", phon(s))
+            tag = f"   [{raw.get('who') or 'voice'}: {voice}, {spd}]" if ch else ""
+            print(s + tag, "\n   ", ("spoken: " + sp + "\n    ") if sp != s else "", phon(s))
     sys.exit()
 
 SR, GAP = 24000, cfg.get("gap", 0.28)
+rms = lambda a: float(np.sqrt(np.mean(a[np.abs(a) > 0.01] ** 2)))
+lines = []   # per scene: [(text, audio, beat, is_character)]
+for say, tone in zip(cfg["scenes"], TONES):
+    sc = []
+    for raw in say:
+        s, voice, spd, beat, ch = spec(raw, tone)
+        audio, _ = k.create(phon(s), voice=voice_of(voice), speed=spd, is_phonemes=True)
+        nz = np.where(np.abs(audio) > 0.01)[0]
+        sc.append((s, audio[max(0, nz[0] - 600): nz[-1] + 1200], beat, ch))
+    lines.append(sc)
+narr = [rms(a) for sc in lines for (_, a, _, ch) in sc if not ch]
+ref = float(np.median(narr)) if narr else None
 out, wavs = [], []
-for i, say in enumerate(cfg["scenes"]):
+for i, (sc, tone) in enumerate(zip(lines, TONES)):
+    tone = tone or {}
+    gap, gain = tone.get("gap", GAP), 10 ** (tone.get("gain", 0) / 20)
     chunks, tim, t = [], [], 0.0
-    for s in say:
-        beat, spd = (0, cfg["speed"]) if isinstance(s, str) else (s.get("beat", 0), s.get("speed", cfg["speed"]))
-        s = line(s)
+    for s, audio, beat, ch in sc:
+        if ch and ref: audio = audio * min(2.0, max(0.5, ref / rms(audio)))
+        audio = (audio * gain).astype(np.float32)
         if beat:
             chunks.append(np.zeros(int(beat * SR), dtype=np.float32))
             t += beat
-        audio, _ = k.create(phon(s), voice=cfg["voice"], speed=spd, is_phonemes=True)
-        nz = np.where(np.abs(audio) > 0.01)[0]
-        audio = audio[max(0, nz[0] - 600): nz[-1] + 1200]
         d = len(audio) / SR
         tim.append(dict(text=s, start=round(t, 3), end=round(t + d, 3)))
-        chunks += [audio, np.zeros(int(GAP * SR), dtype=audio.dtype)]
-        t += d + GAP
+        chunks += [audio, np.zeros(int(gap * SR), dtype=np.float32)]
+        t += d + gap
     wav = np.concatenate(chunks[:-1])
     wavs.append(wav)
     out.append(dict(sentences=tim, length=round(len(wav) / SR, 3)))

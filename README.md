@@ -82,6 +82,19 @@ mode those times are about 0.3 s earlier than with the default lead-in. Stories 
 the line (a held breath before the miracle) and `speed` reads just that line slower. Captions and `info` times
 follow automatically. Plain string lines voice exactly as before.
 
+**Character voices (opt-in):** a quoted line can be read by the speaker instead of the narrator. Split the narration
+from the quote (`'She answered:'`, then `{ text: 'I will not. I am a Christian.', who: 'perpetua' }`) and cast each
+speaker in `STORY.cast = { perpetua: { voice: 'if_sara', speed: 0.95 }, judge: { voice: { im_nicola: 0.55, am_onyx: 0.45 } } }`
+(a voice is a Kokoro name or a weighted blend). Pick the voice with the nearest accent to the speaker: US `a*`,
+British `b*`, Spanish `e*`, French `ff_siwis`, Hindi `h*`, Italian `i*` (also Latin-speaking Romans), Japanese `j*`,
+Portuguese/Brazilian `p*`, Mandarin `z*`; the text stays English phonemes, so the voice keeps its accent. Character
+lines are levelled to the narrator's loudness. Only real, sourced quotes get a voice; keep it to a few lines per reel.
+
+**Scene tone (opt-in):** `scene.tone = { speed, gap, gain, voice }` sets the narrator's speed, the pause between lines
+(s), loudness (dB) and voice or blend for that scene, e.g. a hushed prison `{ speed: 0.92, gap: 0.32, gain: -1.5,
+voice: { am_michael: 0.8, am_onyx: 0.2 } }` or a fast arena `{ speed: 1.0, gap: 0.24, gain: 1 }`. A line's own
+`speed` still wins (the climax beat). `stories/perpetua_arena.mjs` uses both.
+
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
 helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `fastrender.mjs` (standard renderer),
 `narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader only for the experiment in `experiments/three/`).
