@@ -19,43 +19,73 @@ const FEAST = [[0, '#2a1e4a'], [0.4, '#7a3e6a'], [0.7, '#e88a5a'], [1, '#f8c87a'
 // Line starts (s from scene start), from `node build.mjs stories/santo_nino_cebu.mjs info`
 const T = { s2b: 4.48, s3c: 7.68, s4b: 4.71, s4c: 7.68, s4e: 12.08, s5b: 2.0, s5c: 4.42 };
 
-// ---------------------------------------------------------------- the image (base at 0, ~150 units tall, ~175 with crown)
-const FACE = '#a8704a', FACED = '#7a4a30', HAIRN = '#3a2418';
+// ---------------------------------------------------------------- the image (base at 0, ~150 units tall, ~185 with crown)
+const FACE = '#b98058', FACED = '#8a5636', HAIRN = '#3a2418', CAPE = '#c8202e', CAPED = '#8a1420';
+// The right hand raised in blessing, palm out: index and middle fingers up, ring and little finger folded, thumb across
+// them (the Santo Niño's real gesture; not an open palm or a wave). Centred on the palm.
+export const blessingHand = (x, y, c = FACE, k = 1.3) => {
+  const ln = dark(c, 0.35), sh = dark(c, 0.16), hi = light(c, 0.22);
+  return `<g transform="translate(${x},${y}) scale(${k})">`
+    // lace cuff
+    + '<path d="M-8 6 q2 3 4 0 q2 3 4 0 q2 3 4 0 q2 3 4 0 L8 10 L-8 10Z" fill="#fbf4e2"/><path d="M-8 6 H8" stroke="#e8d8b0" stroke-width="1"/>'
+    // palm (facing out)
+    + `<rect x="-7" y="-7" width="14" height="14" rx="5" fill="${c}"/><path d="M-7 -1 Q-7 7 0 7 Q7 7 7 0" fill="${sh}" opacity=".35"/>`
+    // index and middle fingers raised, held together
+    + `<rect x="-0.6" y="-20" width="5.6" height="15" rx="2.8" fill="${c}"/><rect x="-5.8" y="-22.5" width="5.6" height="17.5" rx="2.8" fill="${c}"/>`
+    + `<path d="M-0.4 -20 V-6" stroke="${ln}" stroke-width=".8" opacity=".7"/><path d="M-3 -21 v5 M2.2 -18.6 v4" stroke="${hi}" stroke-width="1.1" stroke-linecap="round" opacity=".7"/>`
+    + `<path d="M-5.2 -12 h4.4 M0 -11 h4.4" stroke="${ln}" stroke-width=".6" opacity=".5"/>`
+    // ring and little fingers curled down into the palm
+    + `<ellipse cx="-4.6" cy="-4.6" rx="2.8" ry="2.4" fill="${sh}"/><ellipse cx="-7.4" cy="-1.6" rx="2.4" ry="2.1" fill="${sh}"/>`
+    + `<path d="M-7.2 -5.4 q2.6 -1.8 5.2 0 M-9.4 -2.4 q2 -1.6 4 0" stroke="${ln}" stroke-width=".8" fill="none"/>`
+    // thumb folded across to touch the ring finger
+    + `<path d="M7 3 Q5 -3 -1.6 -3.6 Q-3.6 -3.6 -3.2 -1.6 Q-2.6 0.6 2 1.8 Q5 3.4 7 6Z" fill="${hi}"/>`
+    + `<path d="M7 3 Q5 -3 -1.6 -3.6 Q-3.6 -3.6 -3.2 -1.6 Q-2.6 0.6 2 1.8" stroke="${ln}" stroke-width=".8" fill="none"/></g>`;
+};
 /** The Santo Niño de Cebú. old: the image as found in 1565 (red velvet cap, flounced white shirt, small gold necklace,
- * right hand raised in blessing, plain orb in the left hand). modern: today's crowned image (gold crown, red cape with
- * gold border, scepter, orb with a cross, on a small gold stand). */
+ * right hand raised in blessing, plain orb in the left hand). modern: today's crowned image (gold-and-red crown with a
+ * cross, wide red cape with gold borders, cream tunic, orb with a cross, on a gold stand). */
 export function santoNino(s = 1, { modern = false, aura = true } = {}) {
   let g = `<g transform="scale(${s})">`;
-  if (aura) g += '<circle cy="-86" r="118" fill="url(#haloGlow)" opacity=".85"/>';
+  if (aura) g += '<circle cy="-90" r="122" fill="url(#haloGlow)" opacity=".85"/>';
   if (modern) {
-    g += `<path d="M-34 0 L34 0 L28 -10 L-28 -10Z" fill="${GOLD}"/><rect x="-40" y="0" width="80" height="8" rx="3" fill="${dark(GOLD, 0.25)}"/>`;
-    g += `<path d="M-17 -104 Q0 -112 17 -104 L50 -10 Q0 -2 -50 -10Z" fill="#b8243a"/><path d="M6 -108 Q17 -106 17 -104 L50 -10 Q34 -6 20 -6Z" fill="#7e1424" opacity=".55"/>`
-      + `<path d="M-17 -104 L-50 -10 Q0 -2 50 -10 L17 -104" stroke="${GOLD}" stroke-width="3.4" fill="none" stroke-linejoin="round"/>`
-      + [[-30, -34], [26, -40], [-14, -22], [34, -20], [-36, -16], [16, -70], [-22, -60]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.2" fill="${GOLD}"/>`).join('');
-    g += `<path d="M-11 -94 L11 -94 L16 -12 L-16 -12Z" fill="#f4e6c0"/><path d="M-16 -16 h32" stroke="${GOLD}" stroke-width="3"/>`;
+    // gold stand
+    g += `<path d="M-14 -18 L14 -18 Q20 -12 11 -8 Q22 -4 20 0 L-20 0 Q-22 -4 -11 -8 Q-20 -12 -14 -18Z" fill="${GOLD}"/><path d="M4 -18 L14 -18 Q20 -12 11 -8 Q22 -4 20 0 L6 0Z" fill="${dark(GOLD, 0.25)}" opacity=".6"/>`
+      + `<rect x="-26" y="0" width="52" height="7" rx="3" fill="${dark(GOLD, 0.2)}"/>`;
+    // wide flaring red cape with gold borders
+    const cape = 'M-13 -104 Q0 -110 13 -104 Q36 -66 62 -26 Q46 -18 30 -22 Q16 -16 0 -20 Q-16 -16 -30 -22 Q-46 -18 -62 -26 Q-36 -66 -13 -104Z';
+    g += `<path d="${cape}" fill="${CAPE}"/><path d="M5 -106 Q13 -106 13 -104 Q36 -66 62 -26 Q46 -18 30 -22 Q22 -20 16 -22 Q22 -60 5 -104Z" fill="${CAPED}" opacity=".5"/>`
+      + `<path d="${cape}" stroke="${GOLD}" stroke-width="4.6" fill="none" stroke-linejoin="round"/>`
+      + `<path d="M-46 -30 Q-30 -26 -18 -28 M46 -30 Q30 -26 18 -28" stroke="${GOLD}" stroke-width="2.4" fill="none"/>`
+      + `<path d="M-9 -98 L9 -98 L18 -22 L-18 -22Z" fill="#f6ecd2"/><path d="M-9 -98 L-18 -22 M9 -98 L18 -22" stroke="${GOLD}" stroke-width="3"/>`
+      + `<path d="M-16 -30 h32" stroke="${GOLD}" stroke-width="2.4"/>`;
   } else {
     g += '<path d="M-12 -98 L12 -98 Q22 -50 30 -4 Q0 4 -30 -4 Q-22 -50 -12 -98Z" fill="#f4efe4"/><path d="M4 -98 L12 -98 Q22 -50 30 -4 L14 -2 Q12 -50 4 -96Z" fill="#d8d0c0" opacity=".6"/>'
       + [-70, -46, -20].map((y) => `<path d="M${-14 - (y + 98) * 0.16} ${y} q5 4 10 0 q5 4 10 0 q5 4 10 0" stroke="#cfc6b4" stroke-width="2.2" fill="none" transform="translate(${(y + 98) * -0.06},0)"/>`).join('');
   }
   // arms: right hand (viewer's left) raised in blessing, left hand (viewer's right) holding the orb
-  const sleeve = modern ? '#f4e6c0' : '#f4efe4';
-  g += `<path d="M-10 -92 Q-24 -96 -28 -112" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="-29" cy="-116" r="5.5" fill="${FACE}"/>`
-    + `<path d="M-31 -120 v-7 M-27.5 -121 v-7" stroke="${FACE}" stroke-width="3" stroke-linecap="round"/>`;
-  if (modern) g += `<path d="M-34 -112 V-176" stroke="${GOLD}" stroke-width="3.6"/><path d="M-34 -176 l-5 -6 l5 -8 l5 8Z" fill="${GOLD}"/><circle cx="-34" cy="-176" r="2.6" fill="#d8323a"/>`;
-  g += `<path d="M10 -90 Q22 -82 22 -70" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/><circle cx="22" cy="-66" r="5" fill="${FACE}"/>`
-    + `<circle cx="22" cy="-74" r="9" fill="${GOLD}"/><path d="M14 -74 h16" stroke="${dark(GOLD, 0.3)}" stroke-width="1.6"/><circle cx="19" cy="-77" r="2.6" fill="#fff4cc" opacity=".8"/>`
-    + (modern ? `<path d="M22 -83 v-10 M18 -89 h8" stroke="${GOLD}" stroke-width="2.6" stroke-linecap="round"/>` : '');
-  // head
+  const sleeve = modern ? '#f6ecd2' : '#f4efe4';
+  g += `<path d="M-10 -94 Q-28 -88 -26 -80" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/>` + blessingHand(-26, -86);
+  g += `<path d="M10 -94 Q28 -88 26 -80" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/>`
+    + '<path d="M18 -78 q2 3 4 0 q2 3 4 0 q2 3 4 0 L34 -74 L18 -74Z" fill="#fbf4e2"/>'
+    + `<ellipse cx="26" cy="-82" rx="7" ry="6" fill="${FACE}"/><path d="M20 -84 q6 -4 12 0" stroke="${dark(FACE, 0.35)}" stroke-width=".8" fill="none"/>`
+    + `<circle cx="26" cy="-94" r="10.5" fill="${GOLD}"/><path d="M15.5 -94 h21" stroke="${dark(GOLD, 0.3)}" stroke-width="1.6"/><path d="M26 -104.5 v21" stroke="${dark(GOLD, 0.3)}" stroke-width="1.2" opacity=".6"/><circle cx="22.4" cy="-97.6" r="3" fill="#fff4cc" opacity=".8"/>`
+    + `<path d="M19.4 -85 q6.6 4 13.2 0" stroke="${FACE}" stroke-width="4" fill="none" stroke-linecap="round"/>`
+    + (modern ? `<path d="M26 -105 v-12 M21.5 -112 h9" stroke="${GOLD}" stroke-width="2.8" stroke-linecap="round"/>` : '');
+  // head: curly dark hair, open eyes, gentle smile
   g += `<rect x="-5" y="-104" width="10" height="8" fill="${FACED}"/><path d="M-9 -98 Q0 -92 9 -98" stroke="${GOLD}" stroke-width="2" fill="none"/>`
-    + `<circle cx="0" cy="-116" r="14" fill="${FACE}"/><path d="M4 -129 A14 14 0 0 1 4 -103 A10 13 0 0 0 4 -129Z" fill="${FACED}" opacity=".45"/>`
-    + `<path d="M-14 -118 Q-15 -133 0 -134 Q15 -133 14 -118 Q8 -128 0 -128 Q-8 -128 -14 -118Z" fill="${HAIRN}"/>`
-    + '<path d="M-7 -116 q2.6 2.2 5.2 0 M2 -116 q2.6 2.2 5.2 0" stroke="#1a0e08" stroke-width="1.8" fill="none" stroke-linecap="round"/>'
-    + '<path d="M-2.6 -109 q2.6 1.8 5.2 0" stroke="#3a1e10" stroke-width="1.3" fill="none" stroke-linecap="round"/><ellipse cx="-7" cy="-111" rx="2.4" ry="1.5" fill="#c86a5a" opacity=".45"/><ellipse cx="7" cy="-111" rx="2.4" ry="1.5" fill="#c86a5a" opacity=".45"/>';
-  if (modern) {   // gold crown with arches and a cross
-    g += `<g transform="translate(0,-130)"><circle cy="-16" r="30" fill="url(#haloGlow)" opacity=".8"/><rect x="-15" y="-6" width="30" height="8" rx="3" fill="${GOLD}"/>`
-      + `<path d="M-14 -6 Q-14 -28 0 -34 Q14 -28 14 -6" fill="none" stroke="${GOLD}" stroke-width="4.4"/><path d="M0 -6 V-34" stroke="${GOLD}" stroke-width="3.6"/>`
-      + `<path d="M0 -34 v-11 M-4.5 -41 h9" stroke="${GOLD}" stroke-width="3" stroke-linecap="round"/>`
-      + '<circle cx="-8" cy="-2" r="2.2" fill="#d8323a"/><circle cx="0" cy="-2" r="2.2" fill="#2a7a4a"/><circle cx="8" cy="-2" r="2.2" fill="#2a5ac8"/></g>';
+    + [[-14, -110], [-15, -118], [14, -110], [15, -118], [-12, -103], [12, -103]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="${HAIRN}"/>`).join('')
+    + `<circle cx="0" cy="-116" r="14" fill="${FACE}"/><path d="M4 -129 A14 14 0 0 1 4 -103 A10 13 0 0 0 4 -129Z" fill="${FACED}" opacity=".4"/>`
+    + `<path d="M-14 -116 Q-15 -133 0 -134 Q15 -133 14 -116 Q11 -124 6 -126 Q2 -121 -3 -126 Q-9 -124 -14 -116Z" fill="${HAIRN}"/>`
+    + '<ellipse cx="-5.4" cy="-115" rx="2" ry="2.6" fill="#1a0e08"/><ellipse cx="5.4" cy="-115" rx="2" ry="2.6" fill="#1a0e08"/>'
+    + '<circle cx="-4.7" cy="-116" r=".8" fill="#fff"/><circle cx="6.1" cy="-116" r=".8" fill="#fff"/>'
+    + '<path d="M-3.4 -109 q3.4 2.6 6.8 0" stroke="#5a1e14" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="-8.4" cy="-110" rx="2.6" ry="1.6" fill="#d86a5a" opacity=".5"/><ellipse cx="8.4" cy="-110" rx="2.6" ry="1.6" fill="#d86a5a" opacity=".5"/>';
+  if (modern) {   // imperial crown: red velvet inside a gold band with arches, pearls and a cross
+    g += `<g transform="translate(0,-130)"><circle cy="-18" r="32" fill="url(#haloGlow)" opacity=".8"/>`
+      + `<path d="M-18 -4 Q-21 -22 0 -24 Q21 -22 18 -4Z" fill="${CAPE}"/>`
+      + `<path d="M-18 -4 Q-20 -22 0 -27 Q20 -22 18 -4 M-9 -5 Q-10 -22 0 -27 Q10 -22 9 -5" fill="none" stroke="${GOLD}" stroke-width="3.2"/>`
+      + `<rect x="-20" y="-6" width="40" height="9" rx="3" fill="${GOLD}"/><path d="M-20 -6 l4 -5 l4 5 l4 -5 l4 5 l4 -5 l4 5 l4 -5 l4 5 l4 -5 l4 5" fill="${GOLD}"/>`
+      + `<circle cx="0" cy="-28" r="3.8" fill="${GOLD}"/><path d="M0 -31 v-12 M-5 -38 h10" stroke="${GOLD}" stroke-width="3.2" stroke-linecap="round"/>`
+      + '<circle cx="-9" cy="-1.5" r="2.2" fill="#d8323a"/><circle cx="0" cy="-1.5" r="2.2" fill="#2a7a4a"/><circle cx="9" cy="-1.5" r="2.2" fill="#2a5ac8"/></g>';
   } else {        // the small flounced red velvet cap
     g += '<path d="M-14 -124 Q-14 -144 0 -146 Q14 -144 14 -124 Q0 -130 -14 -124Z" fill="#c42a3a"/><path d="M4 -145 Q14 -142 14 -124 L6 -126Z" fill="#8a1a28" opacity=".6"/>'
       + '<path d="M-16 -124 q4 3 8 0 q4 3 8 0 q4 3 8 0 q4 3 8 0" stroke="#e05a64" stroke-width="2.6" fill="none"/>';
@@ -66,7 +96,7 @@ export function santoNino(s = 1, { modern = false, aura = true } = {}) {
 // ---------------------------------------------------------------- props and set pieces
 const PINE = '#d9b47a';
 /** The pine box, closed (tied with cord) until `openAt` s, then open with the lid standing behind. `inner` is drawn
- * between the lid and the front of the box (e.g. the image rising out of it). */
+ * between the lid and the front of the box (e.g. the image rising out of it). openAt: 'open' draws it open from the start. */
 export function pineBox(s = 1, { openAt = null, inner = '' } = {}) {
   const front = `<rect x="-62" y="-52" width="124" height="52" rx="3" fill="${PINE}"/><rect x="22" y="-52" width="40" height="52" fill="${dark(PINE, 0.2)}" opacity=".6"/>`
     + `<path d="M-54 -36 h100 M-54 -18 h108" stroke="${dark(PINE, 0.25)}" stroke-width="1.6" opacity=".6"/>`;
@@ -75,6 +105,7 @@ export function pineBox(s = 1, { openAt = null, inner = '' } = {}) {
   const lid = `<rect x="-60" y="-118" width="120" height="62" rx="3" fill="${dark(PINE, 0.15)}"/><rect x="-54" y="-112" width="108" height="50" fill="${dark(PINE, 0.35)}" opacity=".5"/>`;
   const hollow = '<rect x="-58" y="-58" width="116" height="10" fill="#5a3a22"/>';
   if (openAt === null) return `<g transform="scale(${s})">${front}${closed}</g>`;
+  if (openAt === 'open') return `<g transform="scale(${s})">${lid}${hollow}${inner}${front}</g>`;
   return `<g transform="scale(${s})"><g${fadeIn(openAt, 0.4)}>${lid}${hollow}</g>${inner}${front}<g${fadeOut(openAt, 0.4)}>${closed}</g></g>`;
 }
 /** Basilica del Santo Niño, Cebu: coral-stone facade with a pediment and arched door, bell tower on the left. */
@@ -141,15 +172,20 @@ export const dancer = (x, y, s, i = 0, o = {}) => {
 const candle = (h = 36) => `<g><rect x="-4" y="${-h}" width="8" height="${h}" rx="2" fill="#f4ecd8"/><g${M.flick(0.7)}><ellipse cx="0" cy="${-h - 9}" rx="5" ry="9" fill="#ffd27a"/></g><circle cy="${-h - 9}" r="18" fill="url(#sunGlow)" opacity=".6"/></g>`;
 
 // ---------------------------------------------------------------- scenes
-// 0 · hook: dusk after the fire; a closed pine box glows in the ashes (3D bay 'smoke' behind)
+// 0 · hook: dusk after the fire; the crowned Santo Niño stands glowing in an open pine box among burning huts
+// (symbolic opening portrait: the image as Cebuanos know it today; the 1565 finding itself is told in scene 4)
+const flame = (x, y, s = 1, ph = 0) => `<g transform="translate(${x},${y}) scale(${s})"><g${M.pulse(0.12, 0.9 + ph * 0.3, ph, 0, 0)}>`
+  + `<circle cy="-30" r="70" fill="url(#sunGlow)" opacity=".75"/><path d="M0 0 Q-34 -6 -26 -46 Q-20 -70 -4 -96 Q2 -70 14 -60 Q30 -40 26 -16 Q22 0 0 0Z" fill="#f07a2a"/>`
+  + `<path d="M0 0 Q-18 -4 -14 -30 Q-10 -46 0 -60 Q6 -42 14 -32 Q18 -12 0 0Z" fill="#ffd27a"/></g></g>`;
 function scene0() {
-  return MID(charredHut(150, 1170, 0.95) + charredHut(960, 1160, 0.8, { c: '#241a1e' }) + waveBand(1080, ['#3a3456', '#c8806a']))
+  return MID(charredHut(150, 1170, 0.95) + charredHut(960, 1160, 0.8, { c: '#241a1e' }) + waveBand(1080, ['#3a3456', '#c8806a'])
+      + flame(110, 1120, 1.1, 0) + flame(220, 1150, 0.8, 1) + flame(930, 1110, 1.0, 2) + flame(1010, 1140, 0.75, 3))
     + ground(1160, '#3a2e30', { rim: '#7a4a3a' }) + tufts(1166, 8, '#241c1e', { seed: 3 })
-    + smokeWisps(900, 4, 0.28)
-    + glow(540, 1240, 380, 1)
-    + `<g transform="translate(540,1320)"><g${M.pulse(0.04, 2.2)}><g>${pineBox(2.8)}</g></g></g>`
-    + sparkles(10, 400, 680, 1150, 1300, { seed: 6, color: '#ffe8b0' })
-    + embers(22, 5)
+    + smokeWisps(880, 4, 0.3)
+    + glow(540, 960, 520, 1) + rays(540, 900, { n: 12, op: 0.1, len: 900 })
+    + `<g transform="translate(540,1340)">${pineBox(2.6, { openAt: 'open', inner: `<g transform="translate(0,-34)"><g${M.bob(3, 3.4)}>${santoNino(1.08, { modern: true })}</g></g>` })}</g>`
+    + sparkles(16, 330, 760, 760, 1250, { seed: 6, color: '#ffe8b0' })
+    + embers(26, 5)
     + NEAR(foliage('l', 1640, { color: '#1a1416' }) + foliage('r', 1660, { color: '#1a1416', seed: 5 }));
 }
 
@@ -289,6 +325,6 @@ export const STORY = {
       say: ['Legazpi knelt and wept.', 'A church rose on that very spot.', 'Fire took the town, but the Child never left his people.'] },
     { kicker: 'FEAST · 3RD SUNDAY OF JANUARY', title: 'Pit Señor!', art: scene6, cam: { move: 'arc-r', amt: 0.06, oy: 1000 },
       tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
-      say: ['His feast is the third Sunday of January, with the Sinulog dance.', 'Holy Child Jesus, have mercy on us.'] },
+      say: ['His feast is the third Sunday of January, with the Sinulog dance.', 'Señor Santo Niño, pray for us.'] },
   ],
 };
