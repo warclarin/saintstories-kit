@@ -1,6 +1,7 @@
-# Experiments (not used by any reel)
+# Experiments
 
-Kept for reference so the tests can be re-run. Nothing here is needed to make a reel.
+Kept for reference so the tests can be re-run. Nothing here is needed to make a reel. The three.js backgrounds
+tested here are now standard (README "3D backgrounds"); the all-three.js character tests below stay experiments.
 
 ## Render benchmarks (2026-11-10, 24-core laptop, RTX 5060, 16 GB)
 

@@ -31,7 +31,16 @@ CSS in build.mjs: change both together. Validate the MP4 as usual (frame from ev
 help it. It now passes `--browser-gpu` (HyperFrames' auto probe picks SwiftShader on Windows; the GPU is ~17%
 faster, same frames); `--no-browser-gpu` turns it off. Use about 10 workers on 24 cores. Don't pass `--gpu`
 (NVENC: ~6% faster, ~70% bigger files) or `--experimental-fast-capture` (slower overall here, 59 s vs 45 s).
-Benchmarks and the three.js experiment: `experiments/README.md`.
+Benchmarks and the first three.js tests: `experiments/README.md`.
+
+## 3D backgrounds (three.js, standard)
+Three.js backgrounds are a standard part of new reels: characters, props and overlays stay SVG, and the 2–4
+scenes where depth pays off (water, mist, storms, wide landscapes, a dolly zoom) get a WebGL canvas behind the SVG.
+Set `STORY.bg3d: './<slug>.bg3d.js'` and `bg3d: '<builder>'` on those scenes; the module exports `BUILD` and draws
+every frame from HyperFrames' `hf-seek` time. Helpers and wiring: `stories/bakhita_freedom.bg3d.js` (library:
+`ridge`, `cloud`, `sprite`, `makeView`, `newRenderer`, sets `venice`, `savanna`, `hall`); reference story:
+`stories/george_dragon.bg3d.js` (`BG3D_MANUAL` + `bg3d_extra`). More sets: `longinus.bg3d.js` (Golgotha, Cappadocia).
+In a 3D scene drop the SVG sky and `BACK` layer so the canvas shows; `thumb_shift` does not move the canvas.
 
 ## Camera moves and parallax
 
@@ -97,4 +106,4 @@ voice: { am_michael: 0.8, am_onyx: 0.2 } }` or a fast arena `{ speed: 1.0, gap: 
 
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
 helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `fastrender.mjs` (standard renderer),
-`narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader only for the experiment in `experiments/three/`).
+`narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader for the 3D backgrounds).

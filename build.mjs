@@ -100,7 +100,7 @@ function assets() {
     else console.warn('missing font', f, '- falling back to system serif/sans');
   }
   fs.writeFileSync(path.join(OUT, 'hyperframes.json'), '{}\n');
-  // STORY.bg3d (opt-in, EXPERIMENTAL, not used by any reel; see experiments/README.md): a browser module that draws a
+  // STORY.bg3d (opt-in, standard for new reels; see README "3D backgrounds"): a browser module that draws a
   // three.js background on a canvas behind each scene's SVG (scene.bg3d names the scene's builder). Needs vendor/three.module.min.js.
   if (STORY.bg3d) {
     fs.copyFileSync(path.join(KIT, 'vendor', 'three.module.min.js'), path.join(OUT, 'three.module.min.js'));
