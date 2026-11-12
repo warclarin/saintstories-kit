@@ -23,7 +23,7 @@ const T = { s2b: 4.48, s3c: 7.68, s4b: 4.71, s4c: 7.68, s4e: 12.08, s5b: 2.0, s5
 const FACE = '#b98058', FACED = '#8a5636', HAIRN = '#3a2418', CAPE = '#c8202e', CAPED = '#8a1420';
 // The right hand raised in blessing, palm out: index and middle fingers up, ring and little finger folded, thumb across
 // them (the Santo Niño's real gesture; not an open palm or a wave). Centred on the palm.
-export const blessingHand = (x, y, c = FACE, k = 1.3) => {
+export const blessingHand = (x, y, c = FACE, k = 0.78) => {
   const ln = dark(c, 0.35), sh = dark(c, 0.16), hi = light(c, 0.22);
   return `<g transform="translate(${x},${y}) scale(${k})">`
     // lace cuff
@@ -64,13 +64,13 @@ export function santoNino(s = 1, { modern = false, aura = true } = {}) {
   }
   // arms: right hand (viewer's left) raised in blessing, left hand (viewer's right) holding the orb
   const sleeve = modern ? '#f6ecd2' : '#f4efe4';
-  g += `<path d="M-10 -94 Q-28 -88 -26 -80" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/>` + blessingHand(-26, -86);
+  g += `<path d="M-10 -94 Q-28 -88 -26 -80" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/>` + blessingHand(-26, -84);
   g += `<path d="M10 -94 Q28 -88 26 -80" stroke="${sleeve}" stroke-width="9" fill="none" stroke-linecap="round"/>`
-    + '<path d="M18 -78 q2 3 4 0 q2 3 4 0 q2 3 4 0 L34 -74 L18 -74Z" fill="#fbf4e2"/>'
-    + `<ellipse cx="26" cy="-82" rx="7" ry="6" fill="${FACE}"/><path d="M20 -84 q6 -4 12 0" stroke="${dark(FACE, 0.35)}" stroke-width=".8" fill="none"/>`
-    + `<circle cx="26" cy="-94" r="10.5" fill="${GOLD}"/><path d="M15.5 -94 h21" stroke="${dark(GOLD, 0.3)}" stroke-width="1.6"/><path d="M26 -104.5 v21" stroke="${dark(GOLD, 0.3)}" stroke-width="1.2" opacity=".6"/><circle cx="22.4" cy="-97.6" r="3" fill="#fff4cc" opacity=".8"/>`
-    + `<path d="M19.4 -85 q6.6 4 13.2 0" stroke="${FACE}" stroke-width="4" fill="none" stroke-linecap="round"/>`
-    + (modern ? `<path d="M26 -105 v-12 M21.5 -112 h9" stroke="${GOLD}" stroke-width="2.8" stroke-linecap="round"/>` : '');
+    + '<path d="M21 -78 q1.5 2.4 3 0 q1.5 2.4 3 0 q1.5 2.4 3 0 L30 -75 L21 -75Z" fill="#fbf4e2"/>'
+    + `<ellipse cx="26" cy="-81.5" rx="4.8" ry="4.2" fill="${FACE}"/>`
+    + `<circle cx="26" cy="-89" r="7.6" fill="${GOLD}"/><path d="M18.4 -89 h15.2" stroke="${dark(GOLD, 0.3)}" stroke-width="1.3"/><path d="M26 -96.6 v15.2" stroke="${dark(GOLD, 0.3)}" stroke-width="1" opacity=".6"/><circle cx="23.4" cy="-91.6" r="2.2" fill="#fff4cc" opacity=".8"/>`
+    + `<path d="M21.6 -82.6 q4.4 2.8 8.8 0" stroke="${FACE}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+    + (modern ? `<path d="M26 -96.6 v-9 M22.6 -102.4 h6.8" stroke="${GOLD}" stroke-width="2.4" stroke-linecap="round"/>` : '');
   // head: curly dark hair, open eyes, gentle smile
   g += `<rect x="-5" y="-104" width="10" height="8" fill="${FACED}"/><path d="M-9 -98 Q0 -92 9 -98" stroke="${GOLD}" stroke-width="2" fill="none"/>`
     + [[-14, -110], [-15, -118], [14, -110], [15, -118], [-12, -103], [12, -103]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="5" fill="${HAIRN}"/>`).join('')
