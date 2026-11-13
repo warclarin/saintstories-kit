@@ -54,9 +54,8 @@ def cap(a, keep=MAXP):
     out, pos = [], 0
     for s, e in ps:
         if e - s > keep and s > 0.05 and e < len(a) / SR - 0.05:
-            mid = (s + e) / 2
-            out += [a[pos:int((mid - keep / 2) * SR)]]
-            pos = int((mid + keep / 2) * SR)
+            out += [a[pos:int((s + keep / 2) * SR)]]   # keep keep/2 of silence after the speech ...
+            pos = int((e - keep / 2) * SR)             # ... and keep/2 before the next word
     return np.concatenate(out + [a[pos:]])
 
 

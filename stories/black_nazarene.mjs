@@ -19,7 +19,7 @@ const swap = (a, b, at, dur = 0.45) => `<g${fadeOut(at, dur)}>${a}</g><g${fadeIn
 const embers = (n, seed, y0 = 700, y1 = 1300) => motes(n, { y0, y1, seed, color: '#ffb070', size: [2, 6], rise: 120 });
 
 // Line starts (s from scene start), from `node build.mjs stories/black_nazarene.mjs info`
-const T = { s2b: 3.9, s2c: 8.31, s3b: 5.16, s4b: 3.92, s4c: 7.89, s5b: 5.64, s5c: 8.92 };
+const T = { s2b: 3.51, s2c: 6.78, s3b: 5.28, s4b: 4.16, s4c: 8.27, s5b: 5.88, s5c: 8.79 };
 
 // ---------------------------------------------------------------- the image (base at 0, ~360 units tall at s = 1)
 const SKINN = '#4a2c22', SKINND = '#2e1a14', HAIRB = '#160c08', MAROON = '#7a1628', MAROOND = '#4e0c1a';
@@ -282,15 +282,16 @@ export const STORY = {
   // The published narration is ElevenLabs, not Kokoro: one take per scene from these prompts (eleven_v4, premade voice
   // "Brian - Deep, Resonant and Comforting"), saved as work/<slug>/vo/scene_<i>.mp3, then `python narrate_files.py
   // work/<slug>` (caption lines found in the take's pauses, long pauses capped at 0.65 s). `say` + narrate.py re-voices
-  // with Kokoro instead (fix and tone above are for that).
+  // with Kokoro instead (fix and tone above are for that). Plain prompts on purpose: a first version with emotion tags
+  // ([dramatically], [hushed], [long pause], ellipses) was "too much emotion" for the user; Brian's natural read is right.
   vo: { engine: 'elevenlabs', model: 'eleven_v4', voice: 'nPczCjzI2devNBz1zQrb', scenes: [
-    '[dramatically] Over nine million people. [short pause] Bare feet. [short pause] One dark wooden image of Jesus. [pause] [reverently] This is /xeˈsus nasaˈɾeno/, the Black Nazarene.',
-    '[warmly] In the early 1600s, a Mexican sculptor carved Jesus... kneeling under his cross.',
-    'A galleon carried him across the Pacific, to Manila. [pause] [hushed] One famous story says... a fire broke out on board. [long pause] [softly] The image came out dark... but whole.',
-    'In 1650, Pope Innocent the Tenth approved a brotherhood in his honor. [pause] Later, he was brought to /kiˈapo/... his home to this day.',
-    '[seriously] In 1929, fire destroyed /kiˈapo/ Church. [pause] In 1945, bombs fell on Manila. [long pause] [softly] Each time... the Nazarene was saved.',
-    '[warmly] Every January, millions walk barefoot beside him, many praying for healing. [pause] They pull his carriage with two great ropes. [long pause] [with quiet conviction] He carried the cross for us. Now... his people carry him.',
-    '[softly] His feast is January 9. [pause] [reverently] Señor /xeˈsus nasaˈɾeno/... have mercy on us.',
+    'Over nine million people. Bare feet. One dark wooden image of Jesus. This is /xeˈsus nasaˈɾeno/, the Black Nazarene.',
+    'In the early 1600s, a Mexican sculptor carved Jesus, kneeling under his cross.',
+    'A galleon carried him across the Pacific to Manila. One famous story says a fire broke out on board. The image came out dark, but whole.',
+    'In 1650, Pope Innocent the Tenth approved a brotherhood in his honor. Later, he was brought to /kiˈapo/, his home to this day.',
+    'In 1929, fire destroyed /kiˈapo/ Church. In 1945, bombs fell on Manila. [pause] Each time, the Nazarene was saved.',
+    'Every January, millions walk barefoot beside him, many praying for healing. They pull his carriage with two great ropes. He carried the cross for us. Now his people carry him.',
+    'His feast is January 9. Señor /xeˈsus nasaˈɾeno/, have mercy on us.',
   ] },
   scenes: [
     { kicker: 'JANUARY 9 · QUIAPO, MANILA', title: 'Millions Walk Barefoot', art: scene0, bg3d: 'manilaFeast', cam: { move: 'push-fast', oy: 1100 },
