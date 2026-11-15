@@ -206,11 +206,9 @@ export function hd(x, y, s, o = {}) {
     awe: 'M-24 -275 Q-16 -283 -8 -277', peaceful: 'M-24 -267 Q-16 -271 -8 -268',
   }[mood] || 'M-24 -268 Q-16 -275 -7 -270';
   g.push(`<g stroke="${browC}" stroke-width="5" fill="none" stroke-linecap="round"><path d="${BR}"/><path d="${BR}" transform="scale(-1,1)"/></g>`);
-  // nose, cheeks (blush stronger when smiling, faint when sad or stern)
-  const blush = { joy: 0.42, happy: 0.34, tender: 0.36, awe: 0.32, sad: 0.14, stern: 0.12, pain: 0.16 }[mood] ?? 0.26;
-  const by = mood === 'joy' ? -239 : -237;
+  // nose (no red cheeks: user's choice 2026-11-15; `blush: true` brings a faint blush back)
   g.push(`<path d="M-1 -248 Q-5 -241 -1 -239 Q3 -238 5 -241" stroke="${skSh}" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="-2" cy="-245" r="1.6" fill="${skHi}" opacity=".7"/>`
-    + `<ellipse cx="-26" cy="${by}" rx="8.5" ry="5" fill="#ef6f6a" opacity="${blush}"/><ellipse cx="26" cy="${by}" rx="8.5" ry="5" fill="#ef6f6a" opacity="${blush}"/>`);
+    + (o.blush ? `<ellipse cx="-26" cy="-237" rx="8.5" ry="5" fill="#ef6f6a" opacity=".22"/><ellipse cx="26" cy="-237" rx="8.5" ry="5" fill="#ef6f6a" opacity=".22"/>` : ''));
   if (o.tears !== undefined && o.tears !== false) {
     const tf = typeof o.tears === 'number' ? M.in('fade', o.tears, 0.8) : '';
     g.push(`<g${tf}>${[-1, 1].map((sx) => `<g transform="translate(${sx * 18},-238)"><g${M.bob(2.5, 1.8, sx > 0 ? 0.4 : 0)}><path d="M0 -6 Q4 1 3 4 A3.4 3.4 0 0 1 -3 4 Q-4 1 0 -6Z" fill="#bfe4ff" opacity=".9"/><circle cx="-1" cy="2" r="1" fill="#fff"/></g></g>`).join('')}</g>`);
