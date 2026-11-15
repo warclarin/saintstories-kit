@@ -9,11 +9,13 @@
 // Pius XI in 1931; patron of natural scientists (Pius XII, 1941). Feast November 15.
 // Sources: Benedict XVI, General Audience of 24 March 2010 (vatican.va); Wikipedia "Albertus Magnus"; Stanford
 // Encyclopedia of Philosophy "Albert the Great"; New Catholic Encyclopedia.
+// Redone 2026-11-15 with the detailed rig hd() (hd.mjs): every face changes on the word it reacts to (wordTimes + seq).
 // New (exported for later reels): albert (young friar / old friar / bishop), aquinas (young Thomas, optional sun
 // emblem), dominican, quill, oxBubble, crystal, leafSprig, starBurst, glowCross, studyDesk.
 import { W, M, SKIES, SKIN, GOLD, sky, sun, rays, clouds, hill, waves, sparkles, motes, foliage, tufts, flowers, butterflies,
-  person, book, basilica, crowd, ground, dark, light, bokeh, f, FAR, BACK, MID, NEAR } from '../art.mjs';
-import { tonsure, mitre, perched, tree } from './francis.mjs';
+  book, basilica, crowd, ground, dark, light, bokeh, FAR, BACK, MID, NEAR } from '../art.mjs';
+import { hd, seq, wordTimes } from '../hd.mjs';
+import { mitre, perched, tree } from './francis.mjs';
 import { gothic } from './joan_of_arc.mjs';
 import { cloister } from './martin_de_porres.mjs';
 import { crozier, horse } from './martin_of_tours.mjs';
@@ -31,8 +33,8 @@ const span = (svg, t0 = 0, t1 = null, dur = 0.45) => {
 };
 const pop = (svg, x, y, at, type = 'pop') => `<g transform="translate(${x},${y})"><g${M.in(type, at, 0.5)}>${svg}</g></g>`;
 
-// Line starts (s from scene start), from `node build.mjs stories/albert_the_great.mjs info`
-const T = { s0b: 2.59, s0c: 4.89, s2b: 4.01, s2c: 5.51, s3b: 4.32, s3c: 8.62, s5b: 5.6, s5c: 9.75, s6b: 6.35, s7b: 5.66 };
+// When each word is spoken (s from the scene start), from work/<slug>/timings.json
+const at = wordTimes('st_albert_the_great');
 
 // ---------------------------------------------------------------- people
 const SKA = SKIN.fair, BLACK = '#1d1a22', WHITE = '#e8e4dc';
@@ -41,20 +43,21 @@ const scap = '<rect x="-17" y="-204" width="34" height="198" rx="6" fill="#faf6e
 const scapKneel = '<rect x="-17" y="-204" width="34" height="100" rx="6" fill="#faf6ec"/><rect x="6" y="-204" width="11" height="100" fill="#d8d0c0" opacity=".6"/>';
 const capuce = `<path d="M-41 -213 Q0 -196 41 -213 Q47 -190 31 -178 Q0 -170 -31 -178 Q-47 -190 -41 -213Z" fill="${BLACK}"/>`;
 const pectoralCross = `<path d="M-14 -200 Q0 -176 0 -166 Q0 -176 14 -200" stroke="${GOLD}" stroke-width="2.5" fill="none"/><path d="M0 -170 v24 M-8 -161 h16" stroke="${GOLD}" stroke-width="5" stroke-linecap="round"/>`;
-const habit = (o) => (o.kneel || o.sitting ? scapKneel : scap) + capuce;
-/** A Dominican friar: white tunic and scapular, black cape and capuce, tonsure. */
+const habit = (o) => (o.kneel ? scapKneel : scap) + capuce;
+const HABIT = { top: '#f1ebdf', plain: true, belt: false, shoes: '#2a2228', beard: null, hairStyle: 'tonsure' };
+/** A Dominican friar: white tunic and scapular, black cape and capuce, tonsure (detailed rig). */
 export const dominican = (x, y, s, { hair = '#5a3e2a', skin = SKIN.priest, over = '', ...o } = {}) =>
-  person(x, y, s, { kind: 'friar', top: '#efe8da', cord: false, skin, hair, beard: false, under: capeB, ...o, over: habit(o) + tonsure + over });
+  hd(x, y, s, { ...HABIT, age: 'young', skin, hair, ...o, under: o.kneel ? '' : capeB, over: habit(o) + over });
 /** St. Albert the Great. Default: the young Dominican (brown hair, tonsure). old: white hair. bishop: mitre and
  * pectoral cross over the Dominican habit (hold the crozier with propL/propR). */
 export const albert = (x, y, s, { old = false, bishop = false, over = '', ...o } = {}) =>
-  person(x, y, s, { kind: 'friar', top: '#efe8da', cord: false, skin: SKA, hair: old || bishop ? WHITE : '#6a4a30', beard: false, under: o.kneel || o.sitting ? '' : capeB, ...o,
-    over: habit(o) + (bishop ? pectoralCross + mitre : tonsure) + over });
+  hd(x, y, s, { ...HABIT, age: old || bishop ? 'old' : 'young', skin: SKA, hair: old || bishop ? WHITE : '#6a4a30', iris: '#4f6f8f', ...o,
+    under: o.kneel ? '' : capeB, over: habit(o) + (bishop ? pectoralCross + mitre : '') + over });
 const sunEmblem = `<g transform="translate(0,-160)"><circle r="30" fill="url(#haloGlow)"/><circle r="11" fill="${GOLD}"/>${Array.from({ length: 8 }, (_, i) => `<path d="M0 -15 L3 -24 L-3 -24Z" fill="${GOLD}" transform="rotate(${i * 45})"/>`).join('')}</g>`;
 /** Young Thomas Aquinas: a big, quiet Dominican student with dark hair. emblem: the sun on his chest (his attribute). */
 export const aquinas = (x, y, s, { emblem = false, over = '', ...o } = {}) =>
   `<g transform="translate(${x},0) scale(1.12,1) translate(${-x},0)">${dominican(x, y, s, { hair: '#2a1c14', skin: '#e8bc96', ...o, over: (emblem ? sunEmblem : '') + over })}</g>`;
-const kidAlbert = (x, y, s, o = {}) => person(x, y, s, { kind: 'kid', top: '#3f6f8a', pants: '#5a4634', skin: SKA, hair: '#6a4a30', ...o });
+const kidAlbert = (x, y, s, o = {}) => hd(x, y, s, { top: '#3f6f8a', trim: '#e6c880', belt: '#5a4634', shoes: '#5a4634', skin: SKA, hair: '#6a4a30', iris: '#4f6f8f', beard: null, age: 'young', ...o });
 
 // ---------------------------------------------------------------- props + set pieces
 export const quill = '<g transform="translate(0,-10) rotate(18)"><path d="M0 30 L-3 -10 Q-16 -50 0 -96 Q16 -50 3 -10Z" fill="#f6f0e2"/><path d="M0 30 V-90" stroke="#b8a888" stroke-width="2"/><path d="M0 -96 Q16 -50 3 -10 L0 -10Z" fill="#d8ccb0" opacity=".7"/></g>';
@@ -81,71 +84,75 @@ const grass = (y, c) => ground(y, c, { rim: light(c, 0.2) });
 const stoneFloor = (y, c) => ground(y, c, { rim: light(c, 0.15) }) + Array.from({ length: 7 }, (_, i) => `<path d="M${-100 + i * 220} ${y + 6} l-40 400" stroke="${dark(c, 0.2)}" stroke-width="4" opacity=".4"/>`).join('');
 
 // ---------------------------------------------------------------- scenes
-// 0 · hook (3D forest at dusk, push-fast): Albert as he is known (bishop, halo, book); a cross and a star: faith and science
+// 0 · hook (3D forest at dusk, push-fast): Albert as he is known (bishop, halo, book); he looks to the cross on "faith" and to
+// the star on "science", lights up on "mastered both", and turns to the viewer on "This is Saint Albert"
 function scene0() {
-  const B = T.s0b, C = T.s0c;
+  const Fa = at(0, 'faith'), Sc = at(0, 'science'), B = at(0, 'One medieval'), C = at(0, 'This is');
+  const A = (o) => albert(540, 1350, 2.35, { bishop: true, halo: true, armL: [28, 2, 3], propL: openBook(1), armR: 10, ...o });
   return MID(grass(1240, '#33402a') + tufts(1250, 9, '#46573a', { seed: 4 }))
     + glow(540, 900, 470, 0.85)
-    + pop(glowCross(1.25), 190, 760, 0.5) + pop(starBurst(), 880, 700, 1.1) + pop(leafSprig(), 890, 1010, 1.4)
+    + pop(glowCross(1.25), 190, 760, Fa) + pop(starBurst(), 880, 700, Sc) + pop(leafSprig(), 890, 1010, Sc + 0.4)
     + span(sparkles(12, 150, 930, 620, 1100, { seed: 4 }), B, C + 1.5)
-    + span(albert(540, 1350, 2.35, { bishop: true, halo: true, mood: 'happy', armL: [28, 2, 3], propL: openBook(1), armR: 10 }), 0, B)
-    + span(albert(540, 1350, 2.35, { bishop: true, halo: true, mood: 'joy', armL: [28, 2, 3], propL: openBook(1), armR: [112, 3, 2.4], propR: quill }), B, null)
+    + seq(A, [[0, { mood: 'happy' }], [Fa, { mood: 'happy', look: [-2.6, -0.4] }], [Sc, { mood: 'happy', look: [2.6, -0.8] }],
+      [B, { mood: 'joy', armR: [112, 3, 2.4], propR: quill }], [C, { mood: 'happy', armR: [112, 3, 2.4], propR: quill }]], 0.3)
     + span(rays(540, 780, { op: 0.1 }), C, null, 0.8)
     + motes(14, { x0: 120, x1: 940, y0: 650, y1: 1250, seed: 3 })
     + NEAR(foliage('l', 1680, { color: '#1c2a1e', seed: 6 }) + bokeh(6, { seed: 9, op: [0.2, 0.5] }));
 }
 
-// 1 · Germany, around 1200 (pan-r): the knight's son by the Danube watching a bird → the young Dominican friar
+// 1 · Germany, around 1200 (pan-r): the knight's son by the Danube watching a bird in wonder → the young Dominican friar
 function scene1() {
-  const B = 2.5;
+  const B = at(1, 'he became');
   return FAR(sky(SKIES.day) + sun(840, 560, 56, 320) + clouds(440, { seed: 4, n: 2, op: 0.8 }))
     + BACK(hill(1040, 60, '#8fb87a', 3) + wartburg(300, 1010, 0.5) + hill(1100, 30, '#7aa868', 8))
     + MID(waves(1150, 7, 240, 6, '#6aa6c8', { foam: '#c8e4f0' }) + cottage(900, 1215, 0.7) + tree(90, 1225, 1.0) + tree(1010, 1230, 0.8, '#3f8a48'))
     + grass(1225, '#6a9a52') + flowers(1240, 1330, 12, { seed: 5 }) + butterflies(2, { x0: 560, x1: 900, y0: 880, y1: 1080 })
     + perched(720, 1150, '#c86a4a', 1.5, true)
-    + span(kidAlbert(440, 1340, 1.75, { mood: 'surprised', armL: 10, armR: [84, 4, 1.6] }), 0, B)
+    + span(seq((o) => kidAlbert(440, 1340, 1.75, { armL: 10, armR: [84, 4, 1.6], look: [2.4, 1.4], ...o }), [[0, { mood: 'awe' }], [at(1, 'around 1200'), { mood: 'joy' }]]), 0, B)
     + span(glow(440, 980, 340, 0.75) + sparkles(10, 300, 600, 760, 1100, { seed: 6 }), B, B + 1.8)
     + span(albert(440, 1345, 2.15, { mood: 'happy', armL: [26, 2, 3], propL: openBook(0.9), armR: 10 }), B, null)
     + NEAR(foliage('r', 1680, { color: '#2a4a2e', seed: 3 }));
 }
 
-// 2 · the book of nature (3D forest full of light, drift-l): plants, animals, stars and stones; then his own words on science
+// 2 · the book of nature (3D forest full of light, drift-l): he looks at each thing as it is named (plants, animals, stars,
+// stones), then speaks his own words on science (mouth only on his own line)
 function scene2() {
-  const B = T.s2b, C = T.s2c;
+  const Pl = at(2, 'plants'), An = at(2, 'animals'), St = at(2, 'stars'), Sn = at(2, 'stones'), B = at(2, 'Science, he wrote'), C = at(2, 'not simply');
+  const A = (o) => albert(520, 1350, 2.25, { armL: [26, 2, 3], propL: openBook(0.95), armR: [26, 2, 3], propR: quill, ...o });
   return MID(grass(1240, '#3e5228') + tufts(1250, 10, '#56703a', { seed: 7 }) + flowers(1250, 1320, 8, { seed: 9, x0: 40, x1: 480 }))
-    + pop(leafSprig(), 200, 800, 1.5) + `<g${M.in('pop', 2.1, 0.5, 790, 1080)}>${perched(790, 1080, '#6a8ac8', 1.7, true)}</g>`
-    + pop(starBurst(), 830, 730, 2.8) + pop(crystal(), 180, 1090, 3.3)
+    + pop(leafSprig(), 200, 800, Pl) + `<g${M.in('pop', An, 0.5, 790, 1080)}>${perched(790, 1080, '#6a8ac8', 1.7, true)}</g>`
+    + pop(starBurst(), 830, 730, St) + pop(crystal(), 180, 1090, Sn)
     + span(glow(520, 940, 400, 0.7) + rays(520, 900, { op: 0.08 }), C, null, 0.8)
-    + span(albert(520, 1350, 2.25, { mood: 'surprised', armL: [26, 2, 3], propL: openBook(0.95), armR: [26, 2, 3], propR: quill }), 0, B)
-    + span(albert(520, 1350, 2.25, { mood: 'happy', talk: [C, 99], armL: [26, 2, 3], propL: openBook(0.95), armR: [96, 4, 2] }), B, null)
+    + seq(A, [[0, { mood: 'happy' }], [Pl, { mood: 'awe', look: [-2.6, 0.4] }], [An, { mood: 'joy', look: [2.4, 1.6] }], [St, { mood: 'awe', look: [2.6, 0.2] }],
+      [Sn, { mood: 'surprised', look: [-2.4, 1.6] }], [B, { mood: 'happy' }], [C - 0.15, { mood: 'happy', talk: [C, 99], propR: '', armR: [96, 4, 2] }]], 0.3)
     + motes(14, { x0: 100, x1: 950, y0: 700, y1: 1250, seed: 5, color: '#f4ffc8' })
     + NEAR(bokeh(7, { seed: 12 }));
 }
 
-// 3 · Cologne 1248 (dolly): classmates mock the quiet student as the Dumb Ox; Albert's prophecy; Thomas Aquinas
+// 3 · Cologne 1248 (dolly): classmates laugh at the quiet student (the Dumb Ox); Thomas looks down, hurt; Albert speaks up
+// for him and the laughter turns to surprise; "It was Thomas Aquinas": the sun emblem and halo
 function scene3() {
-  const B = T.s3b, C = T.s3c;
-  const mate = (x, s, mood, o = {}) => dominican(x, 1275, s, { mood, armL: 10, armR: 12, ...o });
+  const Mk = at(3, 'mocked'), Ox = at(3, 'Dumb Ox'), B = at(3, 'Tradition says'), Wh = at(3, 'whole world'), C = at(3, 'It was Thomas');
+  const mate = (x, s, o1) => seq((o) => dominican(x, 1275, s, { flip: true, armL: 10, armR: 12, look: [2.2, 0.4], ...o1, ...o }),
+    [[0, { mood: 'happy' }], [Mk, { mood: 'joy', armR: [78, 6, 0.8] }], [Wh, { mood: 'surprised', look: [2.6, -0.2] }], [C, { mood: 'awe', look: [2.2, 0] }]]);
+  const Th = (o) => aquinas(540, 1350, 2.2, { armL: [26, 2, 3], propL: openBook(0.9), armR: 10, ...o });
+  const A = (o) => albert(255, 1345, 1.95, { armL: [26, 2, 3], propL: openBook(0.85), armR: 10, ...o });
   return FAR(sky([[0, '#3a6ab0'], [0.4, '#8ab8e0'], [0.72, '#f4e4c0'], [1, '#f4e4c0']]) + sun(180, 600, 50, 300) + clouds(470, { seed: 8, n: 2, op: 0.75 }))
     + BACK(gothic(560, 1090, 0.72, { wall: '#d8ccb8' }) + hill(1100, 20, '#8aa87a', 5))
-    + MID(cloister(1230, { wall: '#e8dcc0', arch: '#cdb890' })
-      + span(mate(800, 1.15, 'joy', { hair: '#8a5a34', flip: true, armR: [78, 6, 0.8] }) + mate(940, 1.1, 'joy', { hair: '#3a2a20', skin: SKIN.s3, flip: true }), 0, B + 0.6)
-      + span(mate(800, 1.15, 'surprised', { hair: '#8a5a34', flip: true }) + mate(940, 1.1, 'surprised', { hair: '#3a2a20', skin: SKIN.s3, flip: true }), B + 0.6))
+    + MID(cloister(1230, { wall: '#e8dcc0', arch: '#cdb890' }) + mate(800, 1.15, { hair: '#8a5a34' }) + mate(940, 1.1, { hair: '#3a2a20', skin: SKIN.s3 }))
     + stoneFloor(1230, '#b8a888')
-    + span(glow(540, 940, 420, 0.8) + rays(540, 900, { op: 0.09 }), B + 0.4, null, 0.8)
-    + span(albert(180, 1345, 1.95, { mood: 'happy', armL: [26, 2, 3], propL: openBook(0.85), armR: 10 }), 0, B)
-    + span(albert(180, 1345, 1.95, { mood: 'determined', armL: [26, 2, 3], propL: openBook(0.85), armR: [128, 3, 2] }), B, C)
-    + span(albert(180, 1345, 1.95, { mood: 'joy', armL: [26, 2, 3], propL: openBook(0.85), armR: [128, 3, 2] }), C)
-    + span(aquinas(540, 1350, 2.2, { mood: 'sad', armL: [26, 2, 3], propL: openBook(0.9), armR: 10 }), 0, B + 0.6)
-    + span(aquinas(540, 1350, 2.2, { mood: 'surprised', armL: [26, 2, 3], propL: openBook(0.9), armR: 10 }), B + 0.6, C)
-    + span(aquinas(540, 1350, 2.2, { mood: 'happy', emblem: true, halo: C + 0.2, armL: [26, 2, 3], propL: openBook(0.9), armR: 10 }), C)
-    + span(pop(oxBubble, 730, 590, 2.9), 0, B + 0.8)
+    + span(glow(540, 940, 420, 0.8) + rays(540, 900, { op: 0.09 }), Wh, null, 0.8)
+    + seq(A, [[0, { mood: 'happy', look: [2.4, 0] }], [Mk + 0.4, { mood: 'sad', look: [2.6, 0] }], [B, { mood: 'determined', look: [2.4, 0], armR: [128, 3, 2] }],
+      [C, { mood: 'joy', look: [2.2, 0], armR: [128, 3, 2] }]])
+    + seq(Th, [[0, { mood: 'happy', look: [-1, 2.4] }], [Mk + 0.2, { mood: 'sad', look: [-1, 2.4] }], [Wh, { mood: 'surprised', look: [-2.6, -0.2] }],
+      [C, { mood: 'happy', emblem: true, halo: C + 0.2 }]])
+    + span(pop(oxBubble, 730, 590, Ox), 0, Wh)
     + span(sparkles(12, 360, 740, 620, 1050, { seed: 8 }), C, null);
 }
 
-// 4 · Regensburg 1260 (pan-r): made a bishop, he leaves the horse behind and walks his diocese on foot
+// 4 · Regensburg 1260 (pan-r): surprised to be made a bishop; then he sets out on foot, the horse left behind
 function scene4() {
-  const A = 0.7, Wk = 2.0;
+  const A = at(4, 'bishop'), Wk = at(4, 'he walked');
   const walk = M.tw([{ at: Wk, dur: 2.6, from: { x: 0 }, to: { x: 270 }, ease: 'power1.inOut' }]);
   return FAR(sky(SKIES.sunrise) + sun(860, 640, 60, 380) + clouds(450, { seed: 5, n: 2, op: 0.7 }))
     + BACK(hill(1050, 60, '#9ab87a', 6) + gothic(830, 1075, 0.36, { wall: '#e0d0b8' }) + cottage(640, 1085, 0.4) + cottage(1000, 1090, 0.36) + hill(1110, 26, '#84a868', 9))
@@ -154,53 +161,60 @@ function scene4() {
     + tufts(1250, 8, '#8ab060', { seed: 3 })
     + span(albert(470, 1350, 2.15, { old: true, mood: 'surprised', armL: 10, armR: 10 }), 0, A)
     + span(glow(470, 720, 260, 0.8) + sparkles(10, 330, 610, 560, 820, { seed: 5 }), A, A + 1.6)
-    + span(`<g${walk}>${albert(470, 1350, 2.15, { bishop: true, mood: 'determined', armL: 10, armR: [26, 2, 1.2], propR: staff })}</g>`, A)
+    + span(`<g${walk}>${seq((o) => albert(470, 1350, 2.15, { bishop: true, armL: 10, armR: [26, 2, 1.2], propR: staff, ...o }),
+      [[0, { mood: 'happy' }], [Wk - 0.2, { mood: 'determined', look: [2.6, 0] }], [Wk + 1.6, { mood: 'happy', look: [2.6, 0] }]])}</g>`, A)
     + NEAR(foliage('l', 1690, { color: '#2a4a2e', seed: 8 }));
 }
 
-// 5 · Cologne 1274–1280 (tilt-up + rack focus): grief for Thomas; he rises to defend his teaching; his death
+// 5 · Cologne 1274–1280 (tilt-up + rack focus): the human beat: he looks up as Thomas dies and weeps on "grieved"; on the
+// climax line he rises, book raised; then his own death: eyes closed, halo
 function scene5() {
-  const B = T.s5b, C = T.s5c;
+  const Td = at(5, 'Thomas died'), G = at(5, 'grieved'), B = at(5, 'Then he rose'), C = at(5, 'Albert died');
+  const K = (o) => albert(470, 1290, 2.15, { old: true, kneel: true, armL: 26, armR: 26, ...o });
+  const S = (o) => albert(470, 1350, 2.2, { old: true, ...o });
   return FAR(sky(SKIES.deep, { stars: 26, seed: 6 }) + span(rays(560, 620, { op: 0.1 }), B, null, 1))
     + BACK(`<rect x="-200" y="200" width="${W + 400}" height="1100" fill="#3a3046"/><path d="M640 1000 V620 Q790 470 940 620 V1000Z" fill="#20203c"/><path d="M640 1000 V620 Q790 470 940 620 V1000" stroke="#5a4e68" stroke-width="16" fill="none"/>`
-      + sparkles(8, 670, 910, 600, 900, { seed: 3 }) + span(glow(790, 760, 230, 0.8) + aquinas(790, 1010, 1.0, { emblem: true, halo: true, mood: 'happy', armL: 10, armR: 10 }), 1.6, null, 0.9)
+      + sparkles(8, 670, 910, 600, 900, { seed: 3 }) + span(glow(790, 760, 230, 0.8) + aquinas(790, 1010, 1.0, { emblem: true, halo: true, mood: 'tender', armL: 10, armR: 10 }), Td, null, 0.9)
       + span(pop(starBurst(), 800, 560, B + 0.3), B, null))
     + MID(studyDesk(150, 1250, 1.15))
     + stoneFloor(1240, '#4a3e52')
-    + span(albert(470, 1290, 2.15, { old: true, kneel: true, mood: 'sad', armL: 26, armR: 26 }), 0, B)
+    + span(seq(K, [[0, { mood: 'worried' }], [Td, { mood: 'worried', look: [2.4, -2.2] }], [G - 0.2, { mood: 'sad', tears: G }]]), 0, B)
     + span(glow(470, 900, 420, 0.8), B, null, 0.7)
-    + span(albert(470, 1350, 2.2, { old: true, mood: 'determined', armR: 10, armL: [118, 3, 2.4], propL: openBook(0.95) }), B, C)
-    + span(albert(470, 1350, 2.2, { old: true, halo: true, mood: 'peaceful', armL: 26, armR: 26 }), C, null, 0.8)
+    + span(seq(S, [[0, { mood: 'determined', armR: 10, armL: [118, 3, 2.4], propL: openBook(0.95) }], [C, { mood: 'peaceful', halo: true, armL: 26, armR: 26 }]], 0.7), B)
     + span(sparkles(14, 250, 700, 560, 1100, { seed: 9 }), C + 0.4, null)
     + motes(10, { x0: 150, x1: 900, y0: 700, y1: 1250, seed: 8 })
     + NEAR(bokeh(6, { seed: 15, op: [0.2, 0.5] }));
 }
 
-// 6 · Rome 1931 (pull): saint and Doctor of the Church; he read nature like a book
+// 6 · Rome 1931 (pull): the halo comes on "a saint"; joy on "Doctor of the Church"; he looks down at his book on "read
+// nature like a book" and closes his eyes in a smile on "found God"
 function scene6() {
-  const B = T.s6b;
+  const Sa = at(6, 'a saint'), Dc = at(6, 'Doctor'), B = at(6, 'He read'), F = at(6, 'found God');
+  const A = (o) => albert(540, 1350, 2.2, { bishop: true, halo: Sa, armL: [28, 2, 3], propL: openBook(1), armR: [26, 2, 3], propR: crozier, ...o });
   return FAR(sky([[0, '#b8603e'], [0.32, '#f0a46a'], [0.68, '#f8d894'], [1, '#f8d894']]) + sun(540, 760, 70, 500) + rays(540, 760, { op: 0.11 }))
     + BACK(basilica(540, 1130, 1.25) + clouds(520, { seed: 6, n: 2, op: 0.5, color: '#ffe8c0' }))
     + MID(crowd(1235, 14, { flags: [['#ffe14a', '#ffffff', '#ffe14a']] }))
     + ground(1250, '#7a4a3a', { rim: '#c8865a' })
     + glow(540, 900, 430, 0.9)
-    + albert(540, 1350, 2.2, { bishop: true, halo: 3.4, mood: 'happy', armL: [28, 2, 3], propL: openBook(1), armR: [26, 2, 3], propR: crozier })
-    + span(sparkles(10, 300, 780, 560, 900, { seed: 7 }), 3.6, B)
-    + pop(leafSprig(), 200, 880, B + 0.3) + pop(starBurst(), 860, 800, B + 0.9) + pop(glowCross(1.1), 250, 640, B + 2.2)
-    + span(sparkles(14, 200, 880, 600, 1100, { seed: 4 }), B + 2.0, null)
+    + seq(A, [[0, { mood: 'happy' }], [Dc, { mood: 'joy' }], [B, { mood: 'happy', look: [-1.8, 2.4] }], [F, { mood: 'tender' }]])
+    + span(sparkles(10, 300, 780, 560, 900, { seed: 7 }), Sa + 0.2, B)
+    + pop(leafSprig(), 200, 880, B + 0.3) + pop(starBurst(), 860, 800, B + 0.9) + pop(glowCross(1.1), 250, 640, F)
+    + span(sparkles(14, 200, 880, 600, 1100, { seed: 4 }), F, null)
     + NEAR(bokeh(7, { seed: 17 }));
 }
 
-// 7 · feast portrait (arc): Albert with mitre, halo, book and quill before a Gothic church at dusk
+// 7 · feast portrait (arc): Albert with mitre, halo, book and quill before a Gothic church at dusk; a warm closed-eye smile
+// on "Saint Albert the Great, pray for us"
 function scene7() {
-  const B = T.s7b;
+  const B = at(7, 'Saint Albert the Great, pray');
+  const A = (o) => albert(540, 1350, 2.35, { bishop: true, halo: true, armL: [28, 2, 3], propL: openBook(1), armR: [112, 3, 2.4], propR: quill, ...o });
   return FAR(sky(SKIES.dusk, { stars: 20, seed: 5 }) + rays(540, 820, { op: 0.12 }))
     + BACK(hill(1080, 44, '#5a4a6a', 4) + gothic(830, 1110, 0.42, { wall: '#b8a0a8', win: '#ffd98a' }))
     + MID(hill(1170, 18, '#6a5a6a', 7) + tree(80, 1240, 0.9, '#3a5a4a'))
     + ground(1240, '#4a4458', { rim: '#8a7a8a' })
     + glow(540, 900, 470, 0.9)
-    + pop(leafSprig(), 190, 900, 0.8) + pop(starBurst(), 200, 660, 2.4) + pop(crystal(), 900, 700, 4.0)
-    + albert(540, 1350, 2.35, { bishop: true, halo: true, mood: 'happy', armL: [28, 2, 3], propL: openBook(1), armR: [112, 3, 2.4], propR: quill })
+    + pop(leafSprig(), 190, 900, 0.8) + pop(starBurst(), 200, 660, at(7, 'He is the patron')) + pop(crystal(), 900, 700, at(7, 'scientists'))
+    + seq(A, [[0, { mood: 'happy' }], [B, { mood: 'tender' }]])
     + span(sparkles(14, 240, 840, 600, 1100, { seed: 11 }), B)
     + NEAR(foliage('l', 1680, { color: '#1c2a1e', seed: 6 }) + bokeh(6, { seed: 9, op: [0.2, 0.5] }));
 }
@@ -220,7 +234,7 @@ export const STORY = {
     'noʊvˈɛmbɚ fˈɪftiːn': 'noʊvˈɛmbɚ fɪftˈiːnθ',    // November 15 -> November fifteenth
   },
   scenes: [
-    { kicker: 'GERMANY · THE 1200s', title: 'The Saint of Science', art: scene0, bg3d: 'woodsDusk', cam: { move: 'push-fast', oy: 1050 },
+    { kicker: 'GERMANY · THE 1200s', title: 'Faith or Science? Both.', art: scene0, bg3d: 'woodsDusk', cam: { move: 'push-fast', oy: 1050 },
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
       say: ['Some say faith and science are enemies.', 'One medieval friar mastered both.', 'This is Saint Albert the Great.'] },
     { kicker: 'LAUINGEN · AROUND 1200', title: 'A Knight\'s Son', art: scene1, cam: 'pan-r',
@@ -239,7 +253,7 @@ export const STORY = {
     { kicker: 'COLOGNE · 1274–1280', title: 'His Last Defense', art: scene5, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
       tone: { speed: 0.95, gap: 0.3, gain: -1.5, voice: { am_michael: 0.8, am_onyx: 0.2 } },
       say: ['In 1274, Thomas died, and the old teacher grieved.',
-        { text: 'Then he rose once more, to defend his student\'s teaching.', beat: 0.9, speed: 0.85 },
+        { text: 'Then he rose once more, to defend his student\'s teaching.', speed: 0.85 },
         'Albert died in Cologne in 1280.'] },
     { kicker: 'ROME · 1931', title: 'Doctor of the Church', art: scene6, cam: { move: 'pull', amt: 0.07, oy: 1000 },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },

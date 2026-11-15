@@ -9,14 +9,18 @@
 // Opts beyond person(): top (tunic colour), mantle (null = none), lining, trim, belt, skin, hair, beard (null = clean-shaven),
 // iris, age 'young' | 'mid' | 'old', hairStyle 'short' | 'curly' | 'long' | 'wild' | 'old' (bald crown, white mass behind),
 // beardStyle 'short' | 'full' | 'long' | null, shaggy (camel-hair tunic edge).
+// Also: plain (no clavus stripes or embroidery: habits, cassocks), belt: false (no belt), shoes (colour: closed shoes instead of sandals), hairStyle
+// 'tonsure' (hair with a shaved crown), ph (bob / blink phase 0..1, so copies of one character move together).
+// Helpers: seq(draw, steps) changes a character's look on a word; wordTimes(slug) finds when a word is spoken.
 // Not covered yet (use person() or add it here): sitting, veils/wimples (nuns, Mary), crowns, trousers/camisa, habits with
 // hoods. Extend this file for those, keeping old options unchanged.
+import fs from 'fs';
 import { M, GOLD, INK, dark, light, mix, uid, f } from './art.mjs';
 
 let HID = 0;
 export function hd(x, y, s, o = {}) {
-  const n = ++HID, ph = (n * 0.618) % 1, id = uid('hd');
-  const skin = o.skin || '#d9a47e', top = o.top || '#4f7f5c', trim = o.trim || GOLD, hair = o.hair || '#4a3424';
+  const n = ++HID, ph = o.ph ?? (n * 0.618) % 1, id = uid('hd');
+  const skin = o.skin || '#d9a47e', top = o.top || '#4f7f5c', trim = o.trim || (o.plain ? dark(top, 0.1) : GOLD), hair = o.hair || '#4a3424';
   const beard = o.beard === undefined ? hair : o.beard, mantle = o.mantle || null, lining = o.lining || (mantle ? light(mantle, 0.35) : null);
   const age = o.age || 'mid', mood = o.mood || 'happy', hs = o.hairStyle || (age === 'old' ? 'old' : 'short');
   const bs = o.beardStyle === undefined ? (beard ? (age === 'old' ? 'long' : 'full') : null) : o.beardStyle;
@@ -55,7 +59,8 @@ export function hd(x, y, s, o = {}) {
   if (o.kneel) {
     g.push(`<ellipse cx="-66" cy="-92" rx="17" ry="10" fill="${skSh}"/><ellipse cx="66" cy="-92" rx="17" ry="10" fill="${skSh}"/>`);
   } else {
-    for (const sx of [-1, 1]) g.push(`<g transform="translate(${sx * 17},-6)"><ellipse cx="0" cy="3" rx="17" ry="6" fill="#5a3a22"/>`
+    if (o.shoes) for (const sx of [-1, 1]) g.push(`<ellipse cx="${sx * 17}" cy="-4" rx="17" ry="8" fill="${o.shoes}"/><ellipse cx="${sx * 17 - 5}" cy="-7" rx="7" ry="2.6" fill="${light(o.shoes, 0.3)}" opacity=".5"/>`);
+    else for (const sx of [-1, 1]) g.push(`<g transform="translate(${sx * 17},-6)"><ellipse cx="0" cy="3" rx="17" ry="6" fill="#5a3a22"/>`
       + `<ellipse cx="${sx * 2}" cy="-1" rx="14" ry="7.5" fill="${skin}"/><ellipse cx="${sx * 6}" cy="-3" rx="6" ry="3" fill="${skHi}" opacity=".5"/>`
       + `<path d="M-11 -2 Q0 -8 11 -2 M-3 -7 L-1 4" stroke="#6a4428" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`);
   }
@@ -67,19 +72,21 @@ export function hd(x, y, s, o = {}) {
   } else {
     g.push(`<path d="M-37 -207 Q0 -218 37 -207 Q46 -110 58 -8 Q0 4 -58 -8 Q-46 -110 -37 -207Z" fill="${R}"/>`);
   }
-  g.push(`<path d="M-17 -206 Q-20 -110 -26 ${hemY - 2} M17 -206 Q20 -110 26 ${hemY - 2}" stroke="${dark(top, 0.45)}" stroke-width="5" fill="none" opacity=".45"/>`
+  g.push((o.plain ? '' : `<path d="M-17 -206 Q-20 -110 -26 ${hemY - 2} M17 -206 Q20 -110 26 ${hemY - 2}" stroke="${dark(top, 0.45)}" stroke-width="5" fill="none" opacity=".45"/>`)
     + `<path d="M-6 -140 Q-10 -70 -14 ${hemY} M8 -120 Q14 -60 20 ${hemY} M-34 -100 Q-40 -50 -44 ${hemY}" stroke="${sh}" stroke-width="2.4" fill="none" opacity=".5" stroke-linecap="round"/>`
     + `<path d="M-35 -196 Q-42 -110 -52 ${hemY - 4}" stroke="${light(top, 0.55)}" stroke-width="3" fill="none" opacity=".55" stroke-linecap="round"/>`);
   if (o.shaggy) {   // camel-hair edge
     let z = `M-58 ${hemY}`; for (let k = 0; k <= 14; k++) z += ` L${-58 + k * 8.3} ${hemY + (k % 2 ? 10 : 0)}`;
     g.push(`<path d="${z} L58 ${hemY - 12} L-58 ${hemY - 12}Z" fill="${dark(top, 0.12)}"/>`
       + `<path d="M-30 -180 l6 8 M10 -160 l6 8 M-20 -120 l6 8 M24 -100 l6 8 M-36 -60 l6 8 M6 -50 l6 8 M30 -30 l6 8" stroke="${dark(top, 0.3)}" stroke-width="2.4" stroke-linecap="round"/>`);
+  } else if (o.plain) {
+    g.push(`<path d="M-58 ${hemY} Q0 ${hemY + 12} 58 ${hemY} L57 ${hemY - 9} Q0 ${hemY + 3} -57 ${hemY - 9}Z" fill="${trim}"/>`);
   } else {
     let dots = ''; for (let k = -5; k <= 5; k++) dots += `<path d="M${k * 9.5} ${hemY - 10} l3.5 -4 l3.5 4 l-3.5 4Z" fill="${dark(trim, 0.25)}"/>`;
     g.push(`<path d="M-58 ${hemY} Q0 ${hemY + 12} 58 ${hemY} L56 ${hemY - 18} Q0 ${hemY - 6} -56 ${hemY - 18}Z" fill="${trim}"/>${dots}`);
   }
   // belt with a knot and hanging ends
-  g.push(`<path d="M-45 -126 Q0 -114 45 -126 L46 -110 Q0 -98 -46 -110Z" fill="${belt}"/><path d="M-45 -124 Q0 -112 45 -124" stroke="${light(belt, 0.3)}" stroke-width="2" fill="none" opacity=".7"/>`
+  if (o.belt !== false) g.push(`<path d="M-45 -126 Q0 -114 45 -126 L46 -110 Q0 -98 -46 -110Z" fill="${belt}"/><path d="M-45 -124 Q0 -112 45 -124" stroke="${light(belt, 0.3)}" stroke-width="2" fill="none" opacity=".7"/>`
     + `<g transform="translate(-16,-112)"><path d="M-2 4 Q-8 30 -4 52 M3 4 Q6 28 10 46" stroke="${belt}" stroke-width="6" fill="none" stroke-linecap="round"/><ellipse rx="8" ry="6" fill="${dark(belt, 0.15)}"/></g>`);
   // mantle, front drape (left shoulder to right hip) with lining edge, folds and trim
   if (mantle) {
@@ -107,7 +114,7 @@ export function hd(x, y, s, o = {}) {
   g.push(arm(-1, o.armL ?? 8, o.propL));
   // neck, embroidered neckline
   g.push(`<path d="M-10 -230 L10 -230 L11 -204 L-11 -204Z" fill="${skSh}"/>`
-    + `<path d="M-19 -210 Q0 -190 19 -210" stroke="${trim}" stroke-width="4.5" fill="none"/><path d="M-19 -210 Q0 -190 19 -210" stroke="${dark(trim, 0.3)}" stroke-width="1.2" fill="none" stroke-dasharray="3 4"/>`);
+    + `<path d="M-19 -210 Q0 -190 19 -210" stroke="${trim}" stroke-width="4.5" fill="none"/>` + (o.plain ? '' : `<path d="M-19 -210 Q0 -190 19 -210" stroke="${dark(trim, 0.3)}" stroke-width="1.2" fill="none" stroke-dasharray="3 4"/>`));
   // ears, head, cheek shading, rim light
   g.push(`<g fill="${skin}"><ellipse cx="-40" cy="-250" rx="8.5" ry="10"/><ellipse cx="40" cy="-250" rx="8.5" ry="10"/></g>`
     + `<path d="M-42 -255 q-3 5 0 10 M42 -255 q3 5 0 10" stroke="${skSh}" stroke-width="2" fill="none"/>`
@@ -128,10 +135,11 @@ export function hd(x, y, s, o = {}) {
     g.push(`<path d="M-44 -246 Q-48 ${wild ? -310 : -300} 0 ${wild ? -304 : -298} Q48 ${wild ? -310 : -300} 44 -246 Q44 -214 ${wild ? 52 : 46} -186 Q34 -184 32 -200 L34 -258 Q22 -276 4 -272 Q-2 -262 -8 -272 Q-24 -276 -34 -258 L-32 -200 Q-34 -184 ${wild ? -52 : -46} -186 Q-44 -214 -44 -246Z" fill="${HC}"/>`
       + strands('M-6 -294 Q-22 -288 -34 -264 M4 -294 Q22 -288 34 -264 M-38 -240 Q-40 -214 -42 -196 M38 -240 Q40 -214 42 -196', hSh, 2.2, 0.65)
       + strands('M-12 -290 Q-26 -282 -32 -268 M14 -290 Q26 -282 32 -268', hHi, 2, 0.55));
-  } else {   // short wavy
+  } else {   // short wavy; 'tonsure' adds a shaved crown
     g.push(`<path d="M-42 -250 Q-46 -298 0 -297 Q46 -298 42 -250 Q38 -270 22 -276 Q14 -266 6 -276 Q-6 -266 -16 -277 Q-34 -272 -42 -250Z" fill="${HC}"/>`
       + strands('M-30 -282 Q-18 -292 -4 -290 M4 -291 Q18 -292 30 -280 M-38 -262 Q-34 -276 -24 -282', hSh, 2, 0.6)
-      + strands('M-20 -288 Q-8 -294 6 -292', hHi, 3, 0.5));
+      + (hs === 'tonsure' ? `<ellipse cx="0" cy="-290" rx="23" ry="8.5" fill="${skin}"/><ellipse cx="-6" cy="-292" rx="10" ry="3.4" fill="${skHi}" opacity=".7"/><ellipse cx="8" cy="-288" rx="10" ry="4.5" fill="${skSh}" opacity=".3"/>`
+        : strands('M-20 -288 Q-8 -294 6 -292', hHi, 3, 0.5)));
   }
   // age lines
   if (age === 'old') g.push(`<path d="M-16 -278 Q0 -282 16 -278 M-12 -271 Q0 -274 12 -271" stroke="${skSh}" stroke-width="1.6" fill="none" opacity=".5" stroke-linecap="round"/>`
@@ -232,4 +240,39 @@ export function hd(x, y, s, o = {}) {
   g.push(arm(1, o.armR ?? 8, o.propR));
   g.push('</g></g></g>');
   return g.join('');
+}
+
+// ---------------------------------------------------------------- timing helpers
+const fadeInTw = (at, dur) => M.tw([{ at, dur, from: { opacity: 0 }, to: { opacity: 1 } }]);
+let SEQ = 0;
+/** One character through several looks: seq(draw, [[0, opts], [t, opts], ...]). draw(opts) returns the character (pass the
+ * opts on to hd()). Each new look fades in ON TOP of the previous one, which is hidden once covered, so the face never turns
+ * see-through mid-change; all copies share one bob / blink phase. Times are seconds from the scene start. */
+export const seq = (draw, steps, dur = 0.4) => {
+  const ph = (++SEQ * 0.37) % 1;
+  return steps.map(([at, o], i) => {
+    const next = steps[i + 1]?.[0], pic = draw({ ph, ...o });
+    const body = next !== undefined ? `<g${M.tw([{ at: next + dur, dur: 0.05, from: { opacity: 1 }, to: { opacity: 0 } }])}>${pic}</g>` : pic;
+    return i ? `<g opacity="0"${fadeInTw(at, dur)}>${body}</g>` : body;
+  }).join('');
+};
+/** When is a word spoken? const at = wordTimes(STORY slug); at(sceneIndex, 'word or phrase', plus = 0) returns seconds from
+ * the scene start (estimated from the line's start/end in work/<slug>/timings.json by the word's position in the text), so
+ * expression changes and props land on the word they illustrate. A phrase that is not found returns the scene's first line
+ * time; before the narration exists everything returns `plus`. flow lead-ins: 0.3 s for scene 0, 0.1 s for the others. */
+// rough spoken length of caption text: digits and Roman numerals are read as words ("1931" = nineteen thirty-one, "XI" = the Eleventh)
+const spokenLen = (t) => t.replace(/\d/g, '####').replace(/[IVX]{2,}/g, (m) => '#####'.repeat(m.length)).length;
+export function wordTimes(slug, { first = 0.3, lead = 0.1 } = {}) {
+  let T = null;
+  try { T = JSON.parse(fs.readFileSync(new URL(`./work/${slug}/timings.json`, import.meta.url), 'utf8')); } catch { /* not narrated yet */ }
+  return (scene, word, plus = 0) => {
+    const sc = T?.[scene]; if (!sc) return plus;
+    const L = scene === 0 ? first : lead;
+    for (const se of sc.sentences) {
+      const i = se.text.toLowerCase().indexOf(String(word).toLowerCase());
+      if (i >= 0) return +(L + se.start + (se.end - se.start) * spokenLen(se.text.slice(0, i)) / spokenLen(se.text) + plus).toFixed(2);
+    }
+    console.warn(`[wordTimes] "${word}" not found in scene ${scene}`);
+    return +(L + plus).toFixed(2);
+  };
 }
