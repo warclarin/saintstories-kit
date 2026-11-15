@@ -34,7 +34,7 @@ const punch = (at, amt = 0.04, ox = 540, oy = 1000) => M.tw([{ at, dur: 0.9, fro
 const T = { s0b: 3.48, s1b: 2.4, s2b: 4.25, s2c: 6.54, s3b: 1.85, s3c: 3.46, s4b: 4.34, s5b: 4.78, s5c: 8.27, s5d: 12.11, s6b: 4.35, s7b: 4.97 };
 // Word times inside lines (estimated from timings.json), for expression changes on the word they illustrate
 const WD = { greeted: 1.95, john: 3.0, behold: 2.35, lamb: 3.19, come: 6.54, comeEnd: 8.3, found: 2.28, andrewEnd: 3.24, became: 3.9,
-  carried: 1.69, preached: 5.36, sentenced: 3.04, saw: 6.37, quoteEnd: 11.81, brother: 6.07 };
+  carried: 1.69, preached: 5.36, sentenced: 3.04, saw: 6.37, quoteEnd: 11.81, gave: 13.5, brother: 6.07 };
 
 // ================================================================ characters
 const SKA = '#d9a47e';
@@ -66,6 +66,9 @@ export const scroll = (s = 1) => `<g transform="scale(${s}) rotate(-20)"><rect x
 /** John the Baptist's reed staff with a small cross. */
 export const reedCross = (s = 1) => `<g transform="scale(${s})"><rect x="-4" y="-230" width="8" height="300" rx="4" fill="#a88a4a"/><rect x="-26" y="-208" width="52" height="7" rx="3" fill="#a88a4a"/>`
   + '<path d="M0 -226 V64" stroke="#7a6232" stroke-width="2" opacity=".6"/></g>';
+// ropes for the martyrdom: a double loop over each wrist (hand at (0,0), arm raised along a beam; sx -1 left, 1 right) and a band over the robe
+const rope = (sx) => `<g stroke="#d8c090" stroke-width="6" stroke-linecap="round"><path d="M${-sx * 10 - sx * 17} ${13 + 13} L${-sx * 10 + sx * 17} ${13 - 13}"/><path d="M${-sx * 18 - sx * 17} ${24 + 13} L${-sx * 18 + sx * 17} ${24 - 13}" stroke="#b89a68"/></g>`;
+const ropeBand = '<g fill="none" stroke-linecap="round"><path d="M-54 -40 Q0 -27 54 -40" stroke="#d8c090" stroke-width="7"/><path d="M-55 -29 Q0 -16 55 -29" stroke="#b89a68" stroke-width="6"/></g>';
 const lamb = (s = 1) => `<g transform="scale(${s})"><circle r="70" fill="url(#haloGlow)" opacity=".8"/><g fill="#fffaf0"><circle cx="-18" cy="0" r="16"/><circle cx="0" cy="-6" r="18"/><circle cx="18" cy="0" r="16"/><circle cx="0" cy="10" r="16"/></g>`
   + '<ellipse cx="30" cy="-12" rx="11" ry="9" fill="#f0e2d0"/><circle cx="33" cy="-14" r="1.8" fill="#2b1d14"/><path d="M-14 18 v16 M12 18 v16" stroke="#e8d8c0" stroke-width="5" stroke-linecap="round"/></g>';
 const tongue = (s = 1) => `<g transform="scale(${s})"><circle cy="-16" r="34" fill="url(#sunGlow)" opacity=".9"/><g${M.pulse(0.14, 0.6, 0, 0, 0)}><path d="M0 0 Q-14 -14 -5 -36 Q0 -24 6 -30 Q15 -12 0 0Z" fill="#ff8a3a"/>`
@@ -169,10 +172,15 @@ function scene5() {
     [C, { x: 620, flip: true, mood: 'joy', talk: [C, WD.quoteEnd], armL: [120, 4, 2.4], armR: [130, 4, 2.6] }],
   ];
   return MID(shore(1236, '#5a4250', '#8a6070', { seed: 17, stones: '#3a2a38' }))
-    + `<g transform="translate(270,1300)"><g opacity="0"${fadeIn(WD.saw - 0.4, 1.0)}><g${M.tw([{ at: D, dur: 1.6, from: { scale: 1 }, to: { scale: 1.04 }, origin: '0 -190' }])}>${saltire(1.0, { glowOp: 0.9 })}</g></g></g>`
+    + `<g${fadeOut(D, 0.7)}><g transform="translate(270,1300)"><g opacity="0"${fadeIn(WD.saw - 0.4, 1.0)}>${saltire(1.0, { glowOp: 0.9 })}</g></g></g>`
     + `<g${fadeOut(B + 1.2, 0.8)}><g${punch(2.0, 0.05, 900, 1000)}>${governor(850, 1290, 1.55, { flip: true, armL: 10, armR: [42, 4, 1.6] })}</g></g>`
-    + `<g${M.tw([{ at: D + 0.8, dur: 0.05, from: { opacity: 1 }, to: { opacity: 0 } }])}>${seq(A, looks)}</g>`
-    + `<g opacity="0"${fadeIn(D, 0.8)}>${glow(560, 760, 420, 0.75)}${A({ x: 620, flip: true, mood: 'peaceful', halo: true, armL: [40, 2, 3], armR: [40, 2, 3] })}</g>`
+    + `<g${fadeOut(D, 0.7)}>${seq(A, looks)}</g>`
+    // the martyrdom itself (allowed since 2026-11-15, bloodless): Andrew tied on the X cross, looking up, then at peace
+    + `<g opacity="0"${fadeIn(D + 0.1, 0.9)}><g${M.tw([{ at: D, dur: 3.2, from: { scale: 1 }, to: { scale: 1.05 }, origin: '540 900' }])}>${glow(540, 800, 520, 0.8)}`
+    + `<g transform="translate(540,1300)">${saltire(2.0, { glowOp: 0.5 })}</g>`
+    + seq((o) => andrew(540, 1215, 1.9, { age: 'old', halo: true, armL: 142, armR: 142, propL: rope(-1), propR: rope(1), over: ropeBand, ...o }),
+      [[0, { mood: 'awe', look: [0, -2.6] }], [WD.gave, { mood: 'peaceful' }]], 0.6)
+    + '</g></g>'
     + `<g opacity="0"${fadeIn(D + 0.3, 1.2)}>${sparkles(16, 300, 860, 600, 1100, { seed: 12, color: '#ffe0b0' })}</g>`
     + motes(12, { y0: 600, y1: 1240, seed: 15, color: '#ffc890' });
 }
