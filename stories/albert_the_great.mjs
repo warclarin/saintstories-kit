@@ -79,6 +79,21 @@ export function studyDesk(x, y, s = 1) {
     + `<g transform="translate(20,-150)"><rect x="-12" y="-18" width="24" height="18" rx="4" fill="#2a2430"/><g transform="translate(2,-22) scale(.7)">${quill}</g></g>`
     + `<g transform="translate(80,-150)">${candle}</g></g>`;
 }
+/** Albert's death (shown since 2026-11-15): the old friar lying on a plain bed in his cell, eyes closed, halo, a small
+ * cross on the blanket. Sources give only the place and date (the Dominican convent in Cologne, 15 November 1280), so
+ * nothing more is shown. cy = the height of the lying body's centre line. */
+function deathbed(cy) {
+  const bl = '#5a6a8e';
+  return `<rect x="150" y="${cy - 70}" width="26" height="250" rx="6" fill="#5a3a22"/><rect x="170" y="${cy + 84}" width="660" height="44" rx="8" fill="#7a5230"/>`
+    + `<rect x="790" y="${cy + 30}" width="24" height="150" rx="6" fill="#5a3a22"/><rect x="186" y="${cy + 60}" width="620" height="34" rx="12" fill="#efe6d2"/>`
+    + `<ellipse cx="290" cy="${cy + 44}" rx="128" ry="52" fill="#fbf6ea"/><ellipse cx="300" cy="${cy + 62}" rx="110" ry="26" fill="#d8ccb4" opacity=".6"/>`
+    + `<g transform="translate(770,${cy}) rotate(-90)">${albert(0, 0, 1.9, { old: true, halo: true, mood: 'peaceful', armL: 8, armR: 8 })}</g>`
+    + `<path d="M420 ${cy - 112} Q600 ${cy - 128} 800 ${cy - 100} L806 ${cy + 92} L410 ${cy + 92} Q400 ${cy} 420 ${cy - 112}Z" fill="${bl}"/>`
+    + `<path d="M420 ${cy - 112} Q600 ${cy - 128} 800 ${cy - 100}" stroke="${light(bl, 0.35)}" stroke-width="8" fill="none"/>`
+    + `<path d="M470 ${cy - 80} Q480 ${cy} 470 ${cy + 80} M600 ${cy - 90} Q612 ${cy} 600 ${cy + 84} M720 ${cy - 84} Q730 ${cy} 722 ${cy + 86}" stroke="${dark(bl, 0.3)}" stroke-width="4" fill="none" opacity=".5"/>`
+    + `<path d="M420 ${cy - 112} Q400 ${cy} 410 ${cy + 92} L440 ${cy + 92} Q432 ${cy} 448 ${cy - 112}Z" fill="#f4ecd8"/>`
+    + `<g transform="translate(560,${cy - 6})">${glowCross(0.75)}</g>`;
+}
 const openBook = (s = 1) => `<g transform="scale(${s})">${book(true)}</g>`;
 const grass = (y, c) => ground(y, c, { rim: light(c, 0.2) });
 const stoneFloor = (y, c) => ground(y, c, { rim: light(c, 0.15) }) + Array.from({ length: 7 }, (_, i) => `<path d="M${-100 + i * 220} ${y + 6} l-40 400" stroke="${dark(c, 0.2)}" stroke-width="4" opacity=".4"/>`).join('');
@@ -180,7 +195,8 @@ function scene5() {
     + stoneFloor(1240, '#4a3e52')
     + span(seq(K, [[0, { mood: 'worried' }], [Td, { mood: 'worried', look: [2.4, -2.2] }], [G - 0.2, { mood: 'sad', tears: G }]]), 0, B)
     + span(glow(470, 900, 420, 0.8), B, null, 0.7)
-    + span(seq(S, [[0, { mood: 'determined', armR: 10, armL: [118, 3, 2.4], propL: openBook(0.95) }], [C, { mood: 'peaceful', halo: true, armL: 26, armR: 26 }]], 0.7), B)
+    + span(S({ mood: 'determined', armR: 10, armL: [118, 3, 2.4], propL: openBook(0.95) }), B, C, 0.7)
+    + span(deathbed(1140), C, null, 0.8)
     + span(sparkles(14, 250, 700, 560, 1100, { seed: 9 }), C + 0.4, null)
     + motes(10, { x0: 150, x1: 900, y0: 700, y1: 1250, seed: 8 })
     + NEAR(bokeh(6, { seed: 15, op: [0.2, 0.5] }));
@@ -226,7 +242,7 @@ export const STORY = {
   fx: { handheld: true, leak: true, loop: true },
   cast: { albert: { voice: 'bm_george', speed: 0.92 } },
   thumb_hook: 'The saint of science', thumb_title: 'St. Albert the Great', thumb_scene: 7, thumb_t: 5, thumb_shift: 40,
-  wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
+  wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [1024, 1250, 'r']],
   fix: {
     'ˈækwɪnəz': 'əkwˈaɪnəs',                       // Aquinas -> uh-KWY-nus
     'dɪoʊsˈiːz': 'dˈaɪəsɪs',                        // diocese -> DY-uh-sis
