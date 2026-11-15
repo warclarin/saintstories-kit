@@ -11,7 +11,7 @@
 // beardStyle 'short' | 'full' | 'long' | null, shaggy (camel-hair tunic edge).
 // Not covered yet (use person() or add it here): sitting, veils/wimples (nuns, Mary), crowns, trousers/camisa, habits with
 // hoods. Extend this file for those, keeping old options unchanged.
-import { M, GOLD, INK, dark, light, uid, f } from './art.mjs';
+import { M, GOLD, INK, dark, light, mix, uid, f } from './art.mjs';
 
 let HID = 0;
 export function hd(x, y, s, o = {}) {
@@ -28,8 +28,9 @@ export function hd(x, y, s, o = {}) {
     + `<linearGradient id="${id}h" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="${hHi}"/><stop offset=".45" stop-color="${hair}"/><stop offset="1" stop-color="${hSh}"/></linearGradient>`
     + (mantle ? `<linearGradient id="${id}m" x1="0" y1="0" x2="1" y2=".4"><stop offset="0" stop-color="${light(mantle, 0.25)}"/><stop offset=".5" stop-color="${mantle}"/><stop offset="1" stop-color="${dark(mantle, 0.32)}"/></linearGradient>` : '')
     + (beard ? `<linearGradient id="${id}b" x1="0" y1="0" x2=".5" y2="1"><stop offset="0" stop-color="${light(beard, 0.3)}"/><stop offset=".5" stop-color="${beard}"/><stop offset="1" stop-color="${dark(beard, 0.3)}"/></linearGradient>` : '')
+    + `<linearGradient id="${id}e" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mix(skin, '#fffaf2', 0.45)}"/><stop offset=".38" stop-color="#fffaf2"/><stop offset="1" stop-color="#fbf3ea"/></linearGradient>`
     + '</defs>');
-  const R = `url(#${id}r)`, FC = `url(#${id}f)`, HC = `url(#${id}h)`, MC = `url(#${id}m)`, BC = `url(#${id}b)`;
+  const EW = `url(#${id}e)`, R = `url(#${id}r)`, FC = `url(#${id}f)`, HC = `url(#${id}h)`, MC = `url(#${id}m)`, BC = `url(#${id}b)`;
   g.push(`<g transform="translate(${f(x)},${f(y)}) scale(${f(o.flip ? -s : s)},${f(s)})">`);
   g.push('<ellipse cx="0" cy="2" rx="64" ry="13" fill="#1a0f1a" opacity=".28" filter="url(#soft)"/>');
   g.push(`<g${M.bob(1.8, 2.3 + ph, ph)}><g transform="translate(0,${o.kneel ? 84 : 0})">`);
@@ -144,16 +145,15 @@ export function hd(x, y, s, o = {}) {
       + strands(`M-30 -240 Q-30 -224 -22 ${len + 30}`, light(beard, 0.45), 2, 0.5)
       + `<path d="M-17 -233 Q-8 -241 0 -235 Q8 -241 17 -233 Q10 -229 0 -231 Q-10 -229 -17 -233Z" fill="${dark(beard, 0.12)}"/>`);
   }
-  // eyes (iris, pupil, two highlights, a soft thin upper lid; no eyelashes, user's choice 2026-11-15); peaceful = closed
+  // eyes: shaded eye-white, iris, pupil, two highlights; no eyelashes and no lid lines (user's choice 2026-11-15); peaceful = closed
   if (mood === 'peaceful') {
     g.push(`<path d="M-22 -250 Q-14 -243 -6 -250 M6 -250 Q14 -243 22 -250" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
   } else {
-    const sur = mood === 'surprised', ry = sur ? 10 : 8.6, rx = sur ? 7.8 : 7.2, ir = sur ? 5 : 5.8;
-    const eye = (cx, sx) => `<ellipse cx="${cx}" cy="-250" rx="${rx}" ry="${ry}" fill="#fffaf2"/>`
+    const sur = mood === 'surprised', ry = sur ? 10 : 8.6, rx = sur ? 7.8 : 7.2, ir = sur ? 5.4 : 6.4;
+    const eye = (cx, sx) => `<ellipse cx="${cx}" cy="-250" rx="${rx}" ry="${ry}" fill="${EW}"/>`
       + `<circle cx="${cx + sx * 0.6}" cy="-249" r="${ir}" fill="${iris}"/><circle cx="${cx + sx * 0.6}" cy="-247.5" r="${ir * 0.55}" fill="${light(iris, 0.35)}" opacity=".6"/>`
       + `<circle cx="${cx + sx * 0.6}" cy="-249" r="${ir * 0.52}" fill="${INK}"/>`
       + `<circle cx="${cx - 2}" cy="-252.5" r="2.4" fill="#fff"/><circle cx="${cx + 2}" cy="-246" r="1.1" fill="#fff" opacity=".9"/>`
-      + `<path d="M${cx - rx - 1} -250 Q${cx} ${-250 - ry - 3} ${cx + rx + 1} -251" stroke="${dark(skin, 0.45)}" stroke-width="1.6" fill="none" opacity=".75" stroke-linecap="round"/>`
       + `<path d="M${cx - rx + 2} -242.5 Q${cx} ${-240.5} ${cx + rx - 2} -242.5" stroke="${skSh}" stroke-width="1.4" fill="none" opacity=".7"/>`;
     g.push(`<g data-blink="${f(ph * 3)} 0 -250">${eye(-14, -1)}${eye(14, 1)}`
       + (mood === 'joy' ? `<path d="M-23 -241 Q-14 -247 -5 -241 L-5 -238 L-23 -238Z M5 -241 Q14 -247 23 -241 L23 -238 L5 -238Z" fill="${skin}"/>` : '') + '</g>');
