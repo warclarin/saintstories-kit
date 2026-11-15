@@ -144,19 +144,16 @@ export function hd(x, y, s, o = {}) {
       + strands(`M-30 -240 Q-30 -224 -22 ${len + 30}`, light(beard, 0.45), 2, 0.5)
       + `<path d="M-17 -233 Q-8 -241 0 -235 Q8 -241 17 -233 Q10 -229 0 -231 Q-10 -229 -17 -233Z" fill="${dark(beard, 0.12)}"/>`);
   }
-  // eyes (iris, pupil, two highlights, upper lid with a lash flick); peaceful = closed with lashes
-  const lid = dark(hair === '#e8e2d8' || age === 'old' ? '#6a5a4a' : hair, 0.35);
+  // eyes (iris, pupil, two highlights, a soft thin upper lid; no eyelashes, user's choice 2026-11-15); peaceful = closed
   if (mood === 'peaceful') {
-    g.push(`<path d="M-22 -250 Q-14 -243 -6 -250 M6 -250 Q14 -243 22 -250" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`
-      + `<path d="M-22 -250 l-4 -2 M22 -250 l4 -2" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/>`);
+    g.push(`<path d="M-22 -250 Q-14 -243 -6 -250 M6 -250 Q14 -243 22 -250" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
   } else {
     const sur = mood === 'surprised', ry = sur ? 10 : 8.6, rx = sur ? 7.8 : 7.2, ir = sur ? 5 : 5.8;
     const eye = (cx, sx) => `<ellipse cx="${cx}" cy="-250" rx="${rx}" ry="${ry}" fill="#fffaf2"/>`
       + `<circle cx="${cx + sx * 0.6}" cy="-249" r="${ir}" fill="${iris}"/><circle cx="${cx + sx * 0.6}" cy="-247.5" r="${ir * 0.55}" fill="${light(iris, 0.35)}" opacity=".6"/>`
       + `<circle cx="${cx + sx * 0.6}" cy="-249" r="${ir * 0.52}" fill="${INK}"/>`
       + `<circle cx="${cx - 2}" cy="-252.5" r="2.4" fill="#fff"/><circle cx="${cx + 2}" cy="-246" r="1.1" fill="#fff" opacity=".9"/>`
-      + `<path d="M${cx - rx - 1} -250 Q${cx} ${-250 - ry - 3} ${cx + rx + 1} -251" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`
-      + `<path d="M${cx + sx * (rx + 1)} -251 l${sx * 4} -3" stroke="${INK}" stroke-width="2.2" stroke-linecap="round"/>`
+      + `<path d="M${cx - rx - 1} -250 Q${cx} ${-250 - ry - 3} ${cx + rx + 1} -251" stroke="${dark(skin, 0.45)}" stroke-width="1.6" fill="none" opacity=".75" stroke-linecap="round"/>`
       + `<path d="M${cx - rx + 2} -242.5 Q${cx} ${-240.5} ${cx + rx - 2} -242.5" stroke="${skSh}" stroke-width="1.4" fill="none" opacity=".7"/>`;
     g.push(`<g data-blink="${f(ph * 3)} 0 -250">${eye(-14, -1)}${eye(14, 1)}`
       + (mood === 'joy' ? `<path d="M-23 -241 Q-14 -247 -5 -241 L-5 -238 L-23 -238Z M5 -241 Q14 -247 23 -241 L23 -238 L5 -238Z" fill="${skin}"/>` : '') + '</g>');
