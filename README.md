@@ -42,6 +42,15 @@ every frame from HyperFrames' `hf-seek` time. Helpers and wiring: `stories/bakhi
 `stories/george_dragon.bg3d.js` (`BG3D_MANUAL` + `bg3d_extra`). More sets: `longinus.bg3d.js` (Golgotha, Cappadocia).
 In a 3D scene drop the SVG sky and `BACK` layer so the canvas shows; `thumb_shift` does not move the canvas.
 
+## Detailed characters (`hd.mjs`, standard)
+New reels draw their people with `hd(x, y, s, opts)` from `hd.mjs` instead of art.mjs `person()`: the same chibi
+proportions, coordinates and options (`mood`, `talk`, `halo`, `armL/armR`, `propL/propR`, `flip`, `kneel`, `under/over`),
+with gradient-lit clothes, folds, embroidered trim, a draped mantle (`mantle`, `lining`), belt, sandals, hands with fingers,
+irises with highlights, hair and beard strands (`hairStyle`, `beardStyle`), age lines (`age`) and a richer halo.
+Write a small helper per character on top of it (see `andrew`, `jesusHD`, `peterHD`, `baptist`, `governor` in
+`stories/andrew_apostle.mjs`). Not covered yet: sitting, veils/wimples, crowns, trousers, hooded habits; use `person()` for
+those or extend `hd.mjs` with new opt-in options. Older stories keep `person()` and render unchanged.
+
 ## Camera moves and parallax
 
 Each scene can set `cam`:
