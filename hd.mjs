@@ -143,46 +143,90 @@ export function hd(x, y, s, o = {}) {
       + (bs === 'long' ? `<path d="M-8 ${len + 4} Q-6 ${len - 10} -14 ${len - 16} M8 ${len + 4} Q6 ${len - 10} 14 ${len - 16}" stroke="${beard}" stroke-width="7" fill="none" stroke-linecap="round"/>` : '')
       + strands(`M-26 -232 Q-24 ${len + 30} -12 ${len + 12} M-10 -224 Q-8 ${len + 20} -4 ${len + 6} M10 -224 Q8 ${len + 20} 4 ${len + 6} M26 -232 Q24 ${len + 30} 12 ${len + 12}`, dark(beard, 0.32), 1.8, 0.55)
       + strands(`M-30 -240 Q-30 -224 -22 ${len + 30}`, light(beard, 0.45), 2, 0.5)
-      + `<path d="M-17 -233 Q-8 -241 0 -235 Q8 -241 17 -233 Q10 -229 0 -231 Q-10 -229 -17 -233Z" fill="${dark(beard, 0.12)}"/>`);
+      + `<path d="M-15 -235 Q-8 -241 0 -237 Q8 -241 15 -235 Q9 -232 0 -234 Q-9 -232 -15 -235Z" fill="${dark(beard, 0.12)}"/>`);
   }
-  // eyes: shaded eye-white, iris, pupil, two highlights; no eyelashes and no lid lines (user's choice 2026-11-15); peaceful = closed
-  if (mood === 'peaceful') {
-    g.push(`<path d="M-22 -250 Q-14 -243 -6 -250 M6 -250 Q14 -243 22 -250" stroke="${INK}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`);
+  // ---------------------------------------------------------------- face
+  // Expressions (mood): every mood changes the EYES (upper / lower lid, size, gaze), the brows and the mouth, so faces read
+  // even behind a beard. No eyelashes and no lid lines (user's choice 2026-11-15): lids are soft skin shapes over the eye-white.
+  //   happy (soft smile, smiling eyes)   joy (laughing: squinted eyes, open grin)   tender (loving: closed smiling eyes ^ ^)
+  //   sad (drooping outer lids, eyes down, mouth down)   worried (raised inner brows, wavy mouth)   pain (squeezed eyes, grimace)
+  //   determined (calm resolve: slightly lowered lids, level brows, firm closed smile; reads brave, not angry)
+  //   stern (judges, persecutors: heavy V brows, lowered lids, down-turned mouth; never on the saint)
+  //   surprised (wide eyes, small pupils, high brows, O mouth)   awe (wonder at a vision: wide eyes looking up, soft open smile)
+  //   peaceful (prayer, death, glory: closed eyes, gentle smile)
+  // Options: look [dx, dy] moves the gaze (face units, about -3..3; flip mirrors it), tears true | fade-in time (a tear on each cheek).
+  const MO = {   // lt: upper lid [inner, outer] as a share of the eye height; lb: lower lid share; sc: eye size; ir: iris radius; gz: gaze
+    happy:      { lt: [0.12, 0.14], lb: 0.22, sc: 1, ir: 6.4, gz: [0, 0] },
+    joy:        { lt: [0.12, 0.12], lb: 0.48, sc: 1, ir: 6.4, gz: [0, 0] },
+    sad:        { lt: [0.08, 0.5], lb: 0.06, sc: 1, ir: 6.2, gz: [0, 1.8] },
+    worried:    { lt: [0.0, 0.26], lb: 0.04, sc: 1.06, ir: 5.6, gz: [0, 0.6] },
+    determined: { lt: [0.2, 0.14], lb: 0.16, sc: 1, ir: 6.4, gz: [0, 0] },
+    stern:      { lt: [0.5, 0.22], lb: 0.12, sc: 1, ir: 6.2, gz: [0, 0] },
+    surprised:  { lt: [0, 0], lb: 0, sc: 1.16, ir: 5.0, gz: [0, 0] },
+    awe:        { lt: [0, 0.04], lb: 0.06, sc: 1.1, ir: 5.8, gz: [0, -2.4] },
+  }[mood];
+  const look = o.look || [0, 0];
+  if (!MO) {   // closed eyes: peaceful (downward arcs) | tender (smiling arcs ^ ^) | pain (squeezed > <)
+    const d = mood === 'tender' ? 'M-22 -248 Q-14 -256 -6 -248 M6 -248 Q14 -256 22 -248'
+      : mood === 'pain' ? 'M-22 -255 L-8 -250 L-22 -245 M22 -255 L8 -250 L22 -245' : 'M-22 -251 Q-14 -244 -6 -251 M6 -251 Q14 -244 22 -251';
+    g.push(`<path d="${d}" stroke="${INK}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`);
   } else {
-    const sur = mood === 'surprised', ry = sur ? 10 : 8.6, rx = sur ? 7.8 : 7.2, ir = sur ? 5.4 : 6.4;
-    const eye = (cx, sx) => `<ellipse cx="${cx}" cy="-250" rx="${rx}" ry="${ry}" fill="${EW}"/>`
-      + `<circle cx="${cx + sx * 0.6}" cy="-249" r="${ir}" fill="${iris}"/><circle cx="${cx + sx * 0.6}" cy="-247.5" r="${ir * 0.55}" fill="${light(iris, 0.35)}" opacity=".6"/>`
-      + `<circle cx="${cx + sx * 0.6}" cy="-249" r="${ir * 0.52}" fill="${INK}"/>`
-      + `<circle cx="${cx - 2}" cy="-252.5" r="2.4" fill="#fff"/><circle cx="${cx + 2}" cy="-246" r="1.1" fill="#fff" opacity=".9"/>`
-      + `<path d="M${cx - rx + 2} -242.5 Q${cx} ${-240.5} ${cx + rx - 2} -242.5" stroke="${skSh}" stroke-width="1.4" fill="none" opacity=".7"/>`;
-    g.push(`<g data-blink="${f(ph * 3)} 0 -250">${eye(-14, -1)}${eye(14, 1)}`
-      + (mood === 'joy' ? `<path d="M-23 -241 Q-14 -247 -5 -241 L-5 -238 L-23 -238Z M5 -241 Q14 -247 23 -241 L23 -238 L5 -238Z" fill="${skin}"/>` : '') + '</g>');
+    const rx = 7.2 * MO.sc, ry = 8.6 * MO.sc, ir = MO.ir, top = -250 - ry, bot = -250 + ry, lidC = dark(skin, 0.05);
+    const gx = MO.gz[0] + look[0], gy = MO.gz[1] + look[1];
+    const eye = (cx, sx) => {
+      const cl = uid('ey'), xi = cx - sx * (rx + 2), xo = cx + sx * (rx + 2);
+      const [li, lo] = MO.lt, yi = top + li * 2 * ry, yo = top + lo * 2 * ry;
+      const ix = f(cx + sx * 0.6 + gx), iy = f(-249 + gy);
+      return `<clipPath id="${cl}"><ellipse cx="${cx}" cy="-250" rx="${f(rx)}" ry="${f(ry)}"/></clipPath>`
+        + `<ellipse cx="${cx}" cy="-250" rx="${f(rx)}" ry="${f(ry)}" fill="${EW}"/>`
+        + `<g clip-path="url(#${cl})"><circle cx="${ix}" cy="${iy}" r="${ir}" fill="${iris}"/><circle cx="${ix}" cy="${f(iy + 1.5)}" r="${f(ir * 0.55)}" fill="${light(iris, 0.35)}" opacity=".6"/>`
+        + `<circle cx="${ix}" cy="${iy}" r="${f(ir * 0.52)}" fill="${INK}"/>`
+        + `<circle cx="${f(ix - 2.6)}" cy="${f(iy - 3.4)}" r="2.4" fill="#fff"/><circle cx="${f(ix + 1.4)}" cy="${f(iy + 3)}" r="1.1" fill="#fff" opacity=".9"/>`
+        + (li || lo ? `<path d="M${f(xi)} ${f(top - 3)} L${f(xo)} ${f(top - 3)} L${f(xo)} ${f(yo)} Q${cx} ${f((yi + yo) / 2 + 2)} ${f(xi)} ${f(yi)}Z" fill="${lidC}"/>` : '')
+        + (MO.lb ? `<path d="M${f(xi)} ${f(bot + 3)} L${f(xo)} ${f(bot + 3)} L${f(xo)} ${f(bot - MO.lb * ry * 0.7)} Q${cx} ${f(bot - MO.lb * 2 * ry * 1.25)} ${f(xi)} ${f(bot - MO.lb * ry * 0.7)}Z" fill="${skin}"/>` : '')
+        + '</g>';
+    };
+    g.push(`<g data-blink="${f(ph * 3)} 0 -250">${eye(-14, -1)}${eye(14, 1)}</g>`);
   }
-  // brows (tapered strokes) per mood
-  const browC = beard ? dark(beard, 0.15) : dark(hair, 0.1);
-  const br = {
-    sad: ['M-24 -264 L-8 -271', 'M24 -264 L8 -271'], worried: ['M-24 -265 Q-15 -266 -8 -272', 'M24 -265 Q15 -266 8 -272'],
-    determined: ['M-24 -269 Q-15 -269 -7 -265', 'M24 -269 Q15 -269 7 -265'], stern: ['M-24 -272 L-7 -264', 'M24 -272 L7 -264'],
-    surprised: ['M-24 -273 Q-16 -281 -8 -274', 'M24 -273 Q16 -281 8 -274'],
-  }[mood] || ['M-24 -267 Q-16 -273 -8 -268', 'M24 -267 Q16 -273 8 -268'];
-  g.push(`<path d="${br[0]} ${br[1]}" stroke="${browC}" stroke-width="4.4" fill="none" stroke-linecap="round"/>`);
-  // nose, blush
-  const blush = mood === 'sad' || mood === 'stern' ? 0.16 : 0.3;
-  g.push(`<path d="M-1 -246 Q-5 -239 -1 -237 Q3 -236 5 -239" stroke="${skSh}" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="-2" cy="-243" r="1.6" fill="${skHi}" opacity=".7"/>`
-    + `<ellipse cx="-26" cy="-237" rx="8.5" ry="5" fill="#ef6f6a" opacity="${blush}"/><ellipse cx="26" cy="-237" rx="8.5" ry="5" fill="#ef6f6a" opacity="${blush}"/>`);
-  // mouth (on top of the beard)
-  const my = -227;
+  // brows: thick tapered strokes; white or grey hair gets a darker grey so they still read
+  const pale = (c) => { const n = parseInt(c.slice(1), 16); return ((n >> 16) + ((n >> 8) & 255) + (n & 255)) / 3 > 170; };
+  const browSrc = beard || hair, browC = pale(browSrc) ? '#8e847c' : dark(browSrc, 0.15);
+  const BR = {   // left brow (viewer-left); the right one is mirrored
+    happy: 'M-24 -268 Q-16 -275 -7 -270', joy: 'M-24 -271 Q-16 -279 -7 -273', tender: 'M-24 -269 Q-16 -274 -8 -270',
+    sad: 'M-25 -265 Q-17 -266 -8 -275', worried: 'M-25 -266 Q-19 -266 -15 -270 Q-11 -274 -7 -276', pain: 'M-25 -264 Q-16 -266 -7 -273',
+    determined: 'M-25 -271 Q-16 -274 -7 -270', stern: 'M-25 -274 L-6 -264', surprised: 'M-24 -276 Q-16 -285 -8 -278',
+    awe: 'M-24 -275 Q-16 -283 -8 -277', peaceful: 'M-24 -267 Q-16 -271 -8 -268',
+  }[mood] || 'M-24 -268 Q-16 -275 -7 -270';
+  g.push(`<g stroke="${browC}" stroke-width="5" fill="none" stroke-linecap="round"><path d="${BR}"/><path d="${BR}" transform="scale(-1,1)"/></g>`);
+  // nose, cheeks (blush stronger when smiling, faint when sad or stern)
+  const blush = { joy: 0.42, happy: 0.34, tender: 0.36, awe: 0.32, sad: 0.14, stern: 0.12, pain: 0.16 }[mood] ?? 0.26;
+  const by = mood === 'joy' ? -239 : -237;
+  g.push(`<path d="M-1 -248 Q-5 -241 -1 -239 Q3 -238 5 -241" stroke="${skSh}" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="-2" cy="-245" r="1.6" fill="${skHi}" opacity=".7"/>`
+    + `<ellipse cx="-26" cy="${by}" rx="8.5" ry="5" fill="#ef6f6a" opacity="${blush}"/><ellipse cx="26" cy="${by}" rx="8.5" ry="5" fill="#ef6f6a" opacity="${blush}"/>`);
+  if (o.tears !== undefined && o.tears !== false) {
+    const tf = typeof o.tears === 'number' ? M.in('fade', o.tears, 0.8) : '';
+    g.push(`<g${tf}>${[-1, 1].map((sx) => `<g transform="translate(${sx * 18},-238)"><g${M.bob(2.5, 1.8, sx > 0 ? 0.4 : 0)}><path d="M0 -6 Q4 1 3 4 A3.4 3.4 0 0 1 -3 4 Q-4 1 0 -6Z" fill="#bfe4ff" opacity=".9"/><circle cx="-1" cy="2" r="1" fill="#fff"/></g></g>`).join('')}</g>`);
+  }
+  // mouth: below the moustache, lip-coloured so it reads on a dark beard
+  const my = -224, lip = '#b8584f', dk = '#4a1c18';
+  const line = (d, w = 3) => `<path d="${d}" stroke="${lip}" stroke-width="${w}" fill="none" stroke-linecap="round"/>`;
   if (o.talk) {
     const [a, b] = Array.isArray(o.talk) ? o.talk : [0.3, 999];
-    g.push(`<g data-talk="${a} ${b} 0 ${my}"><ellipse cx="0" cy="${my}" rx="7.5" ry="6" fill="#5a2620"/><ellipse cx="0" cy="${my + 3}" rx="4.5" ry="2.4" fill="#d86a6a"/></g>`);
+    g.push(`<g data-talk="${a} ${b} 0 ${my}"><ellipse cx="0" cy="${my}" rx="7.5" ry="6" fill="${dk}" stroke="${lip}" stroke-width="1.6"/><ellipse cx="0" cy="${my + 3}" rx="4.5" ry="2.4" fill="#d86a6a"/></g>`);
   } else {
-    const lc = '#5a2a22', st = `stroke="${lc}" stroke-width="2.6" fill="none" stroke-linecap="round"`;
     g.push({
-      joy: `<path d="M-10 ${my - 3} Q0 ${my + 12} 10 ${my - 3}Z" fill="#5a2620"/><path d="M-6 ${my + 3} Q0 ${my + 7} 6 ${my + 3}" stroke="#d86a6a" stroke-width="3" fill="none"/>`,
-      sad: `<path d="M-7 ${my + 2} Q0 ${my - 4} 7 ${my + 2}" ${st}/>`, worried: `<path d="M-8 ${my} q4 -3 8 0 q4 3 8 0" ${st}/>`,
-      determined: `<path d="M-8 ${my - 1} Q0 ${my + 3} 8 ${my - 1}" ${st}/>`, stern: `<path d="M-8 ${my} H8" ${st}/>`,
-      surprised: `<ellipse cx="0" cy="${my}" rx="5" ry="6.5" fill="#5a2620"/>`, peaceful: `<path d="M-7 ${my - 1} Q0 ${my + 4} 7 ${my - 1}" ${st}/>`,
-    }[mood] || `<path d="M-9 ${my - 2} Q0 ${my + 6} 9 ${my - 2}" ${st}/><path d="M-4 ${my + 3} Q0 ${my + 4.5} 4 ${my + 3}" stroke="#c87a6a" stroke-width="2" fill="none" opacity=".6"/>`);
+      happy: `<path d="M-10 ${my - 2} Q0 ${my + 8} 10 ${my - 2} Q0 ${my + 3} -10 ${my - 2}Z" fill="${lip}"/>${line(`M-10 ${my - 2} Q0 ${my + 8} 10 ${my - 2}`, 1.6)}`,
+      joy: `<path d="M-12 ${my - 4} Q0 ${my + 14} 12 ${my - 4}Z" fill="${dk}" stroke="${lip}" stroke-width="1.6"/><path d="M-10.5 ${my - 3.4} Q0 ${my - 1} 10.5 ${my - 3.4} L9.5 ${my - 0.8} Q0 ${my + 1.6} -9.5 ${my - 0.8}Z" fill="#fffaf2"/><path d="M-6 ${my + 5} Q0 ${my + 1} 6 ${my + 5} Q0 ${my + 9} -6 ${my + 5}Z" fill="#e07a78"/>`,
+      tender: `<path d="M-11 ${my - 2} Q0 ${my + 7} 11 ${my - 2} Q0 ${my + 3} -11 ${my - 2}Z" fill="${lip}"/>`,
+      sad: `<path d="M-9 ${my + 3} Q0 ${my - 5} 9 ${my + 3} Q0 ${my - 1} -9 ${my + 3}Z" fill="${lip}"/>${line(`M-9 ${my + 3} Q0 ${my - 5} 9 ${my + 3}`, 1.6)}`,
+      worried: line(`M-9 ${my} Q-5 ${my - 3.5} 0 ${my} Q5 ${my + 3.5} 9 ${my}`, 3.2),
+      pain: `<path d="M-10 ${my + 1} Q-5 ${my - 4} 0 ${my - 1} Q5 ${my - 4} 10 ${my + 1} Q0 ${my + 5} -10 ${my + 1}Z" fill="${dk}" stroke="${lip}" stroke-width="1.6"/><path d="M-7 ${my - 0.5} Q0 ${my - 2} 7 ${my - 0.5}" stroke="#fffaf2" stroke-width="2" fill="none"/>`,
+      determined: line(`M-9 ${my - 1} Q0 ${my + 3} 9 ${my - 1}`, 3.4),
+      stern: line(`M-9 ${my + 2} Q0 ${my - 2} 9 ${my + 2}`, 3.4),
+      surprised: `<ellipse cx="0" cy="${my + 1}" rx="5.5" ry="7" fill="${dk}" stroke="${lip}" stroke-width="1.8"/>`,
+      awe: `<path d="M-6 ${my - 2} Q0 ${my + 9} 6 ${my - 2} Q0 ${my} -6 ${my - 2}Z" fill="${dk}" stroke="${lip}" stroke-width="1.6"/>`,
+      peaceful: line(`M-8 ${my - 1} Q0 ${my + 4} 8 ${my - 1}`, 3),
+    }[mood] || line(`M-9 ${my - 2} Q0 ${my + 6} 9 ${my - 2}`, 3));
   }
   if (o.over) g.push(o.over);
   g.push(arm(1, o.armR ?? 8, o.propR));

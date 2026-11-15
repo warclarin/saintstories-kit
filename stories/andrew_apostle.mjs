@@ -20,12 +20,21 @@ export { hd };   // re-exported so older imports from this file keep working
 const glow = (x, y, r, op = 1) => `<circle cx="${x}" cy="${y}" r="${r}" fill="url(#sunGlow)" opacity="${op}"/>`;
 const fadeIn = (at, dur = 0.5) => M.tw([{ at, dur, from: { opacity: 0 }, to: { opacity: 1 } }]);
 const fadeOut = (at, dur = 0.5) => M.tw([{ at, dur, from: { opacity: 1 }, to: { opacity: 0 } }]);
-const swap = (a, b, at, dur = 0.45) => `<g${fadeOut(at, dur)}>${a}</g><g opacity="0"${fadeIn(at, dur)}>${b}</g>`;
+/** One character through several looks: steps = [[at, opts], ...] (first at 0). Each new look fades in on top of the
+ * previous one, which is hidden once covered, so the face never turns see-through mid-change. */
+const seq = (draw, steps, dur = 0.4) => steps.map(([at, o], i) => {
+  const next = steps[i + 1]?.[0];
+  const body = next !== undefined ? `<g${M.tw([{ at: next + dur, dur: 0.05, from: { opacity: 1 }, to: { opacity: 0 } }])}>${draw(o)}</g>` : draw(o);
+  return i ? `<g opacity="0"${fadeIn(at, dur)}>${body}</g>` : body;
+}).join('');
 const walkIn = (at, dx, dur = 1.2) => M.tw([{ at, dur, from: { x: dx, opacity: 0 }, to: { x: 0, opacity: 1 }, ease: 'power2.out' }]);
 const punch = (at, amt = 0.04, ox = 540, oy = 1000) => M.tw([{ at, dur: 0.9, from: { scale: 1 }, to: { scale: 1 + amt }, ease: 'power2.out', origin: `${ox} ${oy}` }]);
 
 // Line starts (s from scene start), from `node build.mjs stories/andrew_apostle.mjs info`
 const T = { s0b: 3.48, s1b: 2.4, s2b: 4.25, s2c: 6.54, s3b: 1.85, s3c: 3.46, s4b: 4.34, s5b: 4.78, s5c: 8.27, s5d: 12.11, s6b: 4.35, s7b: 4.97 };
+// Word times inside lines (estimated from timings.json), for expression changes on the word they illustrate
+const WD = { greeted: 1.95, john: 3.0, behold: 2.35, lamb: 3.19, come: 6.54, comeEnd: 8.3, found: 2.28, andrewEnd: 3.24, became: 3.9,
+  carried: 1.69, preached: 5.36, sentenced: 3.04, saw: 6.37, quoteEnd: 11.81, brother: 6.07 };
 
 // ================================================================ characters
 const SKA = '#d9a47e';
@@ -82,11 +91,11 @@ const lightPool = (x, y, r = 420, op = 0.8) => glow(x, y, r, op);
 // 0 · hook: old Andrew beside his cross at Patras at dusk (bg3d 'patras', push-fast)
 function scene0() {
   const B = T.s0b;
-  const A = (mood, armL) => andrew(580, 1340, 2.4, { age: 'old', halo: true, mood, armL, armR: [26, 2, 3], propR: scroll(1.1) });
+  const A = (o) => andrew(580, 1340, 2.4, { age: 'old', halo: true, armR: [26, 2, 3], propR: scroll(1.1), ...o });
   return MID(shore(1236, '#8a6a6a', '#c89a88', { seed: 3, stones: '#5a4450' }))
     + `<g transform="translate(250,1300)"><g${M.tw([{ at: 1.2, dur: 1.4, from: { opacity: 0.85 }, to: { opacity: 1 } }])}>${saltire(1.2, { glowOp: 0.8 })}</g></g>`
     + `<g${punch(B + 0.2, 0.035, 560, 1000)}>`
-    + swap(A('happy', [24, 2, 3]), A('joy', [78, 4, 2.6]), 1.6)
+    + seq(A, [[0, { mood: 'happy', look: [-2.6, 0], armL: [24, 2, 3] }], [WD.greeted, { mood: 'tender', armL: [78, 4, 2.6] }], [B, { mood: 'happy', armL: [78, 4, 2.6] }]])
     + `</g>`
     + `<g${fadeIn(B, 0.8)}>${sparkles(14, 180, 460, 780, 1150, { seed: 4, color: '#ffe0b0' })}</g>`
     + motes(16, { y0: 560, y1: 1240, seed: 4 })
@@ -98,7 +107,7 @@ function scene1() {
   const B = T.s1b;
   return MID(beachBoat(860, 1250, 0.95) + shore(1240, '#dcc496', '#f4e2b8', { seed: 5 }) + reeds(70, 1290, 1.1))
     + `<g${M.tw([{ at: 0.4, dur: 0.9, from: { y: 30, opacity: 0 }, to: { y: 0, opacity: 1 }, ease: 'back.out(2)' }])}><g transform="translate(470,1250)">${fish('#a8c4d0', 1.3, -10)}<g transform="translate(36,12)">${fish('#8aa8b8', 1.2, 16)}</g></g></g>`
-    + andrew(320, 1340, 2.1, { mantle: false, mood: 'happy', armL: [18, 2, 3], armR: [42, 4, 2.6], propR: net })
+    + seq((o) => andrew(320, 1340, 2.1, { mantle: false, armL: [18, 2, 3], armR: [42, 4, 2.6], propR: net, ...o }), [[0, { mood: 'happy' }], [B + 0.3, { mood: 'happy', look: [2.6, -0.4] }]])
     + `<g${walkIn(B, 200, 1.1)}>${baptist(790, 1330, 1.95, { flip: true, mood: 'determined', talk: false, armR: [20, 2, 3], propR: reedCross(1), armL: [120, 4, 2] })}</g>`
     + NEAR(foliage('r', 1640, { color: '#2f5a35', seed: 9 }));
 }
@@ -106,28 +115,30 @@ function scene1() {
 // 2 · "Behold, the Lamb of God" … "Come, and you will see." (bg3d 'jordan': real dolly zoom)
 function scene2() {
   const B = T.s2b, C = T.s2c;
-  const J = (talk, armR) => jesusHD(720, 1330, 2.15, { flip: true, mood: 'happy', talk, armL: [16, 2, 3], armR });
+  const J = (o) => jesusHD(720, 1330, 2.15, { flip: true, mood: 'happy', look: [2.4, 0], armL: [16, 2, 3], ...o });
+  const A = (o) => andrew(300, 1345, 2.0, { mantle: false, look: [2.6, -0.6], armL: 12, armR: [30, 3, 2], ...o });
   return MID(shore(1240, '#a8a070', '#d8cc98', { seed: 8, stones: '#6a6a4a' }) + reeds(980, 1280, 1.2) + reeds(80, 1300, 1.0, '#5a7a42'))
     + lightPool(720, 1000, 380, 0.7)
-    + `<g transform="translate(150,860)"><g${M.in('pop', 0.6, 0.9)}><g${M.bob(8, 3.2)}>${lamb(0.9)}</g></g></g>`
+    + `<g transform="translate(150,860)"><g${M.in('pop', WD.behold, 0.9)}><g${M.bob(8, 3.2)}>${lamb(0.9)}</g></g></g>`
     + `<g transform="translate(0,0)"${M.tw([{ at: B, dur: 1.6, from: { x: -60 }, to: { x: 40 }, ease: 'power2.out' }])}>`
-    + swap(andrew(300, 1345, 2.0, { mantle: false, mood: 'surprised', armL: 12, armR: [30, 3, 2] }), andrew(300, 1345, 2.0, { mantle: false, mood: 'joy', armL: 12, armR: [30, 3, 2] }), C + 0.6)
+    + seq(A, [[0, { mood: 'happy' }], [WD.behold, { mood: 'awe' }], [C + 0.5, { mood: 'joy' }]])
     + '</g>'
-    + swap(J(false, [26, 2, 3]), J([C, C + 1.6], [86, 5, 2.2]), C - 0.2)
+    + seq(J, [[0, { armR: [26, 2, 3] }], [C - 0.2, { talk: [C, WD.comeEnd], armR: [86, 5, 2.2] }]])
     + `<g${fadeIn(C, 0.6)}>${sparkles(12, 520, 900, 700, 1100, { seed: 6 })}</g>`
-    + `<g opacity="0"${fadeIn(2.6, 0.8)}>${sparkles(10, 60, 260, 760, 960, { seed: 2 })}</g>`
+    + `<g opacity="0"${fadeIn(WD.lamb, 0.8)}>${sparkles(10, 60, 260, 760, 960, { seed: 2 })}</g>`
     + NEAR(foliage('l', 1640, { color: '#3a5a2a', seed: 3 }));
 }
 
 // 3 · "We have found the Messiah." Simon becomes Peter (bg3d 'brother', drift-l)
 function scene3() {
   const B = T.s3b, C = T.s3c;
-  const P = (mood) => peterHD(770, 1340, 2.05, { flip: true, mood, armL: [20, 2, 3], armR: [36, 3, 2.4], propR: net });
+  const P = (o) => peterHD(770, 1340, 2.05, { flip: true, armL: [20, 2, 3], armR: [36, 3, 2.4], propR: net, ...o });
+  const A = (o) => andrew(320, 1345, 2.1, { mantle: false, armL: [16, 2, 3], armR: [104, 5, 1.8], ...o });
   return MID(beachBoat(820, 1236, 0.85, '#5e3a26') + shore(1240, '#d8b88a', '#f2d8a8', { seed: 11 }))
-    + andrew(320, 1345, 2.1, { mantle: false, mood: 'joy', talk: [B, B + 1.5], armL: [16, 2, 3], armR: [104, 5, 1.8] })
-    + swap(P('surprised'), P('joy'), C)
-    + `<g transform="translate(770,700)"><g${M.in('pop', C + 0.5, 0.9)}>${glow(0, -20, 200, 0.8)}<g${M.bob(8, 3.2)}>${keys(1.6)}</g></g></g>`
-    + `<g${fadeIn(C + 0.5, 0.7)}>${sparkles(10, 620, 920, 560, 860, { seed: 9 })}</g>`
+    + seq(A, [[0, { mood: 'joy', look: [2.6, 0], talk: [B, WD.andrewEnd] }], [WD.andrewEnd + 0.1, { mood: 'happy', look: [2.6, -0.6] }]])
+    + seq(P, [[0, { mood: 'happy', look: [-1, 2.2] }], [WD.found, { mood: 'surprised', look: [2.2, 0] }], [WD.became, { mood: 'awe' }]])
+    + `<g transform="translate(770,700)"><g${M.in('pop', WD.became, 0.9)}>${glow(0, -20, 200, 0.8)}<g${M.bob(8, 3.2)}>${keys(1.6)}</g></g></g>`
+    + `<g${fadeIn(WD.became + 0.2, 0.7)}>${sparkles(10, 620, 920, 560, 860, { seed: 9 })}</g>`
     + motes(10, { y0: 600, y1: 1200, seed: 8 })
     + NEAR(foliage('l', 1650, { color: '#4a3a2a', seed: 6 }));
 }
@@ -135,12 +146,14 @@ function scene3() {
 // 4 · the missions: Pentecost fire, the Black Sea, Greece (bg3d 'mission', pan-l)
 function scene4() {
   const B = T.s4b;
-  const crowd = [[630, 0, '#7a5a8a', 'joy'], [730, 1, '#5a7a6a', 'happy'], [830, 2, '#9a6a4a', 'surprised']].map(([px, i, c, m]) =>
-    hd(px, 1300, 1.25, { top: c, skin: ['#c48a5f', '#e0b08a', '#b97c52'][i], hair: ['#2a1e16', '#5a3e2a', '#1a120c'][i], beard: i === 1 ? null : undefined, age: 'young', flip: true, mood: m, belt: '#5a4030' })).join('');
+  const crowd = [[630, 0, '#7a5a8a', 'joy'], [730, 1, '#5a7a6a', 'awe'], [830, 2, '#9a6a4a', 'happy']].map(([px, i, c, m]) =>
+    hd(px, 1300, 1.25, { top: c, skin: ['#c48a5f', '#e0b08a', '#b97c52'][i], hair: ['#2a1e16', '#5a3e2a', '#1a120c'][i], beard: i === 1 ? null : undefined, age: 'young', flip: true, mood: m, look: [1.6, -0.8], belt: '#5a4030' })).join('');
+  const flame = `<g transform="translate(0,-310)"><g${M.in('pop', 0.3, 0.8)}>${tongue(1.2)}</g></g>`;
   return MID(shore(1236, '#b8a88a', '#dcd0b0', { seed: 13, stones: '#6a6a6a' }))
     + `<g${fadeIn(B, 0.8)}>${crowd}</g>`
     + `<g${M.tw([{ at: 0, dur: 4, from: { x: -90 }, to: { x: 0 }, ease: 'power2.out' }])}>`
-    + andrew(360, 1345, 2.1, { age: 'mid', mood: 'determined', armL: [22, 3, 2], propL: scroll(1.1), armR: [70, 5, 2.2], over: `<g transform="translate(0,-310)"><g${M.in('pop', 0.3, 0.8)}>${tongue(1.2)}</g></g>` })
+    + seq((o) => andrew(360, 1345, 2.1, { age: 'mid', armL: [22, 3, 2], propL: scroll(1.1), armR: [70, 5, 2.2], over: flame, ...o }),
+      [[0, { mood: 'awe' }], [WD.carried, { mood: 'determined' }], [WD.preached, { mood: 'happy', look: [2.4, 0] }]])
     + '</g>'
     + NEAR(foliage('r', 1650, { color: '#2a3a4a', seed: 4 }));
 }
@@ -148,14 +161,18 @@ function scene4() {
 // 5 · Patras: the governor's sentence, "O good cross", the climax (bg3d 'martyr', tilt-up; the 3D fog thickens)
 function scene5() {
   const B = T.s5b, C = T.s5c, D = T.s5d;
-  const A1 = andrew(590, 1345, 2.2, { age: 'old', mood: 'worried', armL: 12, armR: 14 });
-  const A2 = andrew(620, 1345, 2.2, { age: 'old', flip: true, mood: 'joy', talk: [C, D - 0.3], armL: [120, 4, 2.4], armR: [130, 4, 2.6] });
-  const A3 = andrew(620, 1345, 2.2, { age: 'old', flip: true, mood: 'peaceful', halo: true, armL: [40, 2, 3], armR: [40, 2, 3] });
+  const A = (o) => andrew(o.x || 600, 1345, 2.2, { age: 'old', ...o });
+  const looks = [
+    [0, { x: 590, mood: 'worried', look: [2.6, 0], armL: 12, armR: 14 }],
+    [WD.sentenced, { x: 590, mood: 'sad', armL: 12, armR: 14 }],
+    [WD.saw, { x: 620, flip: true, mood: 'awe', look: [2.4, -1], armL: [60, 3, 2.4], armR: [70, 3, 2.6] }],
+    [C, { x: 620, flip: true, mood: 'joy', talk: [C, WD.quoteEnd], armL: [120, 4, 2.4], armR: [130, 4, 2.6] }],
+  ];
   return MID(shore(1236, '#5a4250', '#8a6070', { seed: 17, stones: '#3a2a38' }))
-    + `<g transform="translate(270,1300)"><g opacity="0"${fadeIn(B - 0.2, 1.0)}><g${M.tw([{ at: D, dur: 1.6, from: { scale: 1 }, to: { scale: 1.04 }, origin: '0 -190' }])}>${saltire(1.0, { glowOp: 0.9 })}</g></g></g>`
+    + `<g transform="translate(270,1300)"><g opacity="0"${fadeIn(WD.saw - 0.4, 1.0)}><g${M.tw([{ at: D, dur: 1.6, from: { scale: 1 }, to: { scale: 1.04 }, origin: '0 -190' }])}>${saltire(1.0, { glowOp: 0.9 })}</g></g></g>`
     + `<g${fadeOut(B + 1.2, 0.8)}><g${punch(2.0, 0.05, 900, 1000)}>${governor(850, 1290, 1.55, { flip: true, armL: 10, armR: [42, 4, 1.6] })}</g></g>`
-    + `<g${fadeOut(B, 0.5)}>${A1}</g><g opacity="0"${fadeIn(B, 0.5)}><g${fadeOut(D, 0.8)}>${A2}</g></g>`
-    + `<g opacity="0"${fadeIn(D, 0.8)}>${glow(560, 760, 420, 0.75)}${A3}</g>`
+    + `<g${M.tw([{ at: D + 0.8, dur: 0.05, from: { opacity: 1 }, to: { opacity: 0 } }])}>${seq(A, looks)}</g>`
+    + `<g opacity="0"${fadeIn(D, 0.8)}>${glow(560, 760, 420, 0.75)}${A({ x: 620, flip: true, mood: 'peaceful', halo: true, armL: [40, 2, 3], armR: [40, 2, 3] })}</g>`
     + `<g opacity="0"${fadeIn(D + 0.3, 1.2)}>${sparkles(16, 300, 860, 600, 1100, { seed: 12, color: '#ffe0b0' })}</g>`
     + motes(12, { y0: 600, y1: 1240, seed: 15, color: '#ffc890' });
 }
@@ -165,8 +182,8 @@ function scene6() {
   const B = T.s6b;
   return MID(shore(1236, '#7a9a6a', '#a8c494', { seed: 19, stones: '#5a6a5a' }) + tufts(1250, 12, '#4a6a3a', { seed: 4 }) + flowers(1270, 1360, 12, { seed: 3, colors: ['#c99ef0', '#ffffff', '#f6d36b'] }))
     + `<g transform="translate(300,1290)"><g opacity="0"${fadeIn(B, 1.0)}>${saltire(0.95, { glowOp: 0.75 })}</g></g>`
-    + andrew(600, 1345, 2.3, { age: 'old', halo: true, mood: 'happy', armL: [24, 2, 3], propL: book(false), armR: [26, 2, 3],
-      propR: `<g opacity="0"${fadeIn(B + 0.6, 0.8)}>${palm_frond(1.05, 30)}</g>` })
+    + seq((o) => andrew(600, 1345, 2.3, { age: 'old', halo: true, armL: [24, 2, 3], propL: book(false), armR: [26, 2, 3],
+      propR: `<g opacity="0"${fadeIn(B + 0.6, 0.8)}>${palm_frond(1.05, 30)}</g>`, ...o }), [[0, { mood: 'happy' }], [WD.brother, { mood: 'tender' }]])
     + `<g${fadeIn(B + 0.4, 1)}>${sparkles(12, 380, 860, 600, 1000, { seed: 14 })}</g>`
     + NEAR(foliage('l', 1640, { color: '#2a4a2a', seed: 2 }) + foliage('r', 1660, { color: '#2a4a2a', seed: 8 }));
 }
@@ -177,7 +194,7 @@ function scene7() {
   return MID(shore(1236, '#a87a6a', '#e0b08a', { seed: 23, stones: '#6a4a50' }) + beachBoat(900, 1240, 0.7, '#6a4030'))
     + `<g transform="translate(290,1290)">${saltire(1.0, { glowOp: 0.85 })}</g>`
     + `<g opacity="0"${fadeIn(2.6, 1.2)}>${glow(580, 900, 380, 0.7)}</g>`
-    + andrew(580, 1345, 2.4, { age: 'old', halo: true, mood: 'happy', armL: [28, 2, 3], propL: scroll(1.1), armR: [24, 2, 3] })
+    + seq((o) => andrew(580, 1345, 2.4, { age: 'old', halo: true, armL: [28, 2, 3], propL: scroll(1.1), armR: [24, 2, 3], ...o }), [[0, { mood: 'happy' }], [B, { mood: 'tender' }]])
     + `<g transform="translate(820,1290)"><g${M.in('pop', 0.8, 0.8)}>${fish('#e0b890', 1.4, -10)}</g></g>`
     + `<g${fadeIn(B, 0.8)}>${sparkles(14, 260, 880, 560, 1050, { seed: 16 })}</g>`
     + motes(14, { y0: 540, y1: 1240, seed: 18 })

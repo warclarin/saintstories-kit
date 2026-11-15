@@ -47,6 +47,10 @@ New reels draw their people with `hd(x, y, s, opts)` from `hd.mjs` instead of ar
 proportions, coordinates and options (`mood`, `talk`, `halo`, `armL/armR`, `propL/propR`, `flip`, `kneel`, `under/over`),
 with gradient-lit clothes, folds, embroidered trim, a draped mantle (`mantle`, `lining`), belt, sandals, hands with fingers,
 irises with highlights, hair and beard strands (`hairStyle`, `beardStyle`), age lines (`age`) and a richer halo.
+Expressions change the eyes (lids, size, gaze), brows and mouth: `happy`, `joy`, `tender` (closed smiling eyes), `sad`,
+`worried`, `pain`, `determined`, `stern`, `surprised`, `awe` (wide eyes looking up), `peaceful`; `look: [dx, dy]` turns the
+gaze (characters can look at each other), `tears: true | time` adds tears. Change a character's look on the word it
+illustrates with a timed sequence of copies (`seq()` in `stories/andrew_apostle.mjs`).
 Write a small helper per character on top of it (see `andrew`, `jesusHD`, `peterHD`, `baptist`, `governor` in
 `stories/andrew_apostle.mjs`). Not covered yet: sitting, veils/wimples, crowns, trousers, hooded habits; use `person()` for
 those or extend `hd.mjs` with new opt-in options. Older stories keep `person()` and render unchanged.
