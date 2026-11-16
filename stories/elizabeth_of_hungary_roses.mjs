@@ -114,17 +114,22 @@ const DUSKWOOD = [[0, '#232850'], [0.4, '#5a5488'], [0.66, '#d098a0'], [1, '#e8b
 const GOLDSNOW = [[0, '#a8603e'], [0.32, '#eaa070'], [0.66, '#f8dca0'], [1, '#f8dca0']];
 
 // ================================================================ scenes
-// 0 · hook (3D valleyHook, push-fast): the princess on the snowy path, cloak held tight; she looks at us on "This is Saint"
+// 0 · hook (3D valleyHook, push-fast): the princess on the snowy path, cloak held tight; on "roses" it opens full of roses;
+// she looks at us on "This is Saint"
 function scene0() {
-  const T1 = at(0, 'This is');
+  const T1 = at(0, 'This is'), tR = at(0, 'turned', -0.1);
+  const open = { armL: [46, 2, 3], armR: [46, 2, 3.3], over: roseLap(1.05) };
   return MID(pine(-10, 1280, 1.45) + pine(1110, 1260, 1.25))
     + snowGround(1250, 2)
     + glow(430, 1150, 430, 0.35)
-    + `<g opacity="0"${fadeIn(1.4, 1.2)}>${glow(1020, 1060, 300, 0.55)}</g>`
-    + `<g${punch(at(0, 'secret'), 0.03, 430, 880)}>`
-    + seq((o) => elizabethHD(430, 1310, 2.35, { armL: -14, armR: -22, over: bundle, ...o }),
-      [[0, { mood: 'worried', look: [2.6, 0] }], [at(0, 'secret', -0.2), { mood: 'worried', look: [-2.4, 0.4] }], [T1, { mood: 'happy', look: [0, 0], halo: true }]])
+    + `<g opacity="0"${fadeIn(tR, 0.8)}>${rays(430, 900, { op: 0.1, color: '#fff0d0' })}${glow(430, 1050, 420, 0.55)}</g>`
+    + `<g${punch(tR, 0.035, 430, 880)}>`
+    + seq((o) => elizabethHD(430, 1310, 2.35, o),
+      [[0, { mood: 'worried', look: [2.6, 0], armL: -14, armR: -22, over: bundle }], [at(0, 'cloak', -0.2), { mood: 'worried', look: [-2.4, 0.4], armL: -14, armR: -22, over: bundle }],
+        [tR, { mood: 'surprised', look: [0, 1.6], ...open }], [T1, { mood: 'happy', look: [0, 0], halo: true, ...open }]])
     + '</g>'
+    + roseFall(430, 1060, tR + 0.3, 3)
+    + `<g opacity="0"${fadeIn(tR, 0.6)}>${sparkles(16, 240, 640, 820, 1180, { seed: 5, color: '#ffe0e8' })}</g>`
     + snowfall(18, 4)
     + NEAR(snowfall(6, 9, { fall: 760 }));
 }
@@ -262,9 +267,9 @@ export const STORY = {
     'θjʊɹɹˈɪŋɡiə': 'θʊɹˈɪndʒiə',                            // Thuringia (thuh-RIN-jee-uh)
   },
   scenes: [
-    { kicker: 'WARTBURG CASTLE · GERMANY', title: "What's Under Her Cloak?", art: scene0, bg3d: 'valleyHook', cam: { move: 'push-fast', ox: 430, oy: 1000 },
+    { kicker: 'WARTBURG CASTLE · GERMANY', title: 'Bread Turned to Roses', art: scene0, bg3d: 'valleyHook', cam: { move: 'push-fast', ox: 430, oy: 1000 },
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
-      say: ['Caught on a castle path, a princess held her cloak tight around a secret.', 'This is Saint Elizabeth of Hungary.'] },
+      say: ['A princess hid bread for the poor under her cloak, and it turned into roses.', 'This is Saint Elizabeth of Hungary.'] },
     { kicker: '1221 · THURINGIA', title: 'A Princess Bride', art: scene1, cam: 'pan-r',
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
       say: ["A Hungarian king's daughter, she married Ludwig of Thuringia at 14.", 'They lived at the Wartburg, high above Eisenach, where a famous legend begins.'] },
