@@ -164,12 +164,22 @@ export function hd(x, y, s, o = {}) {
     + `<path d="M-28 -246 l-5 2 M-28 -250 l-6 -1 M28 -246 l5 2 M28 -250 l6 -1" stroke="${skSh}" stroke-width="1.4" opacity=".55" stroke-linecap="round"/>`);
   // beard and moustache
   if (bs) {
-    const len = bs === 'long' ? -170 : bs === 'full' ? -196 : -206;
-    g.push(`<path d="M-37 -246 Q-38 ${len + 24} -14 ${len + 6} Q0 ${len - 2} 14 ${len + 6} Q38 ${len + 24} 37 -246 Q30 -226 0 -226 Q-30 -226 -37 -246Z" fill="${BC}"/>`
-      + (bs === 'long' ? `<path d="M-8 ${len + 4} Q-6 ${len - 10} -14 ${len - 16} M8 ${len + 4} Q6 ${len - 10} 14 ${len - 16}" stroke="${beard}" stroke-width="7" fill="none" stroke-linecap="round"/>` : '')
-      + strands(`M-26 -232 Q-24 ${len + 30} -12 ${len + 12} M-10 -224 Q-8 ${len + 20} -4 ${len + 6} M10 -224 Q8 ${len + 20} 4 ${len + 6} M26 -232 Q24 ${len + 30} 12 ${len + 12}`, dark(beard, 0.32), 1.8, 0.55)
-      + strands(`M-30 -240 Q-30 -224 -22 ${len + 30}`, light(beard, 0.45), 2, 0.5)
-      + `<path d="M-15 -235 Q-8 -241 0 -237 Q8 -241 15 -235 Q9 -232 0 -234 Q-9 -232 -15 -235Z" fill="${dark(beard, 0.12)}"/>`);
+    // 2026-11-18 redraw (St. Agnes of Assisi): the beard grows from the sideburns along the jaw, hugs the face down to a
+    // rounded chin tuft (no straight-sided bib), joins the moustache under the nose (no skin band between them), and every
+    // strand stays inside the outline (the old highlight strand poked out onto the chest).
+    const len = bs === 'long' ? -174 : bs === 'full' ? -194 : -204, w = bs === 'long' ? 20 : bs === 'full' ? 24 : 27, sx = f(w * 0.6);
+    // outline: sideburn -> jaw -> a convex, rounded chin tuft whose lowest point is the centre (len + 2)
+    const out = `M-40 -262 Q-45 -238 -38 -224 Q-32 ${len - 2} -${sx} ${len - 6} Q0 ${len + 10} ${sx} ${len - 6} Q32 ${len - 2} 38 -224 Q45 -238 40 -262`;
+    g.push(`<path d="${out} L35 -260 Q34 -242 24 -235 Q12 -231 0 -233 Q-12 -231 -24 -235 Q-34 -242 -35 -260Z" fill="${BC}"/>`
+      + `<path d="M-40 -262 Q-45 -238 -38 -224 Q-34 -210 -26 -206 Q-30 -224 -35 -260Z" fill="${light(beard, 0.22)}" opacity=".45"/>`
+      + `<path d="M38 -224 Q32 ${len - 2} ${sx} ${len - 6} Q8 ${len + 3} 0 ${len + 2} Q16 ${len - 6} 26 -222Z" fill="${dark(beard, 0.3)}" opacity=".45"/>`
+      + (bs === 'long' ? `<path d="M-7 ${len - 2} Q-5 ${len - 14} -11 ${len - 20} M7 ${len - 2} Q5 ${len - 14} 11 ${len - 20}" stroke="${beard}" stroke-width="7" fill="none" stroke-linecap="round"/>` : '')
+      // strands end inside the outline
+      + strands(`M-30 -234 Q-26 ${len + 10} -14 ${len - 10} M-12 -218 Q-8 ${len + 4} -5 ${len - 4} M12 -218 Q8 ${len + 4} 5 ${len - 4} M30 -234 Q26 ${len + 10} 14 ${len - 10}`, dark(beard, 0.34), 1.8, 0.55)
+      + strands('M-36 -246 Q-36 -230 -28 -212', light(beard, 0.5), 2, 0.5)
+      // moustache: fuller, sits right under the nose and runs into the beard at the corners of the mouth
+      + `<path d="M-19 -229 Q-12 -240 -2 -236 Q0 -235 2 -236 Q12 -240 19 -229 Q11 -231 4 -230 Q0 -229 -4 -230 Q-11 -231 -19 -229Z" fill="${dark(beard, 0.14)}"/>`
+      + `<path d="M-14 -235 Q-8 -238 -3 -236" stroke="${light(beard, 0.4)}" stroke-width="1.6" fill="none" opacity=".55" stroke-linecap="round"/>`);
   }
   // ---------------------------------------------------------------- face
   // Expressions (mood): every mood changes the EYES (upper / lower lid, size, gaze), the brows and the mouth, so faces read
