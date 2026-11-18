@@ -12,6 +12,7 @@
 // at Monticelli (Florence); returned to nurse Clare in 1253 and died 16 Nov 1253; cult approved by Benedict XIV in 1753.
 // Iconography: Poor Clare (brown habit, white cord, black veil, white wimple) holding a book.
 // Martyrdom-free story; kept bloodless: no hair-pulling or blow is shown, only men pulling her arms and a raised hand.
+// All seven scenes have three.js backgrounds (all-3D backgrounds standard since 2026-11-18); characters stay SVG.
 // Exported for later reels: agnesA, clare, francisHD, knight, monaldo, panzoChurch, monstrance, scissors.
 import fs from 'fs';
 import { W, M, GOLD, sky, sun, rays, clouds, hill, sparkles, motes, tufts, flowers, ground, book, dark, light, bokeh,
@@ -126,10 +127,7 @@ function scene0() {
 // Agnes runs in on "Sixteen days later"; Clare opens her arms on "followed"
 function scene1() {
   const tF = at(1, 'Saint Francis'), tS = at(1, 'Sixteen'), tFo = at(1, 'followed');
-  return FAR(sky(DAWN) + sun(250, 640, 54, 300))
-    + BACK(clouds(440, { color: '#fff8f0', op: 0.75, seed: 4 }) + assisi(380, 1060, 0.95, { win: '#ffe2a0' })
-      + hill(1100, 26, '#9ab070', 6, { freq: 0.8 }))
-    + MID(olive(60, 1200, 1.1) + olive(1020, 1190, 1.0) + panzoChurch(790, 1215, 0.78))
+  return MID(olive(60, 1200, 1.1) + olive(1020, 1190, 1.0) + panzoChurch(790, 1215, 0.78))
     + slopeGround(1240, 5, '#90aa60')
     + `<g opacity="0"${fadeIn(tFo, 0.6)}>${glow(560, 1000, 360, 0.5)}${sparkles(10, 420, 760, 880, 1180, { seed: 6, color: '#fff2d0' })}</g>`
     + seq((o) => clare(640, 1325, 2.05, { armL: 12, ...o }), [
@@ -148,9 +146,7 @@ function scene1() {
 // speaks (his own voice); Agnes worried, then firm on "She refused" (a small shake of the head)
 function scene2() {
   const [q0, q1] = lineSpan(2, 1, 2, 6), tM = at(2, 'Twelve'), tR = at(2, 'She refused');
-  return FAR(sky([[0, '#5a7ab8'], [0.4, '#a8bcd8'], [0.66, '#f0d8b8'], [1, '#f0d8b8']]) + sun(900, 560, 46, 240))
-    + BACK(clouds(470, { color: '#fff8f0', op: 0.7, seed: 8 }) + hill(1060, 34, '#a8b490', 3, { freq: 0.6 }) + hill(1100, 22, '#90a870', 9, { freq: 1.2 }))
-    + MID(panzoChurch(300, 1220, 1.0) + olive(1040, 1200, 1.05)
+  return MID(panzoChurch(300, 1220, 1.0) + olive(1040, 1200, 1.05)
       + `<g opacity="0"${walkIn(tM - 0.2, 260, 1.4)}>${farMan(660, 1200, 2, { flip: true })}${farMan(760, 1196, 3, { flip: true })}${farMan(880, 1204, 0, { flip: true })}${farMan(990, 1200, 1, { flip: true })}</g>`)
     + slopeGround(1245, 8, '#8aa65a')
     + seq((o) => clare(150, 1335, 2.0, { armL: 12, look: [2.4, 0], ...o }), [[0, { mood: 'tender', armR: [50, 2, 3] }], [tM + 0.2, { mood: 'worried', armR: [62, 2, 3] }], [tR, { mood: 'determined', armR: [62, 2, 3] }]])
@@ -169,9 +165,7 @@ function scene2() {
 function scene3() {
   const [q0, q1] = lineSpan(3, 2, 3, 7), tG = at(3, 'grabbed'), tD = at(3, 'dragged'), tY = at(3, 'young girl');
   const drag = M.tw([{ at: tD - 0.2, dur: 7, from: { x: 0 }, to: { x: -110 }, ease: 'sine.inOut' }]);
-  return FAR(sky([[0, '#5a6aa0'], [0.4, '#a8acc8'], [0.66, '#ecd2b4'], [1, '#ecd2b4']]))
-    + BACK(clouds(460, { color: '#f4eef0', op: 0.7, seed: 11 }) + hill(1000, 40, '#9aa6b8', 5, { freq: 0.5 }) + hill(1060, 26, '#a8b48a', 2, { freq: 0.9 }))
-    + MID(`<path d="M-120 1180 L1200 980 L1200 1300 L-120 1300Z" fill="#7e9e56"/>` + panzoChurch(900, 1020, 0.5) + olive(640, 1110, 0.8) + olive(120, 1190, 0.9)
+  return MID(`<path d="M-120 1180 L1200 980 L1200 1300 L-120 1300Z" fill="#7e9e56"/>` + panzoChurch(900, 1020, 0.5) + olive(640, 1110, 0.8) + olive(120, 1190, 0.9)
       + seq((o) => clare(830, 1066, 1.1, { flip: true, look: [1.6, 0.8], ...o }), [[0, { mood: 'worried', armL: 12, armR: [70, 2, 2.4] }], [q0, { mood: 'worried', tears: true, armL: [80, 3, 2], armR: [100, 3, 2] }]]))
     + `<path d="M-200 1290 L1280 1150 L1280 2200 L-200 2200Z" fill="#86a456"/><path d="M-200 1290 L1280 1150" stroke="#b0c880" stroke-width="6" opacity=".5"/>`
     + tufts(1320, 18, '#5e7e3a', { seed: 14 })
@@ -212,11 +206,9 @@ function scene4() {
 function scene5() {
   const tG = at(5, 'gave up'), tC = at(5, 'cut her hair'), tSt = at(5, 'stayed'), tTw = at(5, 'Twelve');
   const lock = (x, y, k) => `<g opacity="0"${M.tw([{ at: tC + 0.2 + k * 0.18, dur: 1.4, from: { y: -20, opacity: 1, rotation: 0 }, to: { y: 150, opacity: 0, rotation: 40 }, ease: 'power1.in', origin: `${x} ${y}` }])}><path d="M${x} ${y} q8 14 2 28 q-6 12 2 22" stroke="#8a4a26" stroke-width="7" fill="none" stroke-linecap="round"/></g>`;
-  return FAR(sky([[0, '#b8603e'], [0.32, '#f0a46a'], [0.66, '#f8d894'], [1, '#f8d894']]) + sun(540, 860, 70, 360)
-      + `<g opacity="0"${fadeIn(tTw - 0.4, 1.2)}>${rays(540, 760, { op: 0.13 })}</g>`)
-    + BACK(clouds(470, { color: '#fff0d8', op: 0.7, seed: 7 }) + hill(1070, 32, '#c0a070', 3, { freq: 0.7 })
-      + `<g${M.tw([{ at: tG - 0.3, dur: 3.2, from: { x: 0, opacity: 1 }, to: { x: -420, opacity: 0 }, ease: 'power1.in' }])}>${[880, 950, 1020, 1090].map((x, k) => knight(x, 1080, 0.7, k, { flip: true, mood: 'sad', armL: 10, armR: 10 })).join('')}</g>`)
-    + MID(panzoChurch(560, 1205, 0.95) + olive(80, 1200, 1.0) + olive(1010, 1195, 0.95))
+  return `<g opacity="0"${fadeIn(tTw - 0.4, 1.2)}>${rays(540, 760, { op: 0.13 })}</g>`
+    + MID(`<g${M.tw([{ at: tG - 0.3, dur: 3.2, from: { x: 0, opacity: 1 }, to: { x: -420, opacity: 0 }, ease: 'power1.in' }])}>${[880, 950, 1020, 1090].map((x, k) => knight(x, 1170, 0.8, k, { flip: true, mood: 'sad', armL: 10, armR: 10 })).join('')}</g>`
+      + panzoChurch(560, 1205, 0.95) + olive(80, 1200, 1.0) + olive(1010, 1195, 0.95))
     + slopeGround(1250, 7, '#a0a060')
     + glow(540, 1050, 420, 0.5)
     + seq((o) => clare(225, 1330, 2.0, { armL: 12, look: [2.4, 0.4], ...o }), [[0, { mood: 'happy', armR: 18 }], [tC, { mood: 'tender', armR: [40, 2, 3] }], [tSt, { mood: 'joy', armR: [70, 2, 3] }], [tTw, { mood: 'peaceful', ...PRAY }]])
@@ -261,19 +253,19 @@ export const STORY = {
     { kicker: '1212 · MOUNT SUBASIO, ITALY', title: 'Too Heavy to Lift', art: scene0, bg3d: 'subasioHook', cam: { move: 'push-fast', ox: 540, oy: 950 },
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
       say: ['Twelve angry men came to drag a girl out of a church.', 'They could not even lift her.', 'So what held her down?', 'This is Saint Agnes of Assisi.'] },
-    { kicker: '1212 · ASSISI, ITALY', title: 'She Followed Her Sister', art: scene1, cam: 'pan-r',
+    { kicker: '1212 · ASSISI, ITALY', title: 'She Followed Her Sister', art: scene1, bg3d: 'subasioDawn', cam: 'pan-r',
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
       say: ['Her sister Clare had just left home to follow Saint Francis.', 'Sixteen days later, Agnes followed her.'] },
-    { kicker: "SANT'ANGELO IN PANZO", title: 'Come Home With Us', art: scene2, cam: { move: 'push', ox: 540, oy: 950 },
+    { kicker: "SANT'ANGELO IN PANZO", title: 'Come Home With Us', art: scene2, bg3d: 'subasioChurch', cam: { move: 'push', ox: 540, oy: 950 },
       tone: { speed: 1.0, gap: 0.28, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } },
       say: ['The next day, twelve men from her family came for her:', { text: 'Why did you come here? Come home with us, now.', who: 'knight' }, 'She refused.'] },
-    { kicker: 'DOWN THE MOUNTAIN', title: 'Help Me, Sister!', art: scene3, cam: 'pan-l',
+    { kicker: 'DOWN THE MOUNTAIN', title: 'Help Me, Sister!', art: scene3, bg3d: 'subasioSlope', cam: 'pan-l',
       tone: { speed: 1.0, gap: 0.26, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } },
       say: ['A knight grabbed her, and they dragged her away.', 'Still a young girl, she cried out:', { text: "Help me, dearest sister! Don't let them take me from Christ the Lord!", who: 'agnes' }] },
     { kicker: 'TOLD BY THOMAS OF CELANO', title: 'The Power of Prayer', art: scene4, bg3d: 'subasioMiracle', cam: { move: 'dolly', amt: 0.08, ox: 540, oy: 950 },
       tone: { speed: 1.0, gap: 0.28, gain: 0 },
       say: ['Clare knelt and prayed.', { text: 'Suddenly, Agnes grew so heavy that no one could lift her.', speed: 0.85 }, 'Her uncle Monaldo raised his arm to strike her, but a sharp pain froze it.'] },
-    { kicker: 'GIVEN TO GOD FOREVER', title: 'Francis Cut Her Hair', art: scene5, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
+    { kicker: 'GIVEN TO GOD FOREVER', title: 'Francis Cut Her Hair', art: scene5, bg3d: 'subasioGold', cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['The men gave up and left.', 'Saint Francis cut her hair, and she stayed with Clare.', 'Twelve men could not carry her away from Christ.'] },
     { kicker: 'FEAST DAY · NOVEMBER 19', title: "Clare's Little Sister", art: scene6, bg3d: 'subasioGlory', cam: { move: 'arc-r', amt: 0.06, oy: 1000 },

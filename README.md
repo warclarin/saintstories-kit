@@ -33,10 +33,12 @@ faster, same frames); `--no-browser-gpu` turns it off. Use about 10 workers on 2
 (NVENC: ~6% faster, ~70% bigger files) or `--experimental-fast-capture` (slower overall here, 59 s vs 45 s).
 Benchmarks and the first three.js tests: `experiments/README.md`.
 
-## 3D backgrounds (three.js, standard)
-Three.js backgrounds are a standard part of new reels: characters, props and overlays stay SVG, and the 2–4
-scenes where depth pays off (water, mist, storms, wide landscapes, a dolly zoom) get a WebGL canvas behind the SVG.
-Set `STORY.bg3d: './<slug>.bg3d.js'` and `bg3d: '<builder>'` on those scenes; the module exports `BUILD` and draws
+## 3D backgrounds (three.js on every scene, standard)
+Since 2026-11-18 EVERY scene of a new reel has a three.js background: characters, props and overlays stay SVG on top
+of a WebGL canvas. Build one world per story with one set-up per scene; each set-up moves its own camera to match the
+scene's `cam` (the canvas sits outside the SVG camera: push = z, pan = x + yaw, tilt-up = `setViewOffset`, dolly =
+fov, rack focus = fog closing in). Reference: `stories/agnes_of_assisi_too_heavy.bg3d.js` `subasio(mode)`.
+Set `STORY.bg3d: './<slug>.bg3d.js'` and `bg3d: '<builder>'` on every scene; the module exports `BUILD` and draws
 every frame from HyperFrames' `hf-seek` time. Helpers and wiring: `stories/bakhita_freedom.bg3d.js` (library:
 `ridge`, `cloud`, `sprite`, `makeView`, `newRenderer`, sets `venice`, `savanna`, `hall`); reference story:
 `stories/george_dragon.bg3d.js` (`BG3D_MANUAL` + `bg3d_extra`). More sets: `longinus.bg3d.js` (Golgotha, Cappadocia).

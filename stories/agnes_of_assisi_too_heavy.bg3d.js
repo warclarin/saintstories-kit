@@ -1,5 +1,8 @@
 // three.js backgrounds for St. Agnes of Assisi: "too heavy to lift" (Mount Subasio, 1212; browser module, build.mjs copies
-// it to work/<slug>/bg3d.mjs). One Umbrian landscape seen from the slope of Mount Subasio, three set-ups:
+// it to work/<slug>/bg3d.mjs). One Umbrian landscape seen from the slope of Mount Subasio behind EVERY scene (all-3D
+// backgrounds, the user's rule since 2026-11-18). Seven set-ups; each makes its scene's camera move itself, because the canvas
+// sits outside the SVG camera: 'hook' (push-fast), 'dawn' (pan-r), 'church' (push), 'slope' (pan-l), 'miracle' (dolly),
+// 'gold' (tilt-up through a view offset; rack focus = fog closing in), 'glory' (arc). The three main looks:
 //   'hook'    clear morning: sun and soft god rays to the upper right, shaded cumulus, Assisi on its hill in the gap above
 //             the characters, push-fast
 //   'miracle' a heavy grey-violet sky with a break of warm light whose rays grow stronger over the scene; dolly zoom
@@ -103,7 +106,7 @@ export function assisi3d({ wall = '#f0dccc', roof = '#c0623e', hillC = '#7a9a5a'
   const g = new THREE.Group(), r = rng(21);
   const dome = (sx, sy, sz, y, c) => { const m = new THREE.Mesh(new THREE.SphereGeometry(60, 36, 16, 0, Math.PI * 2, 0, Math.PI / 2), lam(c)); m.scale.set(sx, sy, sz); m.position.y = y; g.add(m); };
   dome(1.7, 1.0, 0.75, -60, hillC);
-  dome(3.4, 2.3, 1.3, -foot, mixc(hillC, '#6a8a4a', 0.2).getStyle());   // foothill down to the valley floor (foot = local depth)
+  dome(4.8, 2.3, 1.7, -foot, mixc(hillC, '#6a8a4a', 0.2).getStyle());   // foothill down to the valley floor (foot = local depth)
   const hy = (x) => 60 * (Math.sqrt(Math.max(0, 1 - (x / 102) ** 2)) - 1);
   const winM = glowMat('#ffd98a', lit || 1);
   // town wall with towers along the lower tier
@@ -142,15 +145,39 @@ const MODES = {
   hook: { sky: [[0, '#3e6aae'], [0.22, '#6e98cc'], [0.42, '#b4cce4'], [0.52, '#f4dcb8'], [0.57, '#fae6c8'], [1, '#fae6c8']], fog: '#dcd8cc',
     near: '#86a654', valley: ['#9ab460', '#b8b86a', '#7e9e50', '#c8b070', '#a8a058', '#8aa860', '#b4c070'],
     ridges: ['#b4bcd6', '#98a6c4', '#7e9478'], hemi: ['#fff4dc', '#5a6a3a', 1.45], key: ['#ffe8c0', 1.45, [60, 50, -60]],
-    sun: [880, 470, 0.95, 120], rays: { op: 0.075, dir: 0.75, spread: 0.9 }, cloudLit: '#fff8ee', cloudShade: '#c4c8dc', stars: 0, lit: 0, town: [560, 905] },
+    sun: [880, 470, 0.95, 120], rays: { op: 0.075, dir: 0.75, spread: 0.9 }, cloudLit: '#fff8ee', cloudShade: '#c4c8dc', stars: 0, lit: 0, town: [560, 905], move: 'push-fast' },
   miracle: { sky: [[0, '#2e3058'], [0.2, '#5a5682'], [0.38, '#9a8eac'], [0.5, '#e8cca8'], [0.56, '#f4dcbc'], [1, '#f4dcbc']], fog: '#cfc6bc',
     near: '#7c9c50', valley: ['#8aa458', '#a8a862', '#748e4a', '#b8a468', '#98944e', '#80985a', '#a4ae66'],
     ridges: ['#a0a2c0', '#8a90b0', '#74866e'], hemi: ['#f4e8dc', '#4a5038', 1.25], key: ['#ffe0b0', 1.1, [0, 60, -40]],
-    sun: null, rays: { op: 0.11, dir: 0, spread: 0.7 }, cloudLit: '#d8d0dc', cloudShade: '#7a7898', stars: 0, lit: 0, town: [560, 915], breakAt: [540, 640] },
+    sun: null, rays: { op: 0.11, dir: 0, spread: 0.7 }, cloudLit: '#d8d0dc', cloudShade: '#7a7898', stars: 0, lit: 0, town: [560, 915], breakAt: [540, 640], move: 'dolly' },
+  // scene 1 (pan-r): sunrise over Assisi, sun low on the left
+  dawn: { sky: [[0, '#4a6aae'], [0.24, '#86a4d4'], [0.42, '#d8c8d8'], [0.5, '#f6d4b0'], [0.56, '#fae2c0'], [1, '#fae2c0']], fog: '#e8d8c8',
+    near: '#8aa85a', valley: ['#9ab460', '#b8b86a', '#7e9e50', '#c8b070', '#a8a058', '#8aa860', '#b4c070'],
+    ridges: ['#b8b8d4', '#9ca4c4', '#7e9478'], hemi: ['#fff0dc', '#5a6a3a', 1.4], key: ['#ffd8a8', 1.5, [-80, 30, -60]],
+    sun: [230, 640, 0.95, 110], rays: { op: 0.07, dir: -0.6, spread: 0.9 }, cloudLit: '#fff2e4', cloudShade: '#c8c0d8', stars: 0, lit: 0.35, town: [470, 905], move: 'pan-r',
+    clouds: [[120, 470, 900, 8], [780, 430, 900, 10], [1000, 560, 850, 8], [560, 620, 950, 6]] },
+  // scene 2 (push): bright morning at Sant'Angelo, sun to the right
+  church: { sky: [[0, '#3e66aa'], [0.24, '#709ad0'], [0.42, '#b8cce4'], [0.52, '#f2dcbc'], [0.57, '#f8e6cc'], [1, '#f8e6cc']], fog: '#dcd8cc',
+    near: '#8aa65a', valley: ['#9ab460', '#b8b86a', '#7e9e50', '#c8b070', '#a8a058', '#8aa860', '#b4c070'],
+    ridges: ['#b4bcd6', '#98a6c4', '#7e9478'], hemi: ['#fff4dc', '#5a6a3a', 1.45], key: ['#ffe8c0', 1.45, [60, 50, -60]],
+    sun: [900, 560, 0.9, 95], rays: { op: 0.06, dir: 0.7, spread: 0.8 }, cloudLit: '#fff8ee', cloudShade: '#c4c8dc', stars: 0, lit: 0, town: [585, 915], move: 'push',
+    clouds: [[110, 520, 850, 9], [420, 450, 1000, 7], [700, 620, 900, 6], [1020, 420, 900, 9]] },
+  // scene 3 (pan-l): a clouding sky over the slope; Assisi, home, waits below on the left
+  slope: { sky: [[0, '#40467a'], [0.24, '#6e74a4'], [0.42, '#aeaec8'], [0.52, '#e4ccb4'], [0.57, '#eed8c0'], [1, '#eed8c0']], fog: '#d4ccc4',
+    near: '#7e9e56', valley: ['#8aa458', '#a8a862', '#748e4a', '#b8a468', '#98944e', '#80985a', '#a4ae66'],
+    ridges: ['#a8aac4', '#8e94b2', '#74866e'], hemi: ['#f0e8e0', '#4a5038', 1.3], key: ['#ffe4c0', 1.1, [-40, 50, -40]],
+    sun: null, rays: { op: 0, dir: 0, spread: 0.5 }, cloudLit: '#e8e2ea', cloudShade: '#8e8caa', stars: 0, lit: 0, town: [230, 920], move: 'pan-l',
+    clouds: [[100, 470, 900, 11], [420, 520, 950, 10], [760, 460, 900, 12], [1000, 580, 850, 9], [600, 660, 900, 7]] },
+  // scene 5 (tilt-up + rack): golden evening; the fog closes in on the rack (soft focus for the 3D layer)
+  gold: { sky: [[0, '#a8563e'], [0.22, '#d8805a'], [0.4, '#f0a86e'], [0.52, '#f8d494'], [0.58, '#fae0a8'], [1, '#fae0a8']], fog: '#f0c490',
+    near: '#8a9a52', valley: ['#a8a058', '#c0a864', '#8e9a50', '#c8a868', '#b09858', '#98a058', '#b8ac68'],
+    ridges: ['#c8a08e', '#b08a86', '#8a8a5e'], hemi: ['#ffe8c8', '#5a4a3a', 1.35], key: ['#ffc888', 1.5, [0, 30, -100]],
+    sun: [540, 690, 0.95, 120], rays: { op: 0.07, dir: 0, spread: 1.3 }, cloudLit: '#ffe0b8', cloudShade: '#c8909a', stars: 0, lit: 0.6, town: null, move: 'tilt-up',
+    rack: [1, 2.5], clouds: [[110, 470, 900, 9], [970, 450, 900, 10], [300, 600, 900, 6], [800, 620, 900, 6]] },
   glory: { sky: [[0, '#141842'], [0.2, '#2e2c62'], [0.36, '#6a4a7e'], [0.47, '#d8827a'], [0.53, '#f8be86'], [0.57, '#fcd8a0'], [1, '#fcd8a0']], fog: '#d89a84',
     near: '#6c7e44', valley: ['#8a8a50', '#a08a58', '#76784a', '#a8805a', '#8c7c50', '#7a8250', '#9c9058'],
     ridges: ['#a07a98', '#806a90', '#62684e'], hemi: ['#ffd8c0', '#3a3440', 1.2], key: ['#ffb880', 1.6, [80, 12, -100]],
-    sun: [850, 975, 1, 150], rays: { op: 0.08, dir: -0.4, spread: 1.6, up: true }, cloudLit: '#ffc4a4', cloudShade: '#8a6a98', stars: 80, lit: 0.95, town: [800, 925] },
+    sun: [850, 975, 1, 150], rays: { op: 0.08, dir: -0.4, spread: 1.6, up: true }, cloudLit: '#ffc4a4', cloudShade: '#8a6a98', stars: 80, lit: 0.95, town: [800, 925], move: 'arc' },
 };
 
 export function subasio(mode = 'hook') {
@@ -172,14 +199,14 @@ export function subasio(mode = 'hook') {
   }
   // light shafts: from the sun, or (miracle) from the break in the clouds; they grow over the scene
   const rp = P.rays, src = P.sun ? [P.sun[0], P.sun[1]] : P.breakAt;
-  const rays = godRays(cam, src[0], src[1], 400, { n: rp.up ? 13 : 10, len: rp.up ? 900 : 1500, width: 60, spread: rp.spread, dir: rp.dir + (rp.up ? Math.PI : 0), op: rp.op, seed: mode.length });
-  scene.add(rays.group);
+  const rays = rp.op > 0 && src ? godRays(cam, src[0], src[1], 400, { n: rp.up ? 13 : 10, len: rp.up ? 900 : 1500, width: 60, spread: rp.spread, dir: rp.dir + (rp.up ? Math.PI : 0), op: rp.op, seed: mode.length }) : null;
+  if (rays) scene.add(rays.group);
   let breakGlow = null;
   if (P.breakAt) { breakGlow = sprite(warm, 560, 0.3, true); breakGlow.position.copy(atScreen(cam, P.breakAt[0], P.breakAt[1], 1200)); scene.add(breakGlow); }
   // clouds framing the sky (kept off the title at the top centre)
-  const CL = mode === 'miracle'
+  const CL = P.clouds || (mode === 'miracle'
     ? [[90, 500, 900, 13], [990, 480, 900, 13], [300, 560, 950, 12], [790, 570, 950, 12], [180, 680, 820, 9], [900, 700, 820, 9], [540, 470, 1100, 9]]
-    : [[150, 520, 850, 9], [930, 560, 800, 8], [330, 660, 900, 6], [760, 700, 950, 6], [1030, 400, 900, 10], [40, 380, 900, 9]];
+    : [[150, 520, 850, 9], [930, 560, 800, 8], [330, 660, 900, 6], [760, 700, 950, 6], [1030, 400, 900, 10], [40, 380, 900, 9]]);
   const clouds = CL.map(([sx, sy, d, s], k) => {
     const c = cumulus(70 + k * 3 + mode.length, { lit: P.cloudLit, shade: P.cloudShade, glow: mode === 'miracle' ? 0.45 : 0.6, op: mode === 'miracle' ? 0.97 : 1 });
     c.position.copy(atScreen(cam, sx, sy, d)); c.scale.setScalar(s * d / 900 * (mode === 'miracle' ? 1.25 : 1)); c.lookAt(cam.position); scene.add(c); return [c, c.position.x, k];
@@ -194,8 +221,10 @@ export function subasio(mode = 'hook') {
   const mist = [[-240, -14, -420, 520, 60], [160, -16, -480, 640, 70], [520, -14, -400, 480, 55], [-520, -18, -520, 520, 60]].map(([x, y, z, w, h], k) => {
     const m = sprite(mistTex, 1, mode === 'glory' ? 0.42 : 0.6); m.scale.set(w, h, 1); m.position.set(x, y, z); scene.add(m); return [m, x, k]; });
   // Assisi on its hill, placed in the open gap of the frame
+  if (P.town) {
   const tp = atScreen(cam, P.town[0], P.town[1], 330);
   const town = assisi3d({ hillC: mixc(P.near, P.fog, 0.35).getStyle(), lit: P.lit, foot: (tp.y + 30) / 0.3 }); town.position.copy(tp); town.scale.setScalar(0.3); town.rotation.y = -0.12; scene.add(town);
+  }
   // the brow of the slope ends just behind the characters' feet, so the valley spreads out below them
   const slope = new THREE.Mesh(new THREE.PlaneGeometry(700, 48, 70, 6), lam(P.near)); slope.rotation.x = -Math.PI / 2; slope.position.set(0, 0, -4); scene.add(slope);
   // olive groves dotting the valley (instanced canopies in rows)
@@ -216,14 +245,20 @@ export function subasio(mode = 'hook') {
   const d0 = 14;
   return { scene, cam, update(t, p) {
     let ry = 0;
-    if (mode === 'hook') cam.position.set(0, 2.6, -7 * p);
-    else if (mode === 'miracle') {
+    const mv = P.move;
+    if (mv === 'push-fast') cam.position.set(0, 2.6, -7 * p);
+    else if (mv === 'push') cam.position.set(0, 2.6, -5 * p);
+    else if (mv === 'pan-r' || mv === 'pan-l') { const sg = mv === 'pan-r' ? 1 : -1, x = sg * (-4 + 8 * p); cam.position.set(x, 2.6, 0); ry = -sg * (p - 0.5) * 0.05; }
+    else if (mv === 'tilt-up') { cam.position.set(0, 2.6, 0); cam.setViewOffset(W, H, 0, -110 * p, W, H); }
+    else if (mv === 'dolly') {
       const z = 8 * p; cam.position.set(0, 2.6, z);
       cam.fov = 2 * Math.atan(TH * d0 / (d0 + z)) * 180 / Math.PI; cam.updateProjectionMatrix();
     } else { const x = -3 + 6 * p; cam.position.set(x, 2.6, 0); ry = -x * 0.006; }
+    if (P.rack) { const kr = Math.min(1, Math.max(0, (t - P.rack[0]) / P.rack[1])), e2 = kr * kr * (3 - 2 * kr);
+      scene.fog.near = 160 - 130 * e2; scene.fog.far = 1500 - 1000 * e2; }
     // the light: steady in the morning and at sunset, swelling through the miracle
     const k = mode === 'miracle' ? Math.min(1, 0.25 + t * 0.12) : 1;
-    rays.update(t, k);
+    if (rays) rays.update(t, k);
     if (breakGlow) breakGlow.material.opacity = 0.18 + 0.27 * k;
     if (sunGlow) sunGlow.material.opacity = P.sun[2] * 0.85 * (0.94 + 0.06 * Math.sin(t * 0.7));
     clouds.forEach(([c, x, j]) => { c.position.x = x + t * (1.6 + (j % 3) * 0.6) * (j % 2 ? 1 : -1) * (mode === 'miracle' ? 0.6 : 1); });
@@ -234,7 +269,8 @@ export function subasio(mode = 'hook') {
   } };
 }
 
-export const BUILD = { subasioHook: () => subasio('hook'), subasioMiracle: () => subasio('miracle'), subasioGlory: () => subasio('glory') };
+export const BUILD = { subasioHook: () => subasio('hook'), subasioDawn: () => subasio('dawn'), subasioChurch: () => subasio('church'), subasioSlope: () => subasio('slope'),
+  subasioMiracle: () => subasio('miracle'), subasioGold: () => subasio('gold'), subasioGlory: () => subasio('glory') };
 
 if (!window.BG3D_LIB) {
   const views = [...document.querySelectorAll('canvas.bg3d')].map((cv) => { const renderer = newRenderer(cv); return { renderer, ...makeView(cv, BUILD) }; });
