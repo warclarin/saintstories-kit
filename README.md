@@ -52,7 +52,7 @@ Expressions change the eyes (lids, size, gaze), brows and mouth: `happy`, `joy`,
 gaze (characters can look at each other), `tears: true | time` adds tears. Change a character's look on the word it
 illustrates with a timed sequence of copies (`seq()` in `stories/andrew_apostle.mjs`).
 Write a small helper per character on top of it (see `andrew`, `jesusHD`, `peterHD`, `baptist`, `governor` in
-`stories/andrew_apostle.mjs`). Not covered yet: sitting, veils/wimples, crowns, trousers, hooded habits; use `person()` for
+`stories/andrew_apostle.mjs`). Nuns: `veil`, `wimple`, `ruche` (`duchesne` in `stories/duchesne_sugar_creek.mjs`). Not covered yet: sitting, crowns, trousers, hooded habits; use `person()` for
 those or extend `hd.mjs` with new opt-in options. Older stories keep `person()` and render unchanged.
 
 ## Camera moves and parallax

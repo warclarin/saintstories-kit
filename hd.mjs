@@ -11,9 +11,12 @@
 // beardStyle 'short' | 'full' | 'long' | null, shaggy (camel-hair tunic edge).
 // Also: plain (no clavus stripes or embroidery: habits, cassocks), belt: false (no belt), shoes (colour: closed shoes instead of sandals), hairStyle
 // 'tonsure' (hair with a shaved crown), ph (bob / blink phase 0..1, so copies of one character move together).
+// Nuns (opt-in, 2026-11-18, St. Rose Philippine Duchesne): veil (colour: hood over the head + drape down the back, hides
+// hair and ears), wimple (colour: band framing the face), ruche: true (fluted frill on that band, as on the Sacred Heart
+// bonnet).
 // Helpers: seq(draw, steps) changes a character's look on a word; wordTimes(slug) finds when a word is spoken.
-// Not covered yet (use person() or add it here): sitting, veils/wimples (nuns, Mary), crowns, trousers/camisa, habits with
-// hoods. Extend this file for those, keeping old options unchanged.
+// Not covered yet (use person() or add it here): sitting, crowns, trousers/camisa, habits with hoods. Extend this file
+// for those, keeping old options unchanged.
 import fs from 'fs';
 import { M, GOLD, INK, dark, light, mix, uid, f } from './art.mjs';
 
@@ -22,7 +25,8 @@ export function hd(x, y, s, o = {}) {
   const n = ++HID, ph = o.ph ?? (n * 0.618) % 1, id = uid('hd');
   const skin = o.skin || '#d9a47e', top = o.top || '#4f7f5c', trim = o.trim || (o.plain ? dark(top, 0.1) : GOLD), hair = o.hair || '#4a3424';
   const beard = o.beard === undefined ? hair : o.beard, mantle = o.mantle || null, lining = o.lining || (mantle ? light(mantle, 0.35) : null);
-  const age = o.age || 'mid', mood = o.mood || 'happy', hs = o.hairStyle || (age === 'old' ? 'old' : 'short');
+  const age = o.age || 'mid', mood = o.mood || 'happy', veil = o.veil || null;
+  const hs = veil ? 'none' : o.hairStyle || (age === 'old' ? 'old' : 'short');
   const bs = o.beardStyle === undefined ? (beard ? (age === 'old' ? 'long' : 'full') : null) : o.beardStyle;
   const skSh = dark(skin, 0.24), skHi = light(skin, 0.42), sh = dark(top, 0.3), hi = light(top, 0.3);
   const hSh = dark(hair, 0.32), hHi = light(hair, 0.4), iris = o.iris || '#6a4228', belt = o.belt || '#7a5434';
@@ -48,6 +52,13 @@ export function hd(x, y, s, o = {}) {
       + `<g${M.spin(6)}><path d="${ticks}" stroke="${GOLD}" stroke-width="2.4" stroke-linecap="round" opacity=".7"/></g></g></g>`);
   }
   if (o.under) g.push(o.under);
+  // veil drape behind the head and shoulders
+  if (veil) {
+    const vb = o.kneel ? -100 : -112;
+    g.push(`<path d="M-52 -272 Q-72 -160 -62 ${vb} L62 ${vb} Q72 -160 52 -272Z" fill="${dark(veil, 0.08)}"/>`
+      + `<path d="M24 -270 Q66 -200 60 ${vb} L40 ${vb} Q46 -200 24 -270Z" fill="${dark(veil, 0.35)}" opacity=".55"/>`
+      + `<path d="M-50 -250 Q-64 -180 -58 ${vb + 6}" stroke="${light(veil, 0.3)}" stroke-width="3" fill="none" opacity=".5" stroke-linecap="round"/>`);
+  }
   // mantle, back panel
   if (mantle) g.push(`<path d="M-46 -214 Q-72 -120 -68 ${o.kneel ? -92 : -4} L68 ${o.kneel ? -92 : -4} Q72 -120 46 -214Z" fill="${dark(mantle, 0.2)}"/>`
     + `<path d="M40 -200 Q60 -110 58 ${o.kneel ? -94 : -8}" stroke="${dark(mantle, 0.42)}" stroke-width="3" fill="none" opacity=".6"/>`);
@@ -116,8 +127,8 @@ export function hd(x, y, s, o = {}) {
   g.push(`<path d="M-10 -230 L10 -230 L11 -204 L-11 -204Z" fill="${skSh}"/>`
     + `<path d="M-19 -210 Q0 -190 19 -210" stroke="${trim}" stroke-width="4.5" fill="none"/>` + (o.plain ? '' : `<path d="M-19 -210 Q0 -190 19 -210" stroke="${dark(trim, 0.3)}" stroke-width="1.2" fill="none" stroke-dasharray="3 4"/>`));
   // ears, head, cheek shading, rim light
-  g.push(`<g fill="${skin}"><ellipse cx="-40" cy="-250" rx="8.5" ry="10"/><ellipse cx="40" cy="-250" rx="8.5" ry="10"/></g>`
-    + `<path d="M-42 -255 q-3 5 0 10 M42 -255 q3 5 0 10" stroke="${skSh}" stroke-width="2" fill="none"/>`
+  g.push((veil ? '' : `<g fill="${skin}"><ellipse cx="-40" cy="-250" rx="8.5" ry="10"/><ellipse cx="40" cy="-250" rx="8.5" ry="10"/></g>`
+    + `<path d="M-42 -255 q-3 5 0 10 M42 -255 q3 5 0 10" stroke="${skSh}" stroke-width="2" fill="none"/>`)
     + `<circle cx="0" cy="-252" r="40" fill="${FC}"/>`
     + `<path d="M8 -291 A40 40 0 0 1 8 -213 A30 40 0 0 0 8 -291Z" fill="${skSh}" opacity=".25"/>`
     + `<path d="M-30 -279 A40 40 0 0 0 -37 -236" stroke="${skHi}" stroke-width="3.5" fill="none" opacity=".6" stroke-linecap="round"/>`);
@@ -135,6 +146,13 @@ export function hd(x, y, s, o = {}) {
     g.push(`<path d="M-44 -246 Q-48 ${wild ? -310 : -300} 0 ${wild ? -304 : -298} Q48 ${wild ? -310 : -300} 44 -246 Q44 -214 ${wild ? 52 : 46} -186 Q34 -184 32 -200 L34 -258 Q22 -276 4 -272 Q-2 -262 -8 -272 Q-24 -276 -34 -258 L-32 -200 Q-34 -184 ${wild ? -52 : -46} -186 Q-44 -214 -44 -246Z" fill="${HC}"/>`
       + strands('M-6 -294 Q-22 -288 -34 -264 M4 -294 Q22 -288 34 -264 M-38 -240 Q-40 -214 -42 -196 M38 -240 Q40 -214 42 -196', hSh, 2.2, 0.65)
       + strands('M-12 -290 Q-26 -282 -32 -268 M14 -290 Q26 -282 32 -268', hHi, 2, 0.55));
+  } else if (hs === 'none') {   // veiled: white band framing the face (optionally fluted), then the hood
+    const band = 'M-38 -224 Q-47 -297 0 -301 Q47 -297 38 -224';
+    if (o.wimple) g.push(`<path d="${band}" stroke="${o.wimple}" stroke-width="13" fill="none" stroke-linecap="round"/>`
+      + `<path d="M-35 -230 Q-42 -290 0 -294" stroke="${dark(o.wimple, 0.12)}" stroke-width="2" fill="none" opacity=".6"/>`
+      + (o.ruche ? `<path d="${band}" stroke="${dark(o.wimple, 0.2)}" stroke-width="12" fill="none" stroke-dasharray="1.6 5" opacity=".7"/>` : ''));
+    g.push(`<path d="M-51 -256 Q-54 -320 0 -320 Q54 -320 51 -256 Q46 -302 0 -306 Q-46 -302 -51 -256Z" fill="${veil}"/>`
+      + strands('M-40 -296 Q-20 -314 6 -314', light(veil, 0.35), 3, 0.5) + strands('M48 -262 Q48 -296 30 -310', dark(veil, 0.3), 2.4, 0.5));
   } else {   // short wavy; 'tonsure' adds a shaved crown
     g.push(`<path d="M-42 -250 Q-46 -298 0 -297 Q46 -298 42 -250 Q38 -270 22 -276 Q14 -266 6 -276 Q-6 -266 -16 -277 Q-34 -272 -42 -250Z" fill="${HC}"/>`
       + strands('M-30 -282 Q-18 -292 -4 -290 M4 -291 Q18 -292 30 -280 M-38 -262 Q-34 -276 -24 -282', hSh, 2, 0.6)
