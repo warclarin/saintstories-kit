@@ -143,8 +143,8 @@ function scene0() {
       [[0, { mood: 'peaceful' }], [tC, { mood: 'worried', look: [2, 0.6] }], [tY + 0.3, { mood: 'peaceful' }], [tT, { mood: 'happy', halo: true }]])
     + '</g>'
     + `<g opacity="0"${walkIn(tY - 0.2, 220)}>`
-    + seq((o) => potaWoman(820, 1330, 1.75, 0, { flip: true, armL: 12, look: [1, 0.6], ...o }), [[0, { mood: 'happy', armR: 18 }], [tN, { mood: 'tender', armR: [62, 2, 3] }]])
-    + seq((o) => potaKid(695, 1340, 1.15, 1, { flip: true, armL: 10, look: [1, 0], ...o }), [[0, { mood: 'surprised', armR: 16 }], [tN + 0.3, { mood: 'joy', armR: [120, 10, 1.6] }]])
+    + seq((o) => potaWoman(800, 1270, 2.1, 0, { flip: true, armL: 12, look: [1, 0.6], ...o }), [[0, { mood: 'happy', armR: 18 }], [tN, { mood: 'tender', armR: [62, 2, 3] }]])
+    + seq((o) => potaKid(680, 1275, 1.3, 1, { flip: true, armL: 10, look: [1, 0], ...o }), [[0, { mood: 'surprised', armR: 16 }], [tN + 0.3, { mood: 'joy', armR: [120, 10, 1.6] }]])
     + '</g>'
     + motes(14, { seed: 3, y0: 600, y1: 1250 })
     + NEAR(tufts(1680, 14, '#7a6a3a', { seed: 31, s: 2.2 }));
@@ -182,13 +182,13 @@ function scene2() {
       + [[-30, 1000], [120, 990], [960, 995], [1100, 1005]].map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${50 + k * 6}" fill="${k % 2 ? '#5a7a48' : '#6a8a50'}"/>`).join(''))
     + MID(logHouse(640, 1190, 0.9, { w: 420, h: 230 }) + `<path d="M-60 1180 H1140" stroke="#8a6a48" stroke-width="6"/>${[...Array(16)].map((_, k) => `<rect x="${-40 + k * 76}" y="1150" width="10" height="44" fill="#8a6a48"/>`).join('')}`)
     + ground(1240, '#a8b070', { rim: '#c8d090' })
-    + seq((o) => sacredHeartSister(150, 1330, 1.75, { armL: 12, ...o }), [
+    + seq((o) => sacredHeartSister(150, 1330, 1.9, { armL: 12, ...o }), [
       [0, { mood: 'happy', look: [2, 0], armR: 18 }], [tP, { mood: 'joy', look: [2.6, 0], armR: [130, 8, 1.6] }], [tB + 0.4, { mood: 'worried', look: [2.6, 0.4], armR: [60, 2, 3] }]])
-    + `<g${M.tw([{ at: tWk, dur: 1.2, from: { rotation: 0 }, to: { rotation: -3 }, ease: 'sine.inOut', origin: '380 1330' }])}>`
-    + seq((o) => duchesne(380, 1330, 2.1, { armR: [20, 1, 3], propR: cane, ...o }), [
+    + `<g${M.tw([{ at: tWk, dur: 1.2, from: { rotation: 0 }, to: { rotation: -3 }, ease: 'sine.inOut', origin: '390 1330' }])}>`
+    + seq((o) => duchesne(390, 1330, 1.95, { armR: [20, 1, 3], propR: cane, ...o }), [
       [0, { mood: 'happy', look: [2.4, 0], armL: 12 }], [tP, { mood: 'awe', look: [2.6, -1], armL: [40, 2, 3] }], [tB, { mood: 'worried', look: [0, 1.6], armL: 14 }]])
     + '</g>'
-    + `<g opacity="0"${walkIn(tJ - 0.5, 260)}>` + seq((o) => verhaegen(800, 1330, 2.1, { flip: true, armL: 12, ...o }), [
+    + `<g opacity="0"${walkIn(tJ - 0.5, 260)}>` + seq((o) => verhaegen(790, 1330, 2.0, { flip: true, armL: 12, ...o }), [
       [0, { mood: 'happy', armR: [40, 2, 3], propR: letter }], [tB + 0.3, { mood: 'worried', look: [1, 0.8], armR: 18, propR: letter }]]) + '</g>'
     + NEAR(tufts(1660, 10, '#6a7a3a', { seed: 9, s: 2 }));
 }
@@ -202,7 +202,7 @@ function scene3() {
     + `<g opacity="0"${fadeIn(tPr - 0.2, 1)}>${rays(310, 820, { op: 0.09 })}${glow(310, 960, 360, 0.5)}</g>`
     + ground(1240, '#a8a870', { rim: '#c8c890' })
     + `<g${punch(tM, 0.03, 540, 900)}>`
-    + seq((o) => duchesne(310, 1330, 2.3, { armL: 12, propR: cane, armR: [20, 1, 3], ...o }), [
+    + seq((o) => duchesne(310, 1330, 2.25, { armL: 12, propR: cane, armR: [20, 1, 3], ...o }), [
       [0, { mood: 'worried', look: [2.6, 0.4] }], [tM + 0.3, { mood: 'surprised', look: [2.6, 0] }], [tPr, { mood: 'tender' }]])
     + seq((o) => verhaegen(790, 1330, 2.35, { flip: true, armL: 12, look: [1.4, 0.4], ...o }), [
       [0, { mood: 'determined', armR: 18, propR: letter }], [q0 - 0.1, { mood: 'determined', talk: [q0, q1], armR: [48, 3, 2.4] }], [tBw, { mood: 'happy', talk: [tBw, q1], armR: [128, 3, 2.4] }],
@@ -215,7 +215,7 @@ function scene3() {
 // slip in and drop corn on her habit; on "Hours later" the light turns to evening; "not one kernel had moved" (climax)
 function scene4() {
   const tT = at(4, 'sisters taught'), tH = at(4, 'for hours'), tCh = at(4, 'children'), tCo = at(4, 'corn'), tX = at(4, 'to test'), tL = at(4, 'Hours later'), tN = at(4, 'not one');
-  const kid = (x, i, o) => potaKid(x, 1335, 1.2, i, { armL: 10, ...o });
+  const kid = (x, i, o) => potaKid(x, 1335, 1.5, i, { armL: 10, ...o });
   const leave = (dx) => M.tw([{ at: tCh - 0.6, dur: 0.9, from: { x: dx, opacity: 0 }, to: { x: 0, opacity: 1 }, ease: 'power2.out' }, { at: tX + 0.5, dur: 0.8, from: { x: 0, opacity: 1 }, to: { x: dx, opacity: 0 }, ease: 'power2.in' }]);
   return MID(`<g opacity="0"${fadeIn(tT - 0.3, 0.8)}><rect x="820" y="820" width="220" height="420" fill="#f8e8c0"/><rect x="820" y="1080" width="220" height="160" fill="#b8a860"/>`
       + `${sacredHeartSister(900, 1210, 0.7, { mood: 'happy', armL: 12, armR: [60, 2, 3], propR: slate })}${potaKid(980, 1215, 0.5, 0, { flip: true, mood: 'happy', armR: 12 })}${potaKid(1030, 1215, 0.48, 3, { flip: true, mood: 'joy', armR: 30 })}`
@@ -224,10 +224,10 @@ function scene4() {
     + `<g opacity="0"${fadeIn(tH - 0.3, 1)}>${glow(520, 980, 380, 0.4)}</g>`
     + seq((o) => duchesne(520, 1335, 2.45, { kneel: true, ...PRAY, over: cornOnHabit(tCo), ...o }), [
       [0, { mood: 'peaceful' }], [tN, { mood: 'peaceful', halo: tN + 0.1 }]])
-    + `<g opacity="0"${leave(-300)}>${seq((o) => kid(200, 0, o), [[0, { mood: 'happy', look: [2.4, 0], armR: [40, 2, 3], propR: cornCob }], [tCo - 0.2, { mood: 'happy', look: [2.6, 1], armR: [76, 2, 2.4], propR: handCorn }], [tCo + 0.6, { mood: 'joy', armR: [40, 2, 3] }]])}</g>`
-    + `<g opacity="0"${leave(320)}>${seq((o) => kid(800, 1, { flip: true, ...o }), [[0, { mood: 'surprised', look: [2.4, 0], armR: 20 }], [tCo, { mood: 'joy', armR: [76, 2, 2.4], propR: handCorn }]])}</g>`
-    + `<g opacity="0"${walkIn(tL + 0.2, -260, 1)}>${seq((o) => kid(210, 0, o), [[0, { mood: 'surprised', look: [2.4, 0.6], armR: 16 }], [tN, { mood: 'awe', look: [2.6, 0.6], armR: [50, 2, 3] }]])}</g>`
-    + `<g opacity="0"${walkIn(tL + 0.4, 280, 1)}>${seq((o) => kid(810, 1, { flip: true, ...o }), [[0, { mood: 'surprised', look: [2.4, 0.6], armR: 16 }], [tN + 0.2, { mood: 'awe', look: [2.6, 0], armR: [90, 3, 2.4] }]])}</g>`
+    + `<g opacity="0"${leave(-300)}>${seq((o) => kid(190, 0, o), [[0, { mood: 'happy', look: [2.4, 0], armR: [40, 2, 3], propR: cornCob }], [tCo - 0.2, { mood: 'happy', look: [2.6, 1], armR: [76, 2, 2.4], propR: handCorn }], [tCo + 0.6, { mood: 'joy', armR: [40, 2, 3] }]])}</g>`
+    + `<g opacity="0"${leave(320)}>${seq((o) => kid(820, 1, { flip: true, ...o }), [[0, { mood: 'surprised', look: [2.4, 0], armR: 20 }], [tCo, { mood: 'joy', armR: [76, 2, 2.4], propR: handCorn }]])}</g>`
+    + `<g opacity="0"${walkIn(tL + 0.2, -260, 1)}>${seq((o) => kid(190, 0, o), [[0, { mood: 'surprised', look: [2.4, 0.6], armR: 16 }], [tN, { mood: 'awe', look: [2.6, 0.6], armR: [50, 2, 3] }]])}</g>`
+    + `<g opacity="0"${walkIn(tL + 0.4, 280, 1)}>${seq((o) => kid(820, 1, { flip: true, ...o }), [[0, { mood: 'surprised', look: [2.4, 0.6], armR: 16 }], [tN + 0.2, { mood: 'awe', look: [2.6, 0], armR: [90, 3, 2.4] }]])}</g>`
     + `<g opacity="0"${fadeIn(tN, 0.5)}>${sparkles(14, 400, 640, 900, 1260, { seed: 8, color: '#fff2b0' })}</g>`
     + `<g opacity="0"${fadeIn(tH, 1)}>${motes(12, { seed: 6, x0: 300, x1: 760, y0: 700, y1: 1250 })}</g>`
     + NEAR(bokeh(6, { seed: 17, op: [0.25, 0.5] }));
@@ -243,11 +243,11 @@ function scene5() {
     + MID(wigwam(120, 1180, 0.8) + wigwam(330, 1160, 0.6, { c: '#7a5a3e' }) + logHouse(760, 1170, 0.6, { church: true }) + wigwam(990, 1180, 0.75))
     + prairieGround(1250, 7, '#c0a860')
     + glow(540, 1050, 420, 0.5)
-    + seq((o) => potaWoman(200, 1330, 1.8, 1, { armL: 12, look: [2.4, -0.4], ...o }), [[0, { mood: 'happy', armR: 18 }], [tN, { mood: 'tender', armR: [70, 2, 3] }], [tS, { mood: 'happy', armR: 30 }]])
-    + seq((o) => potaMan(860, 1330, 1.85, 1, { flip: true, armL: 12, look: [2.2, -0.4], ...o }), [[0, { mood: 'happy', armR: 18 }], [tWo, { mood: 'tender', armR: [56, 2, 3] }], [tS, { mood: 'happy', armR: 24 }]])
-    + seq((o) => duchesne(530, 1325, 2.25, { ...PRAY, ...o }), [[0, { mood: 'surprised', look: [0, 0.6] }], [tWo, { mood: 'tender' }], [tE, { mood: 'peaceful', halo: tE }]])
-    + `<g opacity="0"${walkIn(tWo - 0.2, -120)}>${potaKid(370, 1340, 1.15, 0, { mood: 'joy', armL: 10, armR: [120, 10, 1.5], look: [2, -0.6] })}</g>`
-    + `<g opacity="0"${walkIn(tWo, 120)}>${potaKid(700, 1340, 1.1, 3, { flip: true, mood: 'joy', armL: 10, armR: [60, 2, 3], look: [2, -0.6] })}</g>`
+    + seq((o) => potaWoman(205, 1330, 2.0, 1, { armL: 12, look: [2.4, -0.4], ...o }), [[0, { mood: 'happy', armR: 18 }], [tN, { mood: 'tender', armR: [70, 2, 3] }], [tS, { mood: 'happy', armR: 30 }]])
+    + seq((o) => potaMan(830, 1330, 2.0, 1, { flip: true, armL: 12, look: [2.2, -0.4], ...o }), [[0, { mood: 'happy', armR: 18 }], [tWo, { mood: 'tender', armR: [56, 2, 3] }], [tS, { mood: 'happy', armR: 24 }]])
+    + seq((o) => duchesne(520, 1330, 2.0, { ...PRAY, ...o }), [[0, { mood: 'surprised', look: [0, 0.6] }], [tWo, { mood: 'tender' }], [tE, { mood: 'peaceful', halo: tE }]])
+    + `<g opacity="0"${walkIn(tWo - 0.2, -120)}>${potaKid(360, 1340, 1.25, 0, { mood: 'joy', armL: 10, armR: [120, 10, 1.5], look: [2, -0.6] })}</g>`
+    + `<g opacity="0"${walkIn(tWo, 120)}>${potaKid(685, 1340, 1.25, 3, { flip: true, mood: 'joy', armL: 10, armR: [60, 2, 3], look: [2, -0.6] })}</g>`
     + `<g opacity="0"${fadeIn(tWo, 0.8)}>${sparkles(16, 300, 780, 640, 1000, { seed: 9, color: '#fff2d0' })}</g>`
     + NEAR(bokeh(6, { seed: 23 }));
 }
@@ -260,8 +260,8 @@ function scene6() {
     + glow(540, 1080, 470, 0.7)
     + seq((o) => duchesne(540, 1320, 2.45, { halo: true, armL: [30, 2, 3], armR: [40, 2, 3.3], propR: rosary(), ...o }), [
       [0, { mood: 'happy' }], [tPa, { mood: 'determined', look: [0, -0.6] }], [tP, { mood: 'tender' }]])
-    + `<g opacity="0"${walkIn(tPa - 0.1, -160)}>${potaKid(190, 1340, 1.15, 1, { mood: 'joy', armL: 10, armR: [130, 12, 1.4], look: [2, -0.8] })}</g>`
-    + `<g opacity="0"${walkIn(tPa + 0.3, 160)}>${potaKid(830, 1340, 1.12, 0, { flip: true, mood: 'joy', armL: 10, armR: [120, 12, 1.5], look: [2, -0.8] })}</g>`
+    + `<g opacity="0"${walkIn(tPa - 0.1, -160)}>${potaKid(195, 1335, 1.5, 1, { mood: 'joy', armL: 10, armR: [130, 12, 1.4], look: [2, -0.8] })}</g>`
+    + `<g opacity="0"${walkIn(tPa + 0.3, 160)}>${potaKid(820, 1335, 1.5, 0, { flip: true, mood: 'joy', armL: 10, armR: [120, 12, 1.5], look: [2, -0.8] })}</g>`
     + motes(12, { seed: 19, y0: 600, y1: 1250 })
     + NEAR(bokeh(7, { seed: 29 }));
 }
