@@ -134,23 +134,30 @@ export const castShadow = (x, y, s, mode) => {
 };
 
 // ================================================================ set pieces (SVG cut-outs; the ground itself is 3D)
-/** A great oak trunk with two limbs spreading out of frame below the title (base at x, y). */
-export const oakTrunk = (x, y, { c = '#5a4232', leaves = ['#8a5428', '#a8742e', '#6a4a24', '#b8863a'] } = {}) => {
-  const d = dark(c, 0.3), l = light(c, 0.25), r = rng(31);
-  const limb = (d0, w) => `<path d="${d0}" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="${d0}" stroke="${d}" stroke-width="${f(w * 0.35)}" fill="none" stroke-linecap="round" opacity=".45" transform="translate(${f(w * 0.22)},0)"/>`;
+/** A great oak (base at x, y): a broad trunk rising well above the figure tied to it, two heavy limbs leaving the frame at
+ * the top corners (leaves only there, clear of the head and the title), bark lines, a knot, and rope bands across the trunk
+ * at a bound figure's chest and knees (ropes: local y of each band; [] for none). Redrawn 2026-11-19: the first version
+ * branched just above the head and read as a crown. */
+export const oakTrunk = (x, y, { c = '#5a4232', leaves = ['#8a5428', '#a8742e', '#6a4a24', '#b8863a'], ropes = [-360, -106] } = {}) => {
+  const d = dark(c, 0.3), l = light(c, 0.22), r = rng(31);
+  const limb = (p, w) => `<path d="${p}" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/><path d="${p}" stroke="${d}" stroke-width="${f(w * 0.4)}" fill="none" stroke-linecap="round" opacity=".45" transform="translate(0,${f(w * 0.25)})"/>`;
   let clumps = '';
-  for (const [cx, cy, n] of [[-330, -930, 13], [330, -930, 13], [-190, -1000, 8], [210, -990, 8], [0, -1010, 5]]) for (let k = 0; k < n; k++) {
-    const px = cx + (r() - 0.5) * 230, py = cy + (r() - 0.5) * 110 + 40, rr = 30 + r() * 26;
-    clumps += `<circle cx="${f(px + rr * 0.15)}" cy="${f(py + rr * 0.3)}" r="${f(rr)}" fill="${dark(leaves[k % leaves.length], 0.3)}"/><circle cx="${f(px)}" cy="${f(py)}" r="${f(rr)}" fill="${leaves[k % leaves.length]}"/><circle cx="${f(px - rr * 0.3)}" cy="${f(py - rr * 0.35)}" r="${f(rr * 0.45)}" fill="${light(leaves[k % leaves.length], 0.25)}" opacity=".6"/>`;
+  for (const [cx, cy, n, sx] of [[-490, -1030, 16, 280], [490, -1020, 16, 280], [-470, -940, 6, 120], [480, -930, 6, 120]]) for (let k = 0; k < n; k++) {
+    const px = cx + (r() - 0.5) * sx, py = cy + (r() - 0.5) * 150, rr = 34 + r() * 30, lc = leaves[k % leaves.length];
+    clumps += `<circle cx="${f(px + rr * 0.15)}" cy="${f(py + rr * 0.3)}" r="${f(rr)}" fill="${dark(lc, 0.3)}"/><circle cx="${f(px)}" cy="${f(py)}" r="${f(rr)}" fill="${lc}"/><circle cx="${f(px - rr * 0.3)}" cy="${f(py - rr * 0.35)}" r="${f(rr * 0.45)}" fill="${light(lc, 0.25)}" opacity=".6"/>`;
   }
-  return `<g transform="translate(${x},${y})"><ellipse cx="0" cy="6" rx="160" ry="24" fill="#1a0f1a" opacity=".3"/>`
-    + limb('M-40 -660 Q-140 -820 -330 -900', 64) + limb('M40 -660 Q140 -820 330 -900', 64) + limb('M-20 -700 Q-80 -880 -190 -960', 40) + limb('M20 -700 Q90 -880 210 -950', 40)
-    + `<path d="M-120 10 Q-80 -30 -86 -220 Q-96 -500 -70 -700 Q0 -740 70 -700 Q96 -500 86 -220 Q80 -30 120 10Z" fill="${c}"/>`
-    + `<path d="M30 -716 Q66 -500 60 -220 Q60 -40 120 10 L64 10 Q44 -200 30 -716Z" fill="${d}" opacity=".6"/>`
-    + `<path d="M-52 -640 Q-64 -400 -56 -120 M-20 -600 Q-28 -380 -20 -80 M14 -640 Q8 -420 16 -140" stroke="${d}" stroke-width="4" fill="none" opacity=".55" stroke-linecap="round"/>`
-    + `<path d="M-70 -680 Q-80 -460 -72 -160" stroke="${l}" stroke-width="5" fill="none" opacity=".45" stroke-linecap="round"/>`
-    + `<path d="M-120 10 Q-160 0 -190 16 M120 10 Q160 0 200 18" stroke="${c}" stroke-width="18" stroke-linecap="round" fill="none"/>`
-    + `<g${M.sway(1.2, 5, 0, 0, -900)}>${clumps}</g></g>`;
+  const rope = (yy) => `<g fill="none" stroke-linecap="round"><path d="M-188 ${yy - 6} Q0 ${yy + 12} 188 ${yy - 6}" stroke="#d8c090" stroke-width="9"/><path d="M-189 ${yy + 7} Q0 ${yy + 25} 189 ${yy + 7}" stroke="#b89a68" stroke-width="8"/>`
+    + `<path d="M-188 ${yy - 6} Q0 ${yy + 12} 188 ${yy - 6}" stroke="#f0dcb0" stroke-width="2" opacity=".6"/></g>`;
+  return `<g transform="translate(${x},${y})"><ellipse cx="0" cy="8" rx="280" ry="30" fill="#1a0f1a" opacity=".3"/>`
+    + limb('M-90 -860 Q-200 -990 -600 -1110', 100) + limb('M90 -860 Q210 -985 600 -1100', 100) + limb('M-250 -985 Q-330 -940 -460 -930', 40) + limb('M260 -985 Q340 -935 470 -925', 40)
+    + `<path d="M-240 12 Q-176 -40 -186 -280 Q-196 -620 -160 -900 Q-80 -944 0 -940 Q80 -944 160 -900 Q196 -620 186 -280 Q176 -40 240 12Z" fill="${c}"/>`
+    + `<path d="M70 -930 Q160 -620 150 -280 Q150 -40 240 12 L150 12 Q100 -220 70 -930Z" fill="${d}" opacity=".55"/>`
+    + `<path d="M-130 -860 Q-146 -520 -136 -160 M-70 -800 Q-82 -480 -72 -90 M-10 -860 Q-16 -560 -8 -200 M50 -780 Q42 -460 52 -120 M110 -840 Q102 -500 114 -160" stroke="${d}" stroke-width="5" fill="none" opacity=".5" stroke-linecap="round"/>`
+    + `<path d="M-160 -880 Q-172 -560 -160 -200" stroke="${l}" stroke-width="6" fill="none" opacity=".45" stroke-linecap="round"/>`
+    + `<ellipse cx="-124" cy="-640" rx="18" ry="28" fill="${d}"/><ellipse cx="-122" cy="-636" rx="9" ry="16" fill="#2a1a14"/>`
+    + `<path d="M-240 12 Q-290 0 -330 20 M240 12 Q290 0 340 22" stroke="${c}" stroke-width="22" stroke-linecap="round" fill="none"/>`
+    + ropes.map(rope).join('')
+    + `<g${M.sway(1, 5, 0, 0, -1000)}>${clumps}</g></g>`;
 };
 // distant Viking warriors at the back of the set (small cut-outs, about 27 units away)
 const vikingRow = (y, xs, t) => xs.map(([x, s, fl], k) => `<g opacity="0"${fadeIn(t + k * 0.18, 0.6)}>${viking(x, y, s, { flip: fl, armR: 22, propR: '<g transform="rotate(-8)"><rect x="-4" y="-260" width="8" height="320" rx="3" fill="#6b4a2a"/><path d="M0 -300 L-10 -258 L10 -258Z" fill="#c4ccd6"/></g>', armL: 30, propL: roundShield(['#c8323a', '#2f5a8a', '#e8c24a'][k % 3], '#efe6d2', 0.9) })}</g>`).join('');
@@ -213,7 +220,7 @@ function scene3() {
 // 4 · the tree, the arrows, and his death (tilt-up + rack focus: real depth of field on the 3D wood)
 function scene4() {
   const bt = at(4, 'beat'), ar = at(4, 'arrows'), bw = at(4, 'Between'), sc = at(4, 'Still calling'), gl = at(4, 'gave his life');
-  const treeArrows = [[400, 760, -40], [655, 700, 46], [380, 980, -58], [680, 930, 52], [430, 560, -24]];
+  const treeArrows = [[372, 780, -40], [690, 700, 46], [366, 1030, -58], [694, 920, 52], [420, 520, -24]];
   const E = (op) => edmund(530, 1345, 2.3, { crowned: false, bound: true, armL: 6, armR: 6, ...op });
   return MID(lit(`<g opacity="0"${fadeIn(0.4, 0.8)}>${castShadow(150, 1250, 1.35, 'oak')}${viking(150, 1250, 1.35, { armR: [14, 2, 3], propR: longbow, armL: 18 })}${castShadow(255, 1246, 1.3, 'oak')}${viking(255, 1246, 1.3, { armR: [16, 2, 3], propR: longbow, armL: 14, helm: false })}</g>`, 'oak'))
     + layer(0.97, lit(oakTrunk(530, 1312) + treeArrows.map(([x, y, r], k) => `<g opacity="0"${fadeIn(ar + k * 0.22, 0.25)}>${arrow(x, y, r, 1.1)}</g>`).join(''), 'oak'))
