@@ -136,7 +136,8 @@ export function smoke3d(x, y, z, s = 1, seed = 1) {
   } };
 }
 
-const GL = -2.5;   // height of the lowland (fields, river, fleet) below the near ground
+const GL = -2.5;
+const GREEN = ['#3e5e2e', '#4e7036', '#5e8040', '#6e8a42', '#8a8a3a'];   // oak leaves in the wood: green with a touch of gold   // height of the lowland (fields, river, fleet) below the near ground
 const AUT = ['#8a8a50', '#a09058', '#6e7a44', '#b09a60', '#7a6a40', '#8e9450', '#a8945a'];
 const MODES = {
   hook: { sky: [[0, '#1e2244'], [0.2, '#3e3c66'], [0.38, '#8a6a7e'], [0.5, '#e09a72'], [0.56, '#f4c08a'], [1, '#f4c08a']], fog: '#b89088',
@@ -161,7 +162,7 @@ const MODES = {
     ships: [[230, 0.95, -100, 0.33, true], [560, 1, -125, 0.33, true], [880, 0.95, -105, 0.33, true]], smoke: [[640, 1130, 300, 1.4], [400, 1135, 380, 1.1], [900, 1130, 420, 1.2]], air: 'embers', move: 'dolly',
     clouds: [[110, 470, 900, 11], [960, 460, 900, 11], [300, 600, 950, 7], [800, 610, 950, 7]] },
   oak: { sky: [[0, '#141a36'], [0.24, '#2e3660'], [0.42, '#6a6a8e'], [0.52, '#c8a8a0'], [0.58, '#dcc0aa'], [1, '#dcc0aa']], fog: '#8a8496',
-    near: '#4a4a30', valley: AUT, ridges: ['#4e5068', '#44465a', '#3a3c3a'], hemi: ['#e8dcf0', '#2a2628', 1.15], key: ['#ffe0b0', 0.9, [0, 60, -40]],
+    near: '#4c6232', valley: AUT, ridges: ['#4e5068', '#44465a', '#3a3c3a'], hemi: ['#e8dcf0', '#2a2628', 1.15], key: ['#ffe0b0', 0.9, [0, 60, -40]],
     sun: null, breakAt: [540, 560], rays: { op: 0.17, dir: 0, spread: 0.7 }, cloudLit: '#c8c0d8', cloudShade: '#4e4a6a', stars: 40,
     ships: [], smoke: [], wood: true, air: 'dust', move: 'tilt-up',
     clouds: [[150, 440, 900, 9], [940, 460, 900, 9]] },
@@ -225,19 +226,19 @@ export function anglia(mode = 'hook') {
     const m = sprite(mistTex, 1, mode === 'oak' ? 0.7 : 0.5); m.scale.set(w, h, 1); m.position.set(x, y, z); scene.add(m); return [m, x, k]; });
   // the hall, the abbey
   if (P.hall) { const hl = hall3d({ lit: 1 }); hl.position.set(0, 0, -P.hall[1]); hl.rotation.y = -0.1; scene.add(hl);
-    for (let k = 0; k < 6; k++) scene.add(oak3d(-40 + k * 16 + (r() - 0.5) * 6, -P.hall[1] - 18 - r() * 10, 16 + r() * 6, 50 + k)); }
+    for (let k = 0; k < 6; k++) scene.add(oak3d(-40 + k * 16 + (r() - 0.5) * 6, -P.hall[1] - 18 - r() * 10, 16 + r() * 6, 50 + k, { leaves: GREEN })); }
   if (P.abbey) { const [sx, sy, d, lit] = P.abbey, p = atScreen(cam, sx, sy, d); const ab = abbey3d({ lit }); ab.position.set(p.x, GL, p.z); ab.scale.setScalar(d / 230 * 0.95); ab.rotation.y = -0.35; scene.add(ab); }
   // the oak wood: big trunks close by on both sides, canopies framing the sky gap at the top
   if (P.wood) {
     [[-22, -26, 26, 1], [-34, -46, 30, 2], [-16, -70, 28, 3], [24, -30, 27, 4], [36, -52, 32, 5], [14, -84, 26, 6], [-48, -90, 34, 7], [52, -96, 34, 8], [0, -140, 30, 9], [-30, -150, 32, 10], [34, -160, 30, 11]]
-      .forEach(([x, z, h, s]) => scene.add(oak3d(x, z, h, s, { leaves: ['#6a3e22', '#8a5428', '#5a4a26', '#9a6a2e', '#4a3420'] })));
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 260), lam('#4a3a26')); floor.rotation.x = -Math.PI / 2; floor.position.set(0, -0.02, -130); scene.add(floor);
+      .forEach(([x, z, h, s]) => scene.add(oak3d(x, z, h, s, { leaves: GREEN })));
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 260), lam('#3e5228')); floor.rotation.x = -Math.PI / 2; floor.position.set(0, -0.02, -130); scene.add(floor);
   }
   // the near ground (3D since 2026-11-19): a textured field or forest floor with grass tufts that ends in a lit rim just behind
   // the characters' feet; the characters stand on it at z = -plane (their SVG card), the MID cut-outs a little farther back
   const nearLen = P.hall ? 110 : P.wood ? 60 : P.beach ? 40 : 48, z0 = 20, zFar = z0 - nearLen;
-  const floorC = P.wood ? '#4a3a26' : P.near;
-  const gt = groundTex(floorC, P.wood ? ['#8a5428', '#6a3e22', '#9a6a2e', '#5a4428'] : ['#a8742e', '#8a5a2a', '#c8963e'], mode.length, !P.wood);
+  const floorC = P.near;
+  const gt = groundTex(floorC, P.wood ? ['#8a6a2e', '#6a7a34', '#5a4428'] : ['#a8742e', '#8a5a2a', '#c8963e'], mode.length, true);
   gt.wrapS = THREE.RepeatWrapping; gt.repeat.set(700 / 14, 1);
   const brow = new THREE.Mesh(new THREE.PlaneGeometry(700, nearLen, 70, 6), lam('#ffffff', { map: gt })); brow.rotation.x = -Math.PI / 2; brow.position.set(0, 0, z0 - nearLen / 2); scene.add(brow);
   if (!P.hall && !P.wood) {
@@ -245,7 +246,7 @@ export function anglia(mode = 'hook') {
     rim.rotation.x = -Math.PI / 2; rim.position.set(0, 0.02, zFar + 0.45); scene.add(rim);
     const bank = new THREE.Mesh(new THREE.PlaneGeometry(700, 12), lam(mixc(P.near, '#3a3020', 0.35))); bank.position.set(0, -6, zFar); scene.add(bank);
   }
-  const grassC = P.wood ? ['#4a3a22', '#5a4428', '#3a2c1a'] : [mixc(P.near, '#1e2a10', 0.28).getStyle(), mixc(P.near, '#7a8a40', 0.3).getStyle(), mixc(P.near, '#8a7a40', 0.32).getStyle()];
+  const grassC = P.wood ? ['#2e4220', '#4a6230', '#5a6a2e'] : [mixc(P.near, '#1e2a10', 0.28).getStyle(), mixc(P.near, '#7a8a40', 0.3).getStyle(), mixc(P.near, '#8a7a40', 0.32).getStyle()];
   scene.add(tufts3d(260, { x: 9, z0: -20.5, z1: zFar + 1, h: [0.16, 0.3], colors: grassC, seed: 3 + mode.length }));
   // the foreground (front3d canvas, drawn over the SVG): low grass in front of and around the feet
   const front = new THREE.Scene(); front.fog = scene.fog;
