@@ -390,7 +390,7 @@ export function makeView(cv, build = BUILD) {
   const sc = cv.closest('.scene'), camEl = sc.querySelector('.cam');
   const LOOP = sc.hasAttribute('data-loop');
   const Z = +sc.dataset.zero, C = +sc.dataset.start, D = +sc.dataset.duration;
-  const move = (camEl?.dataset.camv || 'push').split(/\s+/)[0];
+  const move = (camEl?.dataset.camv || camEl?.dataset.cam3d || 'push').split(/\s+/)[0];
   const fast = move === 'push-fast';
   const at = LOOP ? Z : Math.max(0, C - 0.4), span = (D + 0.8) * (fast ? 0.55 : 1), ease = fast ? EASE.p3o : EASE.sio;
   const hh0 = LOOP ? Z : Math.max(0, C - 0.8);
@@ -408,6 +408,86 @@ export function makeView(cv, build = BUILD) {
 export function newRenderer(cv) {
   const r = new THREE.WebGLRenderer({ canvas: cv, antialias: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
   r.setPixelRatio(1); r.setSize(W, H, false); return r;
+}
+
+// ------------------------------------------------------------------ cam3d rig (opt-in, 2026-11-19, St. Edmund the Martyr)
+// One camera for the whole scene. makeRig(cv, build, opts) wraps makeView and, every frame:
+//  1. poses the three.js camera (the set's update(t, p) does the move, makeView adds the hand-held wobble);
+//  2. projects the SVG with that same camera: the character plane (.cam) sits `plane` units away and each [data-depth]
+//     layer at plane / depth, so a layer's 2D transform is exactly what a flat card at that distance would do (true
+//     parallax, push, pan, tilt, dolly zoom, orbit and roll, no hand-tuned factors);
+//  3. renders the set's optional foreground scene (v.front) with a transparent clear and copies it to canvas.front3d,
+//     which sits over the SVG (grass in front of the characters' feet);
+//  4. renders the background through a depth-of-field pass focused on the character plane: blur radius
+//     = |1 - plane / z| x maxBlur px; maxBlur = opts.dof (gentle, always on) rising to 2 x the scene's rack blur on the
+//     rack timing (data-rack on .cam), so far things blur more than near ones.
+// The set may expose rig(o) to receive { move, amt, ox, oy, plane } before the first update (e.g. to push toward ox, oy).
+export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
+  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+  const view = makeView(cv, build), { sc, v } = view;
+  const camEl = sc.querySelector('.cam');
+  const [move = 'push', amt = 0.07, ox = 540, oy = 1150, shift = 0, plane = 20] = (camEl?.dataset.cam3d || '').trim().split(/\s+/).map((x, i) => (i ? +x : x));
+  const rack = camEl?.dataset.rack ? camEl.dataset.rack.trim().split(/\s+/).map(Number) : null;
+  v.rig?.({ move, amt, ox, oy, plane });
+  const cam0 = v.cam.clone(); cam0.updateMatrixWorld(); cam0.updateProjectionMatrix();
+  const f0 = (H / 2) / Math.tan(cam0.fov * Math.PI / 360);
+  const ptsAt = (z) => [[540, 960], [640, 960], [540, 1060]].map(([sx, sy]) => cam0.localToWorld(new THREE.Vector3((sx - W / 2) / f0 * z, -(sy - H / 2) / f0 * z, -z)));
+  const on = !!camEl?.dataset.cam3d;
+  const P1 = ptsAt(plane);
+  const layers = on ? [...camEl.querySelectorAll('[data-depth]')].map((el) => ({ el, P: ptsAt(plane / Math.max(0.05, +el.dataset.depth)), up: null })) : [];
+  layers.forEach((L) => { const pe = L.el.parentElement?.closest('[data-depth]'); L.up = pe && camEl.contains(pe) ? layers.find((o) => o.el === pe) : null; });
+  const proj = (P) => P.map((p) => { const q = p.clone().project(v.cam); return [(q.x + 1) / 2 * W, (1 - q.y) / 2 * H]; });
+  const aff = ([A, B, C]) => { const a = (B[0] - A[0]) / 100, b = (B[1] - A[1]) / 100, c = (C[0] - A[0]) / 100, d = (C[1] - A[1]) / 100;
+    return new DOMMatrix([a, b, c, d, A[0] - a * 540 - c * 960, A[1] - b * 540 - d * 960]); };
+  const str = (m) => `matrix(${[m.a, m.b, m.c, m.d, m.e, m.f].map((x) => (+x).toFixed(5)).join(' ')})`;
+  const Ts = new DOMMatrix([1, 0, 0, 1, 0, shift]), Tsi = Ts.inverse();
+  // foreground copy target
+  const fcv = sc.querySelector('canvas.front3d'), fctx = fcv && v.front ? fcv.getContext('2d') : null;
+  // depth-of-field pass
+  const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });
+  rt.depthTexture = new THREE.DepthTexture(W, H);
+  const qm = new THREE.ShaderMaterial({ toneMapped: false, depthTest: false, depthWrite: false,
+    uniforms: { tColor: { value: rt.texture }, tDepth: { value: rt.depthTexture }, cNear: { value: v.cam.near }, cFar: { value: v.cam.far },
+      focus: { value: plane }, maxBlur: { value: dof }, res: { value: new THREE.Vector2(W, H) } },
+    vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+    fragmentShader: `#include <packing>
+      uniform sampler2D tColor; uniform sampler2D tDepth; uniform float cNear, cFar, focus, maxBlur; uniform vec2 res; varying vec2 vUv;
+      float vz(vec2 uv){ return -perspectiveDepthToViewZ(texture2D(tDepth, uv).x, cNear, cFar); }
+      float coc(float z){ return clamp(abs(1.0 - focus / z), 0.0, 1.0) * maxBlur; }
+      void main(){
+        float c0 = coc(vz(vUv)); vec3 acc = texture2D(tColor, vUv).rgb; float ws = 1.0;
+        if (c0 > 0.3) for (int i = 0; i < 28; i++) {
+          float a = float(i) * 2.39996, r = sqrt((float(i) + 0.5) / 28.0) * c0; vec2 uv = vUv + vec2(cos(a), sin(a)) * r / res;
+          float w = coc(vz(uv)) >= r * 0.5 ? 1.0 : 0.12; acc += texture2D(tColor, uv).rgb * w; ws += w;
+        }
+        gl_FragColor = vec4(acc / ws, 1.0);
+        #include <colorspace_fragment>
+      }` });
+  const quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), qm), qs = new THREE.Scene(), qc = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  qs.add(quad);
+  return { ...view, renderer, draw(T) {
+    if (!view.active(T)) return;
+    view.pose(T); v.cam.updateMatrixWorld(); v.cam.updateProjectionMatrix?.();
+    if (on) {
+      const S1 = aff(proj(P1)), S1i = S1.inverse();
+      camEl.setAttribute('transform', str(S1));
+      const Sx = new Map();
+      for (const L of layers) Sx.set(L, aff(proj(L.P)));
+      for (const L of layers) { const ref = L.up ? Sx.get(L.up) : S1; L.el.setAttribute('transform', str(Tsi.multiply(ref.inverse()).multiply(Sx.get(L)).multiply(Ts))); }
+      void S1i;
+    }
+    const t = Math.max(0, T - view.Z);
+    let mb = dof;
+    if (rack) { const [at = 1, dur = 2, b = 6] = rack, k = Math.min(1, Math.max(0, (t - at) / dur)), e = k * k * (3 - 2 * k); mb = dof + (2 * b - dof) * e; }
+    qm.uniforms.maxBlur.value = mb; qm.uniforms.cNear.value = v.cam.near; qm.uniforms.cFar.value = v.cam.far;
+    if (fctx) {
+      renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(v.front, v.cam);
+      fctx.clearRect(0, 0, W, H); fctx.drawImage(cv, 0, 0);
+    }
+    renderer.setRenderTarget(rt); renderer.render(v.scene, v.cam);
+    renderer.setRenderTarget(null); renderer.render(qs, qc);
+  } };
 }
 
 if (!window.BG3D_MANUAL) {

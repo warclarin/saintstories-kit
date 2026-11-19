@@ -12,7 +12,9 @@
 // Danish king Guthrum; shrine at Bury St Edmunds; with Edward the Confessor, England's patron saint until St George.
 // Iconography: crown, arrow(s), orb and sceptre, the wolf; red and blue royal robes. The death is shown bloodless: arrows
 // in the tree and in his mantle, never a blow landing; the beheading is told only as "he gave his life".
-// Exported for later reels: edmund, viking, saxonBishop, crown, heavenCrown, roundShield, longbow, silverPenny, threeCrowns, oakTrunk.
+// Exported for later reels: edmund, viking, saxonBishop, crown, heavenCrown, roundShield, longbow, silverPenny, threeCrowns, oakTrunk,
+// LIGHT, lit (one light for 3D + SVG), castShadow.
+// 2026-11-19: the first cam3d reel (one camera for the 3D set and the SVG cards, 3D ground, depth of field, front3d grass).
 import { W, M, GOLD, motes, sparkles, bokeh, foliage, tufts, rays, dark, light, f, rng, NEAR, MID, layer } from '../art.mjs';
 import { hd, seq, wordTimes } from '../hd.mjs';
 import { arrow } from './sebastian_left_for_dead.mjs';
@@ -98,16 +100,40 @@ export const saxonBishop = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, {
   top: '#f1ebdf', mantle: '#4a7a52', lining: GOLD, trim: GOLD, plain: true, skin: '#e8bc9a', hair: '#e8e2d8', beard: '#e8e2d8', beardStyle: 'full', age: 'old',
   belt: false, shoes: '#5a3a22', iris: '#5a4a3a', ...o, over: pectoralCross + mitre + over });
 
-// ================================================================ set pieces (SVG, in front of the 3D)
-/** The near ground: a soft curved field edge with a lit rim, tussocks and fallen leaves. */
-const field = (y, c = '#5a6436', rim = '#8a9a5a', { seed = 3, leaves = ['#a8742e', '#8a5a2a', '#c8963e'] } = {}) => {
-  const r = rng(seed); let lf = '';
-  for (let k = 0; k < 26; k++) { const lx = r() * W, ly = y + 40 + r() * 330, cc = leaves[k % leaves.length]; lf += `<ellipse cx="${f(lx)}" cy="${f(ly)}" rx="${f(7 + r() * 6)}" ry="${f(3 + r() * 2)}" fill="${cc}" opacity=".7" transform="rotate(${f(r() * 180)} ${f(lx)} ${f(ly)})"/>`; }
-  return `<path d="M-200 ${y + 12} Q220 ${y - 12} 540 ${y} Q860 ${y + 12} ${W + 200} ${y - 4} L${W + 200} 2200 L-200 2200Z" fill="${c}"/>`
-    + `<path d="M-200 ${y + 12} Q220 ${y - 12} 540 ${y} Q860 ${y + 12} ${W + 200} ${y - 4}" stroke="${rim}" stroke-width="9" fill="none" opacity=".8"/>`
-    + `<path d="M-200 ${y + 60} Q400 ${y + 40} ${W + 200} ${y + 70} L${W + 200} 2200 L-200 2200Z" fill="${dark(c, 0.12)}" opacity=".5"/>` + lf
-    + tufts(y + 10, 14, dark(c, 0.25), { seed: seed + 2 });
+// ================================================================ one light per scene (shared with the 3D set)
+// key: the 3D key light colour; from: where it comes from (l | r | back | top); tint + amt: a colour wash over the SVG
+// characters and props; rim + rimOp: a rim light on their edges facing the light. Passed to the 3D set as bg3d_vars.light.
+export const LIGHT = {
+  hook:   { key: '#ffb880', from: 'l', tint: '#ffc4a0', amt: 0.14, rim: '#ffd2a8', rimOp: 0.85 },
+  raid:   { key: '#ffe0b0', from: 'r', tint: '#e8e0dc', amt: 0.08, rim: '#fff0d4', rimOp: 0.6 },
+  hall:   { key: '#ffc090', from: 'back', tint: '#ffc4a4', amt: 0.14, rim: '#ffb878', rimOp: 0.75 },
+  arrive: { key: '#ff9a60', from: 'back', tint: '#ff9e7c', amt: 0.2, rim: '#ffb474', rimOp: 0.9 },
+  oak:    { key: '#ffe0b0', from: 'top', tint: '#a8aedc', amt: 0.18, rim: '#ffe8c0', rimOp: 0.85 },
+  abbey:  { key: '#ffc888', from: 'l', tint: '#ffe0b0', amt: 0.12, rim: '#fff0c8', rimOp: 0.8 },
+  glory:  { key: '#ffb880', from: 'r', tint: '#ffc2a8', amt: 0.14, rim: '#ffd2a8', rimOp: 0.85 },
 };
+let LID = 0;
+/** Light SVG characters and props like the 3D set: a colour wash plus a rim light on the edges facing the light. */
+export const lit = (svg, mode) => {
+  const L = LIGHT[mode], id = `lit${++LID}`, d = 5;
+  const offs = { l: [[d, 0]], r: [[-d, 0]], back: [[d, 0], [-d, 0], [0, d]], top: [[0, d], [d * 0.6, d * 0.6], [-d * 0.6, d * 0.6]] }[L.from];
+  const rims = offs.map(([dx, dy], k) => `<feOffset in="SourceAlpha" dx="${dx}" dy="${dy}" result="o${k}"/><feComposite in="SourceAlpha" in2="o${k}" operator="out" result="e${k}"/>`).join('');
+  const merge = offs.map((_, k) => `<feMergeNode in="e${k}"/>`).join('');
+  return `<defs><filter id="${id}" filterUnits="userSpaceOnUse" x="-300" y="-300" width="1680" height="2520" color-interpolation-filters="sRGB">`
+    + `<feFlood flood-color="${L.tint}" result="t"/><feBlend in="SourceGraphic" in2="t" mode="multiply" result="m"/><feComposite in="m" in2="SourceAlpha" operator="in" result="mm"/>`
+    + `<feComposite in="SourceGraphic" in2="mm" operator="arithmetic" k1="0" k2="${f(1 - L.amt)}" k3="${f(L.amt)}" k4="0" result="base"/>`
+    + `${rims}<feMerge result="edge">${merge}</feMerge><feGaussianBlur in="edge" stdDeviation="1.6" result="eb"/>`
+    + `<feFlood flood-color="${L.rim}" flood-opacity="${L.rimOp}"/><feComposite in2="eb" operator="in"/><feComposite in2="SourceAlpha" operator="in" result="rim"/>`
+    + `<feMerge><feMergeNode in="base"/><feMergeNode in="rim"/></feMerge></filter></defs><g filter="url(#${id})">${svg}</g>`;
+};
+/** A soft cast shadow on the ground, thrown away from the scene's light (feet at x, y; s = character scale). */
+export const castShadow = (x, y, s, mode) => {
+  const from = LIGHT[mode].from;
+  const [dx, dy, rx, ry, rot] = { l: [70, 8, 100, 14, 6], r: [-70, 8, 100, 14, -6], back: [0, 20, 70, 24, 0], top: [0, 3, 74, 14, 0] }[from];
+  return `<ellipse cx="${f(x + dx * s)}" cy="${f(y + dy * s)}" rx="${f(rx * s)}" ry="${f(ry * s)}" fill="#140c14" opacity=".26" filter="url(#blur6)" transform="rotate(${rot} ${f(x)} ${f(y)})"/>`;
+};
+
+// ================================================================ set pieces (SVG cut-outs; the ground itself is 3D)
 /** A great oak trunk with two limbs spreading out of frame below the title (base at x, y). */
 export const oakTrunk = (x, y, { c = '#5a4232', leaves = ['#8a5428', '#a8742e', '#6a4a24', '#b8863a'] } = {}) => {
   const d = dark(c, 0.3), l = light(c, 0.25), r = rng(31);
@@ -126,20 +152,21 @@ export const oakTrunk = (x, y, { c = '#5a4232', leaves = ['#8a5428', '#a8742e', 
     + `<path d="M-120 10 Q-160 0 -190 16 M120 10 Q160 0 200 18" stroke="${c}" stroke-width="18" stroke-linecap="round" fill="none"/>`
     + `<g${M.sway(1.2, 5, 0, 0, -900)}>${clumps}</g></g>`;
 };
-// distant Viking warriors at the back of the set (small, in MID)
+// distant Viking warriors at the back of the set (small cut-outs, about 27 units away)
 const vikingRow = (y, xs, t) => xs.map(([x, s, fl], k) => `<g opacity="0"${fadeIn(t + k * 0.18, 0.6)}>${viking(x, y, s, { flip: fl, armR: 22, propR: '<g transform="rotate(-8)"><rect x="-4" y="-260" width="8" height="320" rx="3" fill="#6b4a2a"/><path d="M0 -300 L-10 -258 L10 -258Z" fill="#c4ccd6"/></g>', armL: 30, propL: roundShield(['#c8323a', '#2f5a8a', '#e8c24a'][k % 3], '#efe6d2', 0.9) })}</g>`).join('');
 
-// ================================================================ scenes (all backgrounds are 3D: no SVG sky or BACK layer)
+// ================================================================ scenes
+// cam3d: everything shares the 3D camera. The ground, sky, set and air are three.js; each SVG part is a flat card at a real
+// distance: the character plane (depth 1) is 20 units away, layer(d) at 20 / d (MID 0.75 = 26.7, NEAR 1.4 = 14.3), and a
+// card's feet sit where the 3D ground is at that distance (depth 1: art y ~1345, 0.95: ~1322, 0.92: ~1310, 0.78: ~1262).
 // 0 · hook: the king before his hall, Viking sails on the river behind (push-fast)
 function scene0() {
-  const o = at(0, 'obey'), d = at(0, 'die'), s = at(0, 'This is'), n = at(0, 'Saint Edmund');
+  const d = at(0, 'die'), s = at(0, 'This is'), n = at(0, 'Saint Edmund');
   const E = (op) => edmund(430, 1345, 2.45, { armL: [16, 2, 3], armR: 26, propR: sword, ...op });
-  return MID(field(1250, '#4e5a30', '#7a8a4a', { seed: 3 }))
-    + `<g${walkIn(at(0, 'Viking'), 160, 1.1)}>${viking(850, 1262, 1.55, { flip: true, armR: [70, 3, 2.4], armL: 28, propL: roundShield('#c8323a', '#e8c24a', 0.9) })}</g>`
-    + `<g${punch(d, 0.035, 470, 900)}>`
-    + seq(E, [[0, { mood: 'determined', look: [2.6, 0] }], [d, { mood: 'determined', look: [2.4, -0.4] }], [s, { mood: 'happy', look: [0, 0] }], [n, { mood: 'happy', halo: n }]])
-    + '</g>'
-    + motes(18, { y0: 600, y1: 1250, seed: 4, color: '#ffb070' })
+  return layer(0.78, lit(`<g${walkIn(at(0, 'Viking'), 160, 1.1)}>${castShadow(850, 1262, 1.55, 'hook')}${viking(850, 1262, 1.55, { flip: true, armR: [70, 3, 2.4], armL: 28, propL: roundShield('#c8323a', '#e8c24a', 0.9) })}</g>`, 'hook'))
+    + lit(castShadow(430, 1345, 2.45, 'hook') + `<g${punch(d, 0.035, 470, 900)}>`
+      + seq(E, [[0, { mood: 'determined', look: [2.6, 0] }], [d, { mood: 'determined', look: [2.4, -0.4] }], [s, { mood: 'happy', look: [0, 0] }], [n, { mood: 'happy', halo: n }]])
+      + '</g>', 'hook')
     + NEAR(foliage('l', 1640, { color: '#2a2030' }) + foliage('r', 1660, { color: '#2a2030', seed: 5 }));
 }
 
@@ -147,26 +174,23 @@ function scene0() {
 function scene1() {
   const L2 = at(1, 'Their leader'), q0 = at(1, 'Share'), g = at(1, 'gold'), uk = at(1, 'under-king'), qe = at(1, 'under-king', 0.9);
   const E = (op) => edmund(300, 1345, 2.15, { armL: [14, 2, 3], armR: [20, 2, 3], look: [2.6, 0], ...op });
-  return MID(field(1250, '#5e6a3c', '#8a9a5a', { seed: 6 }))
-    + seq(E, [[0, { mood: 'worried', look: [2.4, -0.6] }], [L2, { mood: 'surprised' }], [uk, { mood: 'worried' }]])
-    + `<g${walkIn(L2 - 0.3, 220, 1.1)}>`
-    + seq((op) => viking(770, 1340, 2.05, { flip: true, armL: 24, propL: roundShield('#2f5a8a', '#efe6d2', 1), look: [2.4, 0], ...op }),
-      [[0, { armR: [20, 2, 3] }], [q0 - 0.2, { talk: [q0, qe], armR: [82, 4, 2.2] }]])
-    + '</g>'
-    + popAt(g, 545, 1305, chestGold, 0.6)
+  return layer(0.95, lit(`<g${walkIn(L2 - 0.3, 220, 1.1)}>${castShadow(780, 1322, 2.0, 'raid')}`
+      + seq((op) => viking(780, 1322, 2.05, { flip: true, armL: 24, propL: roundShield('#2f5a8a', '#efe6d2', 1), look: [2.4, 0], ...op }),
+        [[0, { armR: [20, 2, 3] }], [q0 - 0.2, { talk: [q0, qe], armR: [82, 4, 2.2] }]]) + '</g>', 'raid'))
+    + lit(castShadow(300, 1345, 2.15, 'raid') + seq(E, [[0, { mood: 'worried', look: [2.4, -0.6] }], [L2, { mood: 'surprised' }], [uk, { mood: 'worried' }]])
+      + popAt(g, 545, 1312, chestGold, 0.6), 'raid')
     + NEAR(foliage('r', 1650, { color: '#2f3a26', seed: 9 }));
 }
 
 // 2 · the human beat: the bishop urges him to give in; the king looks at the ground (drift-l)
 function scene2() {
   const g = at(2, 'told him'), lk = at(2, 'Edmund looked'), gr = at(2, 'ground');
-  return MID(field(1250, '#55603a', '#8a905a', { seed: 8 }) + torch(110, 1262) + torch(980, 1250))
-    + seq((op) => edmund(360, 1345, 2.2, { armL: [12, 2, 3], armR: [14, 2, 3], ...op }),
-      [[0, { mood: 'worried', look: [2.6, 0] }], [lk, { mood: 'sad', look: [0, 2.4] }]])
-    + seq((op) => saxonBishop(770, 1340, 2.0, { flip: true, armL: 24, propL: crozier, look: [2.6, 0], ...op }),
-      [[0, { mood: 'worried', armR: [24, 2, 3] }], [g - 0.2, { mood: 'worried', armR: [44, 4, 2.2] }], [gr, { mood: 'sad', armR: [30, 2, 3] }]])
+  return MID(lit(torch(110, 1262) + torch(980, 1250), 'hall'))
+    + layer(0.95, lit(castShadow(775, 1322, 2.0, 'hall') + seq((op) => saxonBishop(775, 1322, 2.05, { flip: true, armL: 24, propL: crozier, look: [2.6, 0], ...op }),
+      [[0, { mood: 'worried', armR: [24, 2, 3] }], [g - 0.2, { mood: 'worried', armR: [44, 4, 2.2] }], [gr, { mood: 'sad', armR: [30, 2, 3] }]]), 'hall'))
+    + lit(castShadow(360, 1345, 2.2, 'hall') + seq((op) => edmund(360, 1345, 2.2, { armL: [12, 2, 3], armR: [14, 2, 3], ...op }),
+      [[0, { mood: 'worried', look: [2.6, 0] }], [lk, { mood: 'sad', look: [0, 2.4] }]]), 'hall')
     + `<g opacity="0"${fadeIn(lk, 1.2)}>${glow(360, 1100, 380, 0.35)}</g>`
-    + motes(14, { y0: 700, y1: 1250, seed: 9, color: '#ffc080' })
     + NEAR(foliage('l', 1640, { color: '#262434', seed: 4 }));
 }
 
@@ -176,31 +200,27 @@ function scene3() {
   const E = (op) => edmund(370, 1345, 2.3, { look: [0, 0], ...op });
   const armed = { armL: 34, propL: roundShield('#2f4f8f', GOLD, 1), armR: 26, propR: sword };
   const drop = (x, y, rot, svg, dx) => `<g opacity="0"${M.tw([{ at: th, dur: 0.05, from: { opacity: 0 }, to: { opacity: 1 } }])}><g${M.tw([{ at: th, dur: 0.7, from: { x: dx, y: -260, rotation: 0 }, to: { x: 0, y: 0, rotation: rot }, ease: 'power2.in', origin: `${x} ${y}` }])}><g transform="translate(${x},${y})">${svg}</g></g></g>`;
-  return MID(field(1250, '#4e5030', '#8a7a4a', { seed: 11 }) + vikingRow(1232, [[640, 1.05, true], [730, 1.1, true], [905, 1.0, true]], hc))
-    + seq(E, [[0, { mood: 'determined', ...armed, look: [0, 0] }], [q0 - 0.2, { mood: 'determined', talk: [q0, qe], ...armed }],
+  return MID(lit(vikingRow(1240, [[640, 1.05, true], [730, 1.1, true], [905, 1.0, true]], hc), 'arrive'))
+    + layer(0.92, lit(`<g${walkIn(hc, 220, 1.2)}>${castShadow(810, 1310, 2.1, 'arrive')}${viking(810, 1310, 2.15, { chief: true, flip: true, armR: [22, 2, 3], armL: 28, propL: roundShield('#8a2a2a', '#e8c24a', 1), look: [2.4, 0] })}</g>`, 'arrive'))
+    + lit(castShadow(370, 1345, 2.3, 'arrive') + seq(E, [[0, { mood: 'determined', ...armed, look: [0, 0] }], [q0 - 0.2, { mood: 'determined', talk: [q0, qe], ...armed }],
       [hc, { mood: 'determined', ...armed, look: [2.6, 0] }], [th, { mood: 'determined', armL: [40, 3, 2.4], armR: [40, 3, 2.4], look: [2.6, 0] }],
       [lc, { mood: 'peaceful', armL: [24, 2, 3], armR: [24, 2, 3] }]])
-    + drop(285, 1338, 8, `<g transform="rotate(90)">${sword}</g>`, 90) + drop(590, 1330, 0, `<g transform="scale(1.15,0.5)">${roundShield('#2f4f8f', GOLD, 1)}</g>`, -60)
-    + `<g${walkIn(hc, 220, 1.2)}>${viking(800, 1340, 2.0, { chief: true, flip: true, armR: [22, 2, 3], armL: 28, propL: roundShield('#8a2a2a', '#e8c24a', 1), look: [2.4, 0] })}</g>`
-    + `<g opacity="0"${fadeIn(lc, 0.8)}>${sparkles(12, 300, 600, 700, 1050, { seed: 6 })}</g>`
-    + motes(16, { y0: 600, y1: 1250, seed: 12, color: '#ffa060' })
+      + drop(285, 1338, 8, `<g transform="rotate(90)">${sword}</g>`, 90) + drop(590, 1338, 0, `<g transform="scale(1.15,0.5)">${roundShield('#2f4f8f', GOLD, 1)}</g>`, -60), 'arrive')
+    + `<g opacity="0"${fadeIn(lc, 0.8)}>${sparkles(12, 260, 520, 700, 1050, { seed: 6 })}</g>`
     + NEAR(foliage('l', 1650, { color: '#241a24', seed: 6 }) + foliage('r', 1660, { color: '#241a24', seed: 7 }));
 }
 
-// 4 · the tree, the arrows, and his death (tilt-up + rack focus)
+// 4 · the tree, the arrows, and his death (tilt-up + rack focus: real depth of field on the 3D wood)
 function scene4() {
   const bt = at(4, 'beat'), ar = at(4, 'arrows'), bw = at(4, 'Between'), sc = at(4, 'Still calling'), gl = at(4, 'gave his life');
   const treeArrows = [[400, 760, -40], [655, 700, 46], [380, 980, -58], [680, 930, 52], [430, 560, -24]];
   const E = (op) => edmund(530, 1345, 2.3, { crowned: false, bound: true, armL: 6, armR: 6, ...op });
-  return MID(field(1250, '#4a4a30', '#7a7a50', { seed: 14, leaves: ['#8a5428', '#6a3e22', '#9a6a2e'] })
-      + `<g opacity="0"${fadeIn(0.4, 0.8)}>${viking(150, 1240, 1.35, { armR: [14, 2, 3], propR: longbow, armL: 18 })}${viking(255, 1236, 1.3, { armR: [16, 2, 3], propR: longbow, armL: 14, helm: false })}</g>`)
-    + layer(0.95, oakTrunk(530, 1300))
-    + treeArrows.map(([x, y, r], k) => `<g opacity="0"${fadeIn(ar + k * 0.22, 0.25)}>${arrow(x, y, r, 1.1)}</g>`).join('')
-    + `<g transform="translate(300,1318)">${fallenCrown(1.3)}</g>`
-    + seq(E, [[0, { mood: 'determined', look: [-2.4, 0] }], [bt, { mood: 'pain' }], [ar + 1.0, { mood: 'pain', pierced: true }],
-      [bw, { mood: 'awe', pierced: true, look: [0, -1] }], [sc, { mood: 'peaceful', pierced: true }], [gl, { mood: 'peaceful', pierced: true, halo: gl }]])
-    + `<g opacity="0"${fadeIn(sc, 1.6)}>${rays(540, 260, { op: 0.08, speed: 1.2 })}${glow(530, 760, 420, 0.5)}</g>`
-    + `<g opacity="0"${fadeIn(gl, 1.2)}>${motes(18, { y0: 500, y1: 1200, seed: 15 })}</g>`
+  return MID(lit(`<g opacity="0"${fadeIn(0.4, 0.8)}>${castShadow(150, 1250, 1.35, 'oak')}${viking(150, 1250, 1.35, { armR: [14, 2, 3], propR: longbow, armL: 18 })}${castShadow(255, 1246, 1.3, 'oak')}${viking(255, 1246, 1.3, { armR: [16, 2, 3], propR: longbow, armL: 14, helm: false })}</g>`, 'oak'))
+    + layer(0.97, lit(oakTrunk(530, 1312) + treeArrows.map(([x, y, r], k) => `<g opacity="0"${fadeIn(ar + k * 0.22, 0.25)}>${arrow(x, y, r, 1.1)}</g>`).join(''), 'oak'))
+    + lit(`<g transform="translate(300,1322)">${fallenCrown(1.3)}</g>`
+      + seq(E, [[0, { mood: 'determined', look: [-2.4, 0] }], [bt, { mood: 'pain' }], [ar + 1.0, { mood: 'pain', pierced: true }],
+        [bw, { mood: 'awe', pierced: true, look: [0, -1] }], [sc, { mood: 'peaceful', pierced: true }], [gl, { mood: 'peaceful', pierced: true, halo: gl }]]), 'oak')
+    + `<g opacity="0"${fadeIn(sc, 1.6)}>${glow(530, 760, 420, 0.5)}</g>`
     + NEAR(foliage('l', 1640, { color: '#1e1a26', seed: 10 }) + foliage('r', 1650, { color: '#1e1a26', seed: 11 }));
 }
 
@@ -209,27 +229,24 @@ function scene5() {
   const cn = at(5, 'coins'), hv = at(5, 'He lost'), hc = at(5, 'heavenly');
   const X = 410, Y = 1345, S = 2.25;
   const pilgrims = [[620, 0.95, '#7a5a4a'], [700, 0.9, '#4a6a5a'], [775, 0.85, '#8a6a3a']].map(([x, s, c], k) =>
-    `<g${M.drift(60, 0)}>${hd(x, 1238, s, { top: c, mantle: null, skin: ['#e6bc98', '#d9a47e', '#efc6a2'][k], hair: ['#4a3424', '#8a6a4a', '#2a1c14'][k], beard: k === 1 ? '#8a6a4a' : null, flip: true, mood: 'happy', armR: 20, propR: k === 0 ? '<rect x="-3" y="-190" width="6" height="240" rx="3" fill="#7a5a3a"/>' : '' })}</g>`).join('');
-  return MID(field(1250, '#6a7840', '#a8b060', { seed: 17 }) + pilgrims)
-    + seq((op) => edmund(X, Y, S, { crowned: false, halo: true, armL: [16, 2, 3], armR: 30, propR: heldArrow(1), ...op }),
+    `<g${M.drift(60, 0)}>${castShadow(x, 1250, s, 'abbey')}${hd(x, 1250, s, { top: c, mantle: null, skin: ['#e6bc98', '#d9a47e', '#efc6a2'][k], hair: ['#4a3424', '#8a6a4a', '#2a1c14'][k], beard: k === 1 ? '#8a6a4a' : null, flip: true, mood: 'happy', armR: 20, propR: k === 0 ? '<rect x="-3" y="-190" width="6" height="240" rx="3" fill="#7a5a3a"/>' : '' })}</g>`).join('');
+  return MID(lit(pilgrims, 'abbey'))
+    + lit(castShadow(X, Y, S, 'abbey') + seq((op) => edmund(X, Y, S, { crowned: false, halo: true, armL: [16, 2, 3], armR: 30, propR: heldArrow(1), ...op }),
       [[0, { mood: 'happy', look: [2.2, -0.4] }], [hv, { mood: 'happy', look: [0, 0] }], [hc, { mood: 'tender' }]])
-    + `<g transform="translate(${X},${Y}) scale(${S})"><g opacity="0"${M.tw([{ at: hc - 0.9, dur: 0.9, from: { y: -160, opacity: 0 }, to: { y: 0, opacity: 1 }, ease: 'power2.out' }])}>${heavenCrown}</g></g>`
-    + popAt(cn, 790, 600, `<g${M.bob(6, 3)}>${silverPenny(1.45)}</g>`, 0.7)
+      + `<g transform="translate(${X},${Y}) scale(${S})"><g opacity="0"${M.tw([{ at: hc - 0.9, dur: 0.9, from: { y: -160, opacity: 0 }, to: { y: 0, opacity: 1 }, ease: 'power2.out' }])}>${heavenCrown}</g></g>`, 'abbey')
+    + layer(0.9, popAt(cn, 790, 600, `<g${M.bob(6, 3)}>${silverPenny(1.45)}</g>`, 0.7))
     + `<g opacity="0"${fadeIn(hc, 0.8)}>${sparkles(16, 240, 600, 420, 760, { seed: 18 })}</g>`
-    + motes(14, { y0: 500, y1: 1250, seed: 19 })
     + NEAR(bokeh(7, { seed: 23 }) + foliage('l', 1650, { color: '#3a4a28', seed: 12 }));
 }
 
-// 6 · feast day portrait: crown, halo, arrow, the wolf, the three-crown banner (arc-r)
+// 6 · feast day portrait: crown, halo, arrow, the wolf, the three-crown banner (arc-r: a real orbit around him)
 function scene6() {
   const pt = at(6, 'patron'), pr = at(6, 'pray for us');
-  return MID(field(1250, '#5e6a3c', '#a8a060', { seed: 20 }))
-    + popAt(pt, 70, 1300, threeCrowns(1.2), 0.8)
-    + `<g transform="translate(1520,0) scale(-1,1)">${wolf(760, 1330, 1.35)}</g>`
-    + seq((op) => edmund(500, 1345, 2.35, { halo: true, armL: [16, 2, 3], armR: 30, propR: heldArrow(1), ...op }),
-      [[0, { mood: 'happy', look: [0, 0] }], [pt, { mood: 'happy', look: [-2.4, -0.6] }], [pr, { mood: 'tender' }]])
+  return layer(0.9, lit(popAt(pt, 90, 1300, threeCrowns(1.2), 0.8), 'glory'))
+    + layer(1.06, lit(castShadow(760, 1360, 1.1, 'glory') + `<g transform="translate(1520,0) scale(-1,1)">${wolf(760, 1362, 1.3)}</g>`, 'glory'))
+    + lit(castShadow(500, 1345, 2.35, 'glory') + seq((op) => edmund(500, 1345, 2.35, { halo: true, armL: [16, 2, 3], armR: 30, propR: heldArrow(1), ...op }),
+      [[0, { mood: 'happy', look: [0, 0] }], [pt, { mood: 'happy', look: [-2.4, -0.6] }], [pr, { mood: 'tender' }]]), 'glory')
     + `<g opacity="0"${fadeIn(pr, 0.8)}>${sparkles(14, 260, 700, 480, 900, { seed: 21 })}</g>`
-    + motes(16, { y0: 500, y1: 1250, seed: 22 })
     + NEAR(bokeh(7, { seed: 25 }) + foliage('l', 1640, { color: '#2a2440', seed: 13 }) + foliage('r', 1660, { color: '#2a2440', seed: 14 }));
 }
 
@@ -238,6 +255,9 @@ export const STORY = {
   bg3d: './edmund_last_stand.bg3d.js', bg3d_extra: { 'bakhita.bg3d.js': './bakhita_freedom.bg3d.js', 'agnes.bg3d.js': './agnes_of_assisi_too_heavy.bg3d.js' },
   voice: 'am_michael', speed: 0.95, flow: true,
   fx: { handheld: true, leak: true, loop: true },
+  // one camera for 3D + SVG (kit 2026-11-19): characters are cards at real distances, 3D depth of field, front3d grass
+  cam3d: { plane: 20, dof: 2 },
+  bg3d_vars: { light: LIGHT },
   cast: { edmund: { voice: 'bm_george', speed: 0.92 }, messenger: { voice: { bm_daniel: 0.55, am_onyx: 0.45 }, speed: 0.9 } },
   thumb_hook: 'He laid down his sword for Christ', thumb_title: 'St. Edmund the Martyr', thumb_scene: 0, thumb_t: 3, thumb_shift: 0,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
@@ -245,27 +265,27 @@ export const STORY = {
     'noʊvˈɛmbɚ twˈɛnti': 'noʊvˈɛmbɚ twˈɛntiəθ',      // November 20 -> November twentieth
   },
   scenes: [
-    { kicker: 'EAST ANGLIA, ENGLAND · AD 869', title: 'Obey, or Die', art: scene0, bg3d: 'angliaHook', cam: { move: 'push-fast', oy: 1000 },
+    { kicker: 'EAST ANGLIA, ENGLAND · AD 869', title: 'Obey, or Die', art: scene0, bg3d: 'angliaHook', front3d: true, cam: { move: 'push-fast', oy: 1000 },
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
       say: ['A Viking army gave a Christian king one choice: obey, or die.', 'This is Saint Edmund.'] },
-    { kicker: 'THE GREAT HEATHEN ARMY', title: 'The Demand', art: scene1, bg3d: 'angliaRaid', cam: 'pan-r',
+    { kicker: 'THE GREAT HEATHEN ARMY', title: 'The Demand', art: scene1, bg3d: 'angliaRaid', front3d: true, cam: 'pan-r',
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
       say: ['In 869, the Great Heathen Army reached his kingdom.', 'Their leader, Hingwar, sent word:', { text: 'Share your hidden gold with him, and be his under-king.', who: 'messenger' }] },
-    { kicker: 'THE KING\'S HALL', title: 'The King Was Silent', art: scene2, bg3d: 'angliaHall', cam: 'drift-l',
+    { kicker: 'THE KING\'S HALL', title: 'The King Was Silent', art: scene2, bg3d: 'angliaHall', front3d: true, cam: 'drift-l',
       tone: { speed: 1.0, gap: 0.28, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } },
       say: ['His bishop, afraid for his life, told him to give in.', 'Edmund looked at the ground in silence.'] },
-    { kicker: 'HINGWAR ARRIVES', title: 'He Laid Down His Sword', art: scene3, bg3d: 'angliaArrive', cam: { move: 'dolly', amt: 0.08, ox: 450, oy: 1000 },
+    { kicker: 'HINGWAR ARRIVES', title: 'He Laid Down His Sword', art: scene3, bg3d: 'angliaArrive', front3d: true, cam: { move: 'dolly', amt: 0.08, ox: 450, oy: 1000 },
       tone: { speed: 1.0, gap: 0.28, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } },
       say: ['Then he answered:', { text: 'I follow Christ. Edmund will never yield to Hingwar alive.', who: 'edmund' },
         'When Hingwar came, Edmund threw away his weapons, like Christ, who stopped Peter from fighting.'] },
-    { kicker: '20 NOVEMBER 869', title: 'Calling on Christ', art: scene4, bg3d: 'angliaOak', cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
+    { kicker: '20 NOVEMBER 869', title: 'Calling on Christ', art: scene4, bg3d: 'angliaOak', front3d: true, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
       tone: { speed: 0.95, gap: 0.3, gain: -1.5, voice: { am_michael: 0.8, am_onyx: 0.2 } },
       say: ['They tied him to a tree, beat him, and shot him with arrows.', 'Between the blows, he called out to Jesus.',
         { text: 'Still calling on Christ, he gave his life.', speed: 0.85 }] },
-    { kicker: 'BURY ST EDMUNDS', title: 'A Heavenly Crown', art: scene5, bg3d: 'angliaAbbey', cam: { move: 'pull', amt: 0.07, oy: 1000 },
+    { kicker: 'BURY ST EDMUNDS', title: 'A Heavenly Crown', art: scene5, bg3d: 'angliaAbbey', front3d: true, cam: { move: 'pull', amt: 0.07, oy: 1000 },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['About twenty years later, even the land the Vikings ruled was making coins in his honor.', 'He lost an earthly crown, and won a heavenly one.'] },
-    { kicker: 'FEAST DAY · NOVEMBER 20', title: 'Saint Edmund', art: scene6, bg3d: 'angliaGlory', cam: { move: 'arc-r', amt: 0.06, oy: 1000 },
+    { kicker: 'FEAST DAY · NOVEMBER 20', title: 'Saint Edmund', art: scene6, bg3d: 'angliaGlory', front3d: true, cam: { move: 'arc-r', amt: 0.06, oy: 1000 },
       tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
       say: ['His feast day is November 20, and he was once England\'s patron saint.', 'Saint Edmund, pray for us.'] },
   ],

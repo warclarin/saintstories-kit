@@ -159,7 +159,7 @@ async function pageMain({ F0, F1, fps, bitrate }) {
   for (const c of clips) {
     const cl = c.el.classList;
     if (cl.contains('scene')) {
-      c.kind = 'scene'; c.cv = c.el.querySelector('canvas.bg3d'); c.svg = c.el.querySelector('svg');
+      c.kind = 'scene'; c.cv = c.el.querySelector('canvas.bg3d'); c.fr = c.el.querySelector('canvas.front3d'); c.svg = c.el.querySelector('svg');
       c.svgHidden = !c.svg || c.svg.style.visibility === 'hidden';
       c.texts = [...c.el.querySelectorAll('.t')].map(prepText);
     } else if (cl.contains('vig')) c.kind = 'vig';
@@ -193,6 +193,7 @@ async function pageMain({ F0, F1, fps, bitrate }) {
         ctx.save(); ctx.globalAlpha = a;
         if (c.cv) ctx.drawImage(c.cv, 0, 0);
         if (!c.svgHidden) await drawSvg(c.svg);
+        if (c.fr) ctx.drawImage(c.fr, 0, 0);   // cam3d foreground canvas, over the SVG
         ctx.restore();
         for (const t of c.texts) drawText(t, a);
       } else if (c.kind === 'vig') ctx.drawImage(vig, 0, 0);

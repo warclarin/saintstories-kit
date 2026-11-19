@@ -44,6 +44,21 @@ every frame from HyperFrames' `hf-seek` time. Helpers and wiring: `stories/bakhi
 `stories/george_dragon.bg3d.js` (`BG3D_MANUAL` + `bg3d_extra`). More sets: `longinus.bg3d.js` (Golgotha, Cappadocia).
 In a 3D scene drop the SVG sky and `BACK` layer so the canvas shows; `thumb_shift` does not move the canvas.
 
+## One camera for 3D + SVG (`STORY.cam3d`, opt-in, first used on St. Edmund 2026-11-19)
+`cam3d: { plane: 20, dof: 2 }` makes the three.js camera the only camera. build.mjs writes `data-cam3d` instead of
+`data-camv` (reel.js leaves .cam and the layers alone, no SVG hand-held loop), and `makeRig()` in bakhita_freedom.bg3d.js
+projects the SVG with the 3D camera every frame: the character plane sits `plane` units away and each `layer(d, svg)` at
+plane / d, so every SVG part is a flat card at a real distance (true parallax, push, pan, tilt, dolly zoom, orbit, roll).
+The set's `update(t, p)` moves the 3D camera (size the move for the character plane: push ~1.3 units, pan ~1.5, dolly = back
+away while narrowing the fov with d0 = plane, arc = orbit around the plane); an optional `rig(o)` receives the scene's
+`{ move, amt, ox, oy, plane }` first. The background renders through a depth-of-field pass focused on the character plane
+(`dof` px always, rising to 2 x the rack blur on `cam.rack`). `scene.front3d: true` adds `canvas.front3d` over the SVG: the
+set's `front` scene (grass in front of the feet) drawn with the same camera. Put the ground in 3D, place cards where the
+3D ground is at their distance (plane 20: depth 1 feet at art y ~1345, 0.95 ~1322, 0.92 ~1310, 0.78 ~1262), and share one light
+per scene (`stories/edmund_last_stand.mjs` LIGHT + `lit()` + `castShadow()`, passed to the set as `bg3d_vars.light`).
+Reference: `stories/edmund_last_stand.mjs` / `.bg3d.js` (`anglia(mode)`, `groundTex`, `tufts3d`, `particles`). Stories without
+`cam3d` render exactly as before.
+
 ## Detailed characters (`hd.mjs`, standard)
 New reels draw their people with `hd(x, y, s, opts)` from `hd.mjs` instead of art.mjs `person()`: the same chibi
 proportions, coordinates and options (`mood`, `talk`, `halo`, `armL/armR`, `propL/propR`, `flip`, `kneel`, `under/over`),

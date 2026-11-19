@@ -130,7 +130,7 @@ const CSS = `
 html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
 #root{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Poppins,'DejaVu Sans',sans-serif}
 .clip{position:absolute;inset:0}
-.scene svg,.scene canvas.bg3d{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.scene svg,.scene canvas.bg3d,.scene canvas.front3d{position:absolute;left:0;top:0;width:1080px;height:1920px}
 .t{position:absolute;left:0;right:0;text-align:center}
 .brand{top:86px;font:500 28px Poppins;color:rgba(255,255,255,.6);letter-spacing:.05em}
 .kicker{top:146px;font:500 32px Poppins;letter-spacing:.14em;color:#ffe2a0;text-shadow:0 3px 10px rgba(0,0,0,.55)}
@@ -159,10 +159,17 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   // cam: [ox,oy,amt] (legacy slow push-in) | 'pan-r' | {move, amt, ox, oy}; moves live in reel.js (data-camv)
   const cam = s.cam || [540, 1150, 0.05];
   let camAttr, rackDef = '';
-  if (Array.isArray(cam)) camAttr = `data-cam="${cam.join(' ')}"`;
+  // STORY.cam3d (opt-in, 2026-11-19, St. Edmund): one camera for the scene. The three.js camera of the scene's bg3d set
+  // moves, and the 3D module (bakhita.bg3d.js makeRig) projects every SVG depth layer with that same camera, so the SVG
+  // layers sit at real distances (character plane = cam3d.plane units, layer depth d at plane / d). reel.js then leaves
+  // .cam and the layers alone (no data-camv), and the hand-held wobble comes from the 3D camera too (no .hh loop).
+  const c3 = !!(STORY.cam3d && STORY.bg3d && s.bg3d);
+  const plane = (STORY.cam3d && STORY.cam3d.plane) || 20;
+  if (Array.isArray(cam) && !c3) camAttr = `data-cam="${cam.join(' ')}"`;
   else {
-    const c = typeof cam === 'string' ? { move: cam } : cam;
-    camAttr = `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift}"`;
+    const c = typeof cam === 'string' ? { move: cam } : Array.isArray(cam) ? { move: 'push', amt: cam[2], ox: cam[0], oy: cam[1] } : cam;
+    camAttr = c3 ? `data-cam3d="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift} ${plane}"`
+      : `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift}"`;
     // rack focus: cam.rack = { at, dur, blur } blurs the background layers (depth < 0.9) while the characters stay sharp
     if (c.rack) {
       const r = c.rack === true ? {} : c.rack;
@@ -171,10 +178,13 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
     }
   }
   // fx.handheld: a slow hand-held wobble on top of the camera move (own <g>, so it never fights the move's transform)
-  const hh = FX.handheld ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
+  const hh = FX.handheld && !c3 ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
     + (s.bg3d && STORY.bg3d ? `<canvas class="bg3d" data-bg3d="${s.bg3d}" width="1080" height="1920"></canvas>` : '')
     + `<svg viewBox="0 0 1080 1920">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g></svg>`
+    // scene.front3d (cam3d only): a 2D canvas over the SVG that the 3D module fills with the set's foreground (grass in
+    // front of the characters' feet), drawn with the same camera, so the SVG characters stand inside the 3D world
+    + (c3 && s.front3d ? '<canvas class="front3d" width="1080" height="1920"></canvas>' : '')
     + (hud ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
     + '</div>';
 }
@@ -205,7 +215,7 @@ function page(body, reel) {
 <title>${esc(BRAND)} - ${esc(STORY.scenes[0].title)}</title><script src="gsap.min.js"></script><style>${CSS}</style></head><body>
 ${SHARED_DEFS}
 ${body}
-<script>window.REEL=${JSON.stringify(reel)};</script><script src="reel.js"></script>${STORY.bg3d ? '<script>window.BG3D_VARS=' + JSON.stringify(STORY.bg3d_vars || {}) + ';window.__hf=window.__hf||{};window.__hf.buildReady=window.__hf.buildReady||{};window.__hf.buildReady.bg3d=new Promise((r)=>{window.__bg3dDone=r;});</script><script type="module" src="bg3d.mjs"></script>' : ''}
+<script>window.REEL=${JSON.stringify(reel)};</script><script src="reel.js"></script>${STORY.bg3d ? '<script>window.BG3D_VARS=' + JSON.stringify(STORY.bg3d_vars || {}) + ';window.CAM3D=' + JSON.stringify(STORY.cam3d || null) + ';window.__hf=window.__hf||{};window.__hf.buildReady=window.__hf.buildReady||{};window.__hf.buildReady.bg3d=new Promise((r)=>{window.__bg3dDone=r;});</script><script type="module" src="bg3d.mjs"></script>' : ''}
 </body></html>`;
 }
 

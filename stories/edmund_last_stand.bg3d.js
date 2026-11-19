@@ -15,7 +15,7 @@
 import * as THREE from './three.module.min.js';
 window.BG3D_MANUAL = true;
 const B = await import('./bakhita.bg3d.js');
-const { W, H, FOV, TH, rng, glowTex, skyTex, canvasTex, lam, glowMat, ridge, sprite, atScreen, newRenderer, makeView, stars } = B;
+const { W, H, FOV, TH, rng, glowTex, skyTex, canvasTex, lam, glowMat, ridge, sprite, atScreen, makeRig, stars } = B;
 const prevLib = window.BG3D_LIB;
 window.BG3D_LIB = true;
 const A = await import('./agnes.bg3d.js');
@@ -142,38 +142,38 @@ const MODES = {
   hook: { sky: [[0, '#1e2244'], [0.2, '#3e3c66'], [0.38, '#8a6a7e'], [0.5, '#e09a72'], [0.56, '#f4c08a'], [1, '#f4c08a']], fog: '#b89088',
     near: '#5e6a3a', valley: AUT, ridges: ['#6a5a74', '#5a5266', '#4a4a44'], hemi: ['#ffd8c0', '#3a3030', 1.25], key: ['#ffb880', 1.3, [-80, 20, -100]],
     sun: [200, 960, 0.9], rays: { op: 0.06, dir: -0.5, spread: 1.0 }, cloudLit: '#f8c0a0', cloudShade: '#6a5a78', stars: 0,
-    ships: [[780, 1, -100, 0.45], [560, 0.85, -140, 0.45], [980, 1.1, -150, 0.4]], smoke: [[880, 1150, 330, 1.2], [1020, 1140, 420, 1], [140, 1150, 460, 0.8]], move: 'push-fast',
+    ships: [[780, 1, -100, 0.45], [560, 0.85, -140, 0.45], [980, 1.1, -150, 0.4]], smoke: [[880, 1150, 330, 1.2], [1020, 1140, 420, 1], [140, 1150, 460, 0.8]], air: 'embers', move: 'push-fast',
     clouds: [[120, 470, 900, 10], [900, 450, 900, 11], [640, 610, 950, 7], [300, 640, 900, 6]] },
   raid: { sky: [[0, '#3a4660'], [0.22, '#6a7690'], [0.4, '#aaa8b0'], [0.5, '#e0c8a0'], [0.56, '#ead6b0'], [1, '#ead6b0']], fog: '#c8bcaa',
     near: '#6a7440', valley: AUT, ridges: ['#8a8aa0', '#76788a', '#5a6048'], hemi: ['#fff0dc', '#4a4434', 1.3], key: ['#ffe0b0', 1.2, [60, 40, -80]],
     sun: [860, 700, 0.55], rays: { op: 0.045, dir: 0.6, spread: 0.8 }, cloudLit: '#ece4dc', cloudShade: '#8a8a9e', stars: 0,
-    ships: [[480, 0.9, -80, 0.5], [820, 1, -120, 0.5], [160, 0.85, -150, 0.5]], smoke: [[700, 1140, 360, 1.1], [960, 1135, 420, 1.3], [300, 1140, 480, 0.9], [560, 1130, 560, 0.8]], move: 'pan-r',
+    ships: [[480, 0.9, -80, 0.5], [820, 1, -120, 0.5], [160, 0.85, -150, 0.5]], smoke: [[700, 1140, 360, 1.1], [960, 1135, 420, 1.3], [300, 1140, 480, 0.9], [560, 1130, 560, 0.8]], air: 'embers', move: 'pan-r',
     clouds: [[110, 480, 900, 10], [800, 440, 900, 12], [460, 600, 950, 7], [1000, 600, 900, 7]] },
   hall: { sky: [[0, '#22284a'], [0.24, '#4a4a72'], [0.42, '#9a7e8e'], [0.52, '#e8b08a'], [0.57, '#f2c89c'], [1, '#f2c89c']], fog: '#b8988e',
     near: '#5a6438', valley: AUT, ridges: ['#7a6a84', '#645a70', '#4e5040'], hemi: ['#ffdcc8', '#3a3430', 1.2], key: ['#ffc090', 1.2, [-60, 25, -60]],
     sun: [940, 900, 0.6], rays: { op: 0, dir: 0, spread: 0.5 }, cloudLit: '#f0c4b0', cloudShade: '#6e6280', stars: 30,
-    hall: [540, 70], ships: [], smoke: [], move: 'drift',
+    hall: [540, 70], ships: [], smoke: [], air: 'embers', move: 'drift',
     clouds: [[120, 470, 900, 10], [960, 500, 900, 10], [300, 610, 950, 6]] },
   arrive: { sky: [[0, '#2a1830'], [0.22, '#5a2a3e'], [0.4, '#a84a40'], [0.5, '#e8864a'], [0.56, '#f4aa66'], [1, '#f4aa66']], fog: '#a86a58',
     near: '#4e5030', valley: ['#7a6a44', '#8a7448', '#5e6038', '#987a50', '#6a5a3a', '#7a7a44', '#8e7a4e'], ridges: ['#6a3a4a', '#5a3442', '#463a34'],
     hemi: ['#ffc8a8', '#2a2024', 1.2], key: ['#ff9a60', 1.4, [0, 20, -100]], sun: [540, 1000, 0.8], rays: { op: 0.05, dir: 0, spread: 1.4 },
     cloudLit: '#f0a080', cloudShade: '#5a3048', stars: 0, beach: true,
-    ships: [[230, 0.95, -100, 0.33, true], [560, 1, -125, 0.33, true], [880, 0.95, -105, 0.33, true]], smoke: [[640, 1130, 300, 1.4], [400, 1135, 380, 1.1], [900, 1130, 420, 1.2]], move: 'dolly',
+    ships: [[230, 0.95, -100, 0.33, true], [560, 1, -125, 0.33, true], [880, 0.95, -105, 0.33, true]], smoke: [[640, 1130, 300, 1.4], [400, 1135, 380, 1.1], [900, 1130, 420, 1.2]], air: 'embers', move: 'dolly',
     clouds: [[110, 470, 900, 11], [960, 460, 900, 11], [300, 600, 950, 7], [800, 610, 950, 7]] },
   oak: { sky: [[0, '#141a36'], [0.24, '#2e3660'], [0.42, '#6a6a8e'], [0.52, '#c8a8a0'], [0.58, '#dcc0aa'], [1, '#dcc0aa']], fog: '#8a8496',
     near: '#4a4a30', valley: AUT, ridges: ['#4e5068', '#44465a', '#3a3c3a'], hemi: ['#e8dcf0', '#2a2628', 1.15], key: ['#ffe0b0', 0.9, [0, 60, -40]],
-    sun: null, breakAt: [540, 560], rays: { op: 0.1, dir: 0, spread: 0.7 }, cloudLit: '#c8c0d8', cloudShade: '#4e4a6a', stars: 40,
-    ships: [], smoke: [], wood: true, rack: [1, 2.5], move: 'tilt-up',
+    sun: null, breakAt: [540, 560], rays: { op: 0.17, dir: 0, spread: 0.7 }, cloudLit: '#c8c0d8', cloudShade: '#4e4a6a', stars: 40,
+    ships: [], smoke: [], wood: true, air: 'dust', move: 'tilt-up',
     clouds: [[150, 440, 900, 9], [940, 460, 900, 9]] },
   abbey: { sky: [[0, '#a8563e'], [0.22, '#d8805a'], [0.4, '#f0a86e'], [0.52, '#f8d494'], [0.58, '#fae0a8'], [1, '#fae0a8']], fog: '#f0c490',
     near: '#7a8448', valley: ['#a8a058', '#c0a864', '#8e9a50', '#c8a868', '#b09858', '#98a058', '#b8ac68'], ridges: ['#c8a08e', '#b08a86', '#8a8a5e'],
     hemi: ['#ffe8c8', '#5a4a3a', 1.35], key: ['#ffc888', 1.5, [0, 30, -100]], sun: [300, 760, 0.9], rays: { op: 0.07, dir: -0.4, spread: 1.2 },
-    cloudLit: '#ffe0b8', cloudShade: '#c8909a', stars: 0, abbey: [730, 1110, 230, 0], ships: [], smoke: [], move: 'pull',
+    cloudLit: '#ffe0b8', cloudShade: '#c8909a', stars: 0, abbey: [730, 1110, 230, 0], ships: [], smoke: [], air: 'gold', move: 'pull',
     clouds: [[110, 470, 900, 9], [970, 450, 900, 10], [600, 600, 900, 6]] },
   glory: { sky: [[0, '#141842'], [0.2, '#2e2c62'], [0.36, '#6a4a7e'], [0.47, '#d8827a'], [0.53, '#f8be86'], [0.57, '#fcd8a0'], [1, '#fcd8a0']], fog: '#d89a84',
     near: '#5e6a3c', valley: ['#8a8a50', '#a08a58', '#76784a', '#a8805a', '#8c7c50', '#7a8250', '#9c9058'], ridges: ['#a07a98', '#806a90', '#62684e'],
     hemi: ['#ffd8c0', '#3a3440', 1.2], key: ['#ffb880', 1.6, [80, 12, -100]], sun: [820, 1010, 1], rays: { op: 0.08, dir: -0.4, spread: 1.6, up: true },
-    cloudLit: '#ffc4a4', cloudShade: '#8a6a98', stars: 80, abbey: [800, 1080, 420, 1], ships: [], smoke: [], move: 'arc' },
+    cloudLit: '#ffc4a4', cloudShade: '#8a6a98', stars: 80, abbey: [800, 1080, 420, 1], ships: [], smoke: [], air: 'gold', move: 'arc' },
 };
 
 export function anglia(mode = 'hook') {
@@ -182,7 +182,10 @@ export function anglia(mode = 'hook') {
   scene.background = skyTex(P.sky);
   scene.fog = new THREE.Fog(P.fog, 160, 1500);
   scene.add(new THREE.HemisphereLight(P.hemi[0], P.hemi[1], P.hemi[2]));
-  const key = new THREE.DirectionalLight(P.key[0], P.key[1]); key.position.set(...P.key[2]); scene.add(key);
+  // one light per scene, shared with the SVG characters: STORY.bg3d_vars.light[mode] (from the story's LIGHT table)
+  const VL = (window.BG3D_VARS?.light || {})[mode] || {};
+  const LK = { color: VL.key || P.key[0], int: P.key[1], pos: { l: [-80, 25, -100], r: [80, 25, -100], back: [0, 22, -100], top: [0, 60, -30] }[VL.from] || P.key[2] };
+  const key = new THREE.DirectionalLight(LK.color, LK.int); key.position.set(...LK.pos); scene.add(key);
   const cam = camera(0, 2.6, 0, 0.03);
   if (P.stars) scene.add(stars(P.stars, 13, 0.8, { el0: 0.26, el1: 0.62 }));
   let sunGlow = null;
@@ -230,37 +233,108 @@ export function anglia(mode = 'hook') {
       .forEach(([x, z, h, s]) => scene.add(oak3d(x, z, h, s, { leaves: ['#6a3e22', '#8a5428', '#5a4a26', '#9a6a2e', '#4a3420'] })));
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 260), lam('#4a3a26')); floor.rotation.x = -Math.PI / 2; floor.position.set(0, -0.02, -130); scene.add(floor);
   }
-  // the near ground: ends just behind the characters' feet (longer under the hall and in the wood)
-  const nearLen = P.hall ? 110 : P.wood ? 60 : P.beach ? 40 : 48;
-  const brow = new THREE.Mesh(new THREE.PlaneGeometry(700, nearLen, 70, 6), lam(P.near)); brow.rotation.x = -Math.PI / 2; brow.position.set(0, 0, -nearLen / 2 + 20); scene.add(brow);
-  if (!P.hall && !P.wood) { const bank = new THREE.Mesh(new THREE.PlaneGeometry(700, 12), lam(mixc(P.near, '#3a3020', 0.35))); bank.position.set(0, -6, -nearLen + 20); scene.add(bank); }
-  const d0 = 14;
-  return { scene, cam, update(t, p) {
-    let ry = 0, rz = 0;
-    const mv = P.move;
-    if (mv === 'push-fast') cam.position.set(0, 2.6, -7 * p);
-    else if (mv === 'push') cam.position.set(0, 2.6, -5 * p);
-    else if (mv === 'pull') cam.position.set(0, 2.6, 6 * p);
-    else if (mv === 'pan-r' || mv === 'pan-l') { const sg = mv === 'pan-r' ? 1 : -1, x = sg * (-4 + 8 * p); cam.position.set(x, 2.6, 0); ry = -sg * (p - 0.5) * 0.05; }
-    else if (mv === 'tilt-up') { cam.position.set(0, 2.6, 0); cam.setViewOffset(W, H, 0, -110 * p, W, H); }
-    else if (mv === 'dolly') {
-      const z = 8 * p; cam.position.set(0, 2.6, z);
-      cam.fov = 2 * Math.atan(TH * d0 / (d0 + z)) * 180 / Math.PI; cam.updateProjectionMatrix();
-    } else if (mv === 'drift') { const x = 2.5 - 5 * p; cam.position.set(x, 2.6, 0); ry = -x * 0.004; }
-    else { const x = -3 + 6 * p; cam.position.set(x, 2.6, 0); ry = -x * 0.006; rz = (p - 0.5) * 0.004; }
-    if (P.rack) { const kr = Math.min(1, Math.max(0, (t - P.rack[0]) / P.rack[1])), e2 = kr * kr * (3 - 2 * kr);
-      scene.fog.near = 160 - 130 * e2; scene.fog.far = 1500 - 1000 * e2; }
-    const k = mode === 'oak' ? Math.min(1, 0.2 + t * 0.11) : 1;   // the light breaking through the wood swells over the scene
-    if (rays) rays.update(t, k);
-    if (breakGlow) breakGlow.material.opacity = 0.12 + 0.3 * k;
-    if (sunGlow) sunGlow.material.opacity = P.sun[2] * 0.85 * (0.94 + 0.06 * Math.sin(t * 0.7));
-    clouds.forEach(([c, x, j]) => { c.position.x = x + t * (1.4 + (j % 3) * 0.5) * (j % 2 ? 1 : -1); });
-    mist.forEach(([m, x, j]) => { m.position.x = x + t * (2 + j * 0.6) * (j % 2 ? -1 : 1); });
-    ships.forEach(([sh, x, j, beached]) => { if (beached) { sh.rotation.z = 0.01 * Math.sin(t * 0.8 + j); return; }
-      sh.position.x = x + t * (mode === 'raid' ? 1.6 : 1.0) * (j % 2 ? -1 : 1); sh.position.y = GL - 0.6 + 0.12 * Math.sin(t * 1.3 + j * 2); sh.rotation.z = 0.02 * Math.sin(t * 1.1 + j); });
-    smokes.forEach((s) => s.update(t));
-    st.offset.x = t * 0.01;
-    return { ry, rz };
+  // the near ground (3D since 2026-11-19): a textured field or forest floor with grass tufts that ends in a lit rim just behind
+  // the characters' feet; the characters stand on it at z = -plane (their SVG card), the MID cut-outs a little farther back
+  const nearLen = P.hall ? 110 : P.wood ? 60 : P.beach ? 40 : 48, z0 = 20, zFar = z0 - nearLen;
+  const floorC = P.wood ? '#4a3a26' : P.near;
+  const gt = groundTex(floorC, P.wood ? ['#8a5428', '#6a3e22', '#9a6a2e', '#5a4428'] : ['#a8742e', '#8a5a2a', '#c8963e'], mode.length, !P.wood);
+  gt.wrapS = THREE.RepeatWrapping; gt.repeat.set(700 / 14, 1);
+  const brow = new THREE.Mesh(new THREE.PlaneGeometry(700, nearLen, 70, 6), lam('#ffffff', { map: gt })); brow.rotation.x = -Math.PI / 2; brow.position.set(0, 0, z0 - nearLen / 2); scene.add(brow);
+  if (!P.hall && !P.wood) {
+    const rim = new THREE.Mesh(new THREE.PlaneGeometry(700, 0.9), lam(mixc(P.near, '#fff0c0', 0.35), { emissive: mixc(P.near, '#fff0c0', 0.3), emissiveIntensity: 0.25 }));
+    rim.rotation.x = -Math.PI / 2; rim.position.set(0, 0.02, zFar + 0.45); scene.add(rim);
+    const bank = new THREE.Mesh(new THREE.PlaneGeometry(700, 12), lam(mixc(P.near, '#3a3020', 0.35))); bank.position.set(0, -6, zFar); scene.add(bank);
+  }
+  const grassC = P.wood ? ['#4a3a22', '#5a4428', '#3a2c1a'] : [mixc(P.near, '#1e2a10', 0.28).getStyle(), mixc(P.near, '#7a8a40', 0.3).getStyle(), mixc(P.near, '#8a7a40', 0.32).getStyle()];
+  scene.add(tufts3d(260, { x: 9, z0: -20.5, z1: zFar + 1, h: [0.16, 0.3], colors: grassC, seed: 3 + mode.length }));
+  // the foreground (front3d canvas, drawn over the SVG): low grass in front of and around the feet
+  const front = new THREE.Scene(); front.fog = scene.fog;
+  front.add(new THREE.HemisphereLight(P.hemi[0], P.hemi[1], P.hemi[2]));
+  const fkey = new THREE.DirectionalLight(LK.color, LK.int); fkey.position.set(...LK.pos); front.add(fkey);
+  front.add(tufts3d(150, { x: 4.6, z0: -9, z1: -16.8, h: [0.08, 0.16], colors: grassC, seed: 11 + mode.length, blades: P.wood ? 3 : 5, r: 0.012 }));
+  front.add(tufts3d(60, { x: 4.4, z0: -17.4, z1: -19.4, h: [0.1, 0.18], colors: grassC, seed: 21 + mode.length, blades: 4, r: 0.014 }));
+  // 3D air: embers from the burning villages, dust in the light shafts, gold motes in glory (behind the character plane)
+  const air = P.air ? particles(P.air, { seed: mode.length * 5 + 1 }) : null;
+  if (air) scene.add(air.points);
+  let R = { move: P.move, amt: 0.07, ox: 540, oy: 1000, plane: 20 }, dirF = new THREE.Vector3(0, 0, -1);
+  const P0 = cam.position.clone();
+  return { scene, cam, front,
+    rig(o) {   // makeRig hands over the scene's move, focus point and character-plane distance before the first frame
+      R = { ...R, ...o };
+      const f0 = (H / 2) / Math.tan(FOV * Math.PI / 360), z = R.plane;
+      dirF = cam.localToWorld(new THREE.Vector3((R.ox - W / 2) / f0 * z, -(R.oy - H / 2) / f0 * z, -z)).sub(cam.position).normalize();
+    },
+    update(t, p) {
+      // moves sized so the character plane (R.plane units away) moves about as much as the old 2D moves did; everything
+      // nearer or farther then moves by true perspective (the SVG layers follow through makeRig)
+      let ry = 0, rz = 0;
+      const mv = P.move, D = R.plane, A = R.amt / 0.07;
+      const toward = (u) => cam.position.copy(P0).addScaledVector(dirF, u);
+      if (mv === 'push-fast') toward(1.6 * A * p);
+      else if (mv === 'push') toward(1.3 * A * p);
+      else if (mv === 'pull') toward(1.4 * A * (1 - p));
+      else if (mv === 'pan-r' || mv === 'pan-l') { const sg = mv === 'pan-r' ? 1 : -1; cam.position.set(P0.x + sg * (-0.75 + 1.5 * p) * A, P0.y, P0.z - 0.35 * A); }
+      else if (mv === 'tilt-up') { cam.position.set(P0.x, P0.y + 0.55 * p * A, P0.z); cam.setViewOffset(W, H, 0, -95 * p * A, W, H); }
+      else if (mv === 'dolly') {   // dolly zoom: back away while narrowing the lens, so the character plane keeps its size
+        const z = 9 * p; cam.position.set(P0.x, P0.y, P0.z + z);
+        cam.fov = 2 * Math.atan(TH * D / (D + z)) * 180 / Math.PI; cam.updateProjectionMatrix();
+      } else if (mv === 'drift') cam.position.set(P0.x + (0.4 - 0.8 * p) * A, P0.y, P0.z - 0.15 * A);
+      else {   // arc: orbit around the character plane, looking at it, with a slight roll
+        const a = (-0.05 + 0.1 * p) * A; cam.position.set(P0.x + D * Math.sin(a), P0.y, P0.z - D + D * Math.cos(a) - 0.3 * A); ry = a; rz = (p - 0.5) * 0.016;
+      }
+      const k = mode === 'oak' ? Math.min(1, 0.2 + t * 0.11) : 1;   // the light breaking through the wood swells over the scene
+      if (rays) rays.update(t, k);
+      if (breakGlow) breakGlow.material.opacity = 0.12 + 0.3 * k;
+      if (sunGlow) sunGlow.material.opacity = P.sun[2] * 0.85 * (0.94 + 0.06 * Math.sin(t * 0.7));
+      clouds.forEach(([c, x, j]) => { c.position.x = x + t * (1.4 + (j % 3) * 0.5) * (j % 2 ? 1 : -1); });
+      mist.forEach(([m, x, j]) => { m.position.x = x + t * (2 + j * 0.6) * (j % 2 ? -1 : 1); });
+      ships.forEach(([sh, x, j, beached]) => { if (beached) { sh.rotation.z = 0.01 * Math.sin(t * 0.8 + j); return; }
+        sh.position.x = x + t * (mode === 'raid' ? 1.6 : 1.0) * (j % 2 ? -1 : 1); sh.position.y = GL - 0.6 + 0.12 * Math.sin(t * 1.3 + j * 2); sh.rotation.z = 0.02 * Math.sin(t * 1.1 + j); });
+      smokes.forEach((s) => s.update(t));
+      if (air) air.update(t);
+      st.offset.x = t * 0.01;
+      return { ry, rz };
+    } };
+}
+
+/** A ground texture: base colour with soft patches, grass strokes and fallen leaves (repeats along x). */
+export function groundTex(base, leaves, seed = 1, grass = true) {
+  const r = rng(seed * 7 + 3);
+  return canvasTex(512, 512, (g, w, h) => {
+    g.fillStyle = col(base).getStyle(); g.fillRect(0, 0, w, h);
+    for (let k = 0; k < 70; k++) { const x = r() * w, y = r() * h, rr = 20 + r() * 60; g.fillStyle = r() < 0.5 ? 'rgba(0,0,0,.07)' : 'rgba(255,240,200,.06)'; g.beginPath(); g.ellipse(x, y, rr * 1.8, rr * 0.6, 0, 0, Math.PI * 2); g.fill(); }
+    if (grass) for (let k = 0; k < 900; k++) { const x = r() * w, y = r() * h, l = 4 + r() * 8; g.strokeStyle = r() < 0.5 ? 'rgba(20,30,10,.25)' : 'rgba(220,230,160,.16)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, y); g.lineTo(x + (r() - 0.5) * 4, y - l); g.stroke(); }
+    for (let k = 0; k < 140; k++) { const x = r() * w, y = r() * h; g.fillStyle = leaves[k % leaves.length]; g.globalAlpha = 0.75; g.beginPath(); g.ellipse(x, y, 4 + r() * 4, 2 + r() * 1.6, r() * 3.14, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+  });
+}
+/** Grass tufts (each a fan of thin blades) scattered on the ground between z0 and z1 (z0 nearer), |x| < x. */
+export function tufts3d(n, { x = 8, z0 = -2, z1 = -26, h = [0.25, 0.5], colors = ['#4a5a2a'], seed = 1, blades = 5, r: rad = 0.02 } = {}) {
+  const r = rng(seed), N = n * blades, geo = new THREE.ConeGeometry(rad, 1, 3); geo.translate(0, 0.5, 0);
+  const m = new THREE.InstancedMesh(geo, new THREE.MeshBasicMaterial({ color: '#ffffff' }), N), M4 = new THREE.Matrix4(), q = new THREE.Quaternion(), e = new THREE.Euler(), sv = new THREE.Vector3(), pv = new THREE.Vector3();
+  let i = 0;
+  for (let k = 0; k < n; k++) {
+    const cx = (r() * 2 - 1) * x, cz = z0 + (z1 - z0) * r(), hh = h[0] + (h[1] - h[0]) * r();
+    for (let b = 0; b < blades; b++, i++) {
+      e.set((r() - 0.5) * 0.5, r() * 3.1, (b / (blades - 1 || 1) - 0.5) * 1.1); q.setFromEuler(e);
+      M4.compose(pv.set(cx + (r() - 0.5) * 0.12, 0, cz + (r() - 0.5) * 0.12), q, sv.set(1, hh * (0.7 + r() * 0.5), 1)); m.setMatrixAt(i, M4); m.setColorAt(i, col(colors[Math.floor(r() * colors.length)]));
+    }
+  }
+  return m;
+}
+const dotTex = glowTex([[0, 'rgba(255,255,255,1)'], [0.3, 'rgba(255,255,255,.7)'], [1, 'rgba(255,255,255,0)']]);
+/** Floating particles behind the character plane: 'embers' (orange, rising), 'dust' (pale gold, slow, in light shafts), 'gold'. */
+export function particles(kind, { n = 220, seed = 1 } = {}) {
+  const r = rng(seed), K = { embers: { c: '#ffa050', s: 0.16, vy: 0.9, sw: 0.5 }, dust: { c: '#ffe8c0', s: 0.11, vy: 0.12, sw: 0.35 }, gold: { c: '#ffe0a0', s: 0.13, vy: 0.25, sw: 0.4 } }[kind];
+  const base = [], pos = new Float32Array(n * 3);
+  for (let k = 0; k < n; k++) { const z = -22 - r() * 70, half = -z * TH * W / H; base.push([(r() * 2 - 1) * half * 1.1, r() * 14, z, r() * 6.3, 0.6 + r() * 0.8]); }
+  const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const mat = new THREE.PointsMaterial({ map: dotTex, color: K.c, size: K.s, sizeAttenuation: true, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending, fog: false });
+  const points = new THREE.Points(geo, mat);
+  return { points, update(t) {
+    base.forEach(([x, y, z, ph, sp], k) => {
+      pos[k * 3] = x + Math.sin(t * 0.6 * sp + ph) * K.sw * 2; pos[k * 3 + 1] = 0.3 + ((y + t * K.vy * sp) % 14); pos[k * 3 + 2] = z;
+    });
+    geo.attributes.position.needsUpdate = true; mat.opacity = 0.7 + 0.15 * Math.sin(t * 1.7);
   } };
 }
 
@@ -268,13 +342,10 @@ export const BUILD = { angliaHook: () => anglia('hook'), angliaRaid: () => angli
   angliaOak: () => anglia('oak'), angliaAbbey: () => anglia('abbey'), angliaGlory: () => anglia('glory') };
 
 if (!window.BG3D_LIB) {
-  const views = [...document.querySelectorAll('canvas.bg3d')].map((cv) => { const renderer = newRenderer(cv); return { renderer, ...makeView(cv, BUILD) }; });
-  const renderAt = (T) => {
-    for (const w of views) {
-      if (!w.active(T)) continue;
-      w.pose(T); w.renderer.render(w.v.scene, w.v.cam);
-    }
-  };
+  // cam3d (STORY.cam3d): one camera drives the 3D set and the SVG layers; depth of field on the 3D; front3d foreground
+  const C3 = window.CAM3D || {};
+  const rigs = [...document.querySelectorAll('canvas.bg3d')].map((cv) => makeRig(cv, BUILD, { dof: C3.dof ?? 2 }));
+  const renderAt = (T) => { for (const w of rigs) w.draw(T); };
   window.addEventListener('hf-seek', (e) => renderAt(e.detail.time));
   renderAt(0);
   window.__bg3dDone && window.__bg3dDone();
