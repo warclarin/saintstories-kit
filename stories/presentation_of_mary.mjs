@@ -264,10 +264,10 @@ export const STORY = {
   scenes: [
     { kicker: 'JERUSALEM · AN OLD TRADITION', title: 'She Never Looked Back', art: scene0, bg3d: 'jerHook', front3d: true, cam: { move: 'push-fast', oy: 950 },
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
-      say: ['Her parents gave her to God at just three years old.', 'She climbed the Temple steps, and never looked back.', 'This is the Virgin Mary.'] },
+      say: ['By ancient tradition, her parents gave her to God at just three.', 'She climbed the Temple steps, and never looked back.', 'This is the Virgin Mary.'] },
     { kicker: 'JOACHIM AND ANNE', title: 'A Mother\'s Promise', art: scene1, bg3d: 'jerHome', front3d: true, cam: 'pan-r',
       tone: { speed: 1.1, gap: 0.18, gain: 1 },
-      say: ['An ancient story says Joachim and Anne prayed for years for a child.', 'Anne promised:', { text: 'Boy or girl, I will bring my child as a gift to the Lord.', who: 'anne' }] },
+      say: ['Joachim and Anne prayed for years for a child.', 'Anne promised:', { text: 'Boy or girl, I will bring my child as a gift to the Lord.', who: 'anne' }] },
     { kicker: 'MARY IS BORN', title: 'One More Year', art: scene2, bg3d: 'jerWait', front3d: true, cam: 'drift-l',
       tone: { speed: 1.0, gap: 0.28, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } },
       say: ['God gave them a daughter, Mary.', 'When she turned two, Anne asked to wait one more year, so she would not miss them.'] },
