@@ -13,7 +13,9 @@
 // 'tonsure' (hair with a shaved crown), ph (bob / blink phase 0..1, so copies of one character move together).
 // Nuns (opt-in, 2026-11-18, St. Rose Philippine Duchesne): veil (colour: hood over the head + drape down the back, hides
 // hair and ears), wimple (colour: band framing the face), ruche: true (fluted frill on that band, as on the Sacred Heart
-// bonnet). veilHair: true (2026-11-20): with a veil and no wimple, show centre-parted hair under the hood (laywomen, Mary).
+// bonnet). veilHair (2026-11-20): with a veil and no wimple, show hair under the hood: 'covered' (married/older women, a thin band),
+// 'parted' or true (Western-style Mary), 'long' (young girls: veil set back, long locks over the shoulders), 'hidden' (no
+// hair: the veil comes low on the forehead over a white under-cloth edge, `undercloth` colour; most depictions of St. Anne).
 // Helpers: seq(draw, steps) changes a character's look on a word; wordTimes(slug) finds when a word is spoken.
 // Not covered yet (use person() or add it here): sitting, crowns, trousers/camisa, habits with hoods. Extend this file
 // for those, keeping old options unchanged.
@@ -152,12 +154,26 @@ export function hd(x, y, s, o = {}) {
       + `<path d="M-35 -230 Q-42 -290 0 -294" stroke="${dark(o.wimple, 0.12)}" stroke-width="2" fill="none" opacity=".6"/>`
       + (o.ruche ? `<path d="${band}" stroke="${dark(o.wimple, 0.2)}" stroke-width="12" fill="none" stroke-dasharray="1.6 5" opacity=".7"/>` : ''));
     // veilHair (opt-in, 2026-11-20, Presentation of Mary): without a wimple the bare forehead dome under the hood read as a
-    // bald head, so show centre-parted hair from the hood down to the temples, with a lock falling on each side of the face
-    if (o.veilHair && !o.wimple) g.push(`<path d="M-48 -256 Q-50 -304 0 -307 Q50 -304 48 -256 Q47 -232 42 -212 Q36 -216 37 -236 Q36 -262 22 -274 Q10 -278 2 -273 L0 -269 L-2 -273 Q-10 -278 -22 -274 Q-36 -262 -37 -236 Q-36 -216 -42 -212 Q-47 -232 -48 -256Z" fill="${HC}"/>`
+    // bald head, so show hair under the hood. Styles: 'covered' (married / older women: the veil comes low on the forehead,
+    // only a thin band of hair shows), 'parted' (true; Western-style Mary: centre-parted hair down to the temples, a short
+    // lock each side), 'long' (young girls: the veil set back, fuller parted hair and long locks over the shoulders).
+    const vh = o.wimple || !o.veilHair ? null : o.veilHair === true ? 'parted' : o.veilHair;
+    if (vh === 'covered') g.push(`<path d="M-48 -256 Q-50 -298 0 -300 Q50 -298 48 -256 Q46 -244 42 -236 Q38 -258 24 -276 Q10 -284 2 -281 L0 -278 L-2 -281 Q-10 -284 -24 -276 Q-38 -258 -42 -236 Q-46 -244 -48 -256Z" fill="${HC}"/>`
+      + strands('M-4 -292 Q-18 -286 -30 -272 Q-38 -260 -42 -244 M4 -292 Q18 -286 30 -272 Q38 -260 42 -244', hSh, 1.8, 0.55));
+    else if (vh === 'long') g.push(`<path d="M-49 -262 Q-52 -312 0 -316 Q52 -312 49 -262 Q52 -214 50 -176 Q42 -168 34 -176 Q38 -214 37 -240 Q36 -262 22 -274 Q10 -278 2 -273 L0 -269 L-2 -273 Q-10 -278 -22 -274 Q-36 -262 -37 -240 Q-38 -214 -34 -176 Q-42 -168 -50 -176 Q-52 -214 -49 -262Z" fill="${HC}"/>`
+      + strands('M-3 -308 Q-16 -296 -28 -278 Q-38 -262 -42 -232 Q-44 -204 -42 -182 M3 -308 Q16 -296 28 -278 Q38 -262 42 -232 Q44 -204 42 -182', hSh, 2, 0.55)
+      + strands('M-8 -304 Q-24 -292 -32 -272 M8 -304 Q24 -292 32 -272 M-46 -230 Q-48 -206 -46 -186 M46 -230 Q48 -206 46 -186', hHi, 2, 0.5));
+    else if (vh && vh !== 'hidden') g.push(`<path d="M-48 -256 Q-50 -304 0 -307 Q50 -304 48 -256 Q47 -232 42 -212 Q36 -216 37 -236 Q36 -262 22 -274 Q10 -278 2 -273 L0 -269 L-2 -273 Q-10 -278 -22 -274 Q-36 -262 -37 -236 Q-36 -216 -42 -212 Q-47 -232 -48 -256Z" fill="${HC}"/>`
       + strands('M-3 -300 Q-14 -290 -26 -276 Q-36 -262 -40 -232 M3 -300 Q14 -290 26 -276 Q36 -262 40 -232', hSh, 2, 0.55)
       + strands('M-8 -298 Q-22 -288 -30 -272 M8 -298 Q22 -288 30 -272', hHi, 2, 0.5));
-    g.push(`<path d="M-51 -256 Q-54 -320 0 -320 Q54 -320 51 -256 Q46 -302 0 -306 Q-46 -302 -51 -256Z" fill="${veil}"/>`
-      + strands('M-40 -296 Q-20 -314 6 -314', light(veil, 0.35), 3, 0.5) + strands('M48 -262 Q48 -296 30 -310', dark(veil, 0.3), 2.4, 0.5));
+    const hood = vh === 'hidden' ? 'M-52 -248 Q-55 -320 0 -320 Q55 -320 52 -248 Q50 -282 0 -288 Q-50 -282 -52 -248Z'
+      : vh === 'covered' ?'M-52 -252 Q-55 -320 0 -320 Q55 -320 52 -252 Q48 -290 0 -293 Q-48 -290 -52 -252Z'
+      : vh === 'long' ? 'M-50 -262 Q-53 -326 0 -327 Q53 -326 50 -262 Q45 -310 0 -315 Q-45 -310 -50 -262Z'
+      : 'M-51 -256 Q-54 -320 0 -320 Q54 -320 51 -256 Q46 -302 0 -306 Q-46 -302 -51 -256Z';
+    g.push(`<path d="${hood}" fill="${veil}"/>`
+      + strands('M-40 -296 Q-20 -314 6 -314', light(veil, 0.35), 3, 0.5) + strands('M48 -262 Q48 -296 30 -310', dark(veil, 0.3), 2.4, 0.5)
+      // 'hidden': the white under-cloth edge just inside the low veil (no hair shows, as in most depictions of St. Anne)
+      + (vh === 'hidden' ? strands('M-49 -250 Q-47 -280 0 -285 Q47 -280 49 -250', o.undercloth || '#fbf8f0', 5, 0.95) : ''));
   } else {   // short wavy; 'tonsure' adds a shaved crown
     g.push(`<path d="M-42 -250 Q-46 -298 0 -297 Q46 -298 42 -250 Q38 -270 22 -276 Q14 -266 6 -276 Q-6 -266 -16 -277 Q-34 -272 -42 -250Z" fill="${HC}"/>`
       + strands('M-30 -282 Q-18 -292 -4 -290 M4 -291 Q18 -292 30 -280 M-38 -262 Q-34 -276 -24 -282', hSh, 2, 0.6)
