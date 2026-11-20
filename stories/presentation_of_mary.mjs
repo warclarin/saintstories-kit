@@ -137,14 +137,18 @@ export const castShadow = (x, y, s, mode) => {
 // cam3d: the character plane (depth 1) is 20 units away; feet on the 3D ground: depth 1 ~1345, 0.97 ~1312, 0.95 ~1322,
 // 0.92 ~1310, 0.78 ~1262, MID 0.75 ~1245. Steps are SVG cards on the character plane (tread k at 1345 - 34 k).
 const SH = 34;
-// 0 · hook: little Mary on the Temple steps between two lamp-bearers, the sanctuary behind (push-fast)
+// 0 · hook: little Mary climbing the Temple steps; Joachim and Anne below let her go, the sanctuary behind (push-fast)
 function scene0() {
   const g = at(0, 'gave her'), cl = at(0, 'climbed'), nb = at(0, 'never looked'), ti = at(0, 'This is'), vm = at(0, 'Virgin Mary');
-  const MX = 540, MY = 1345 - 4 * SH + 4;
+  const MX = 540, MY = 1345 - 4 * SH + 4, JY = 1345 - SH + 4, AY = 1345 - 2 * SH + 4;
   const Mary = (op) => maryChild(MX, MY + SH, 1.62, { armL: [14, 2, 3], armR: [14, 2, 3], ...op });
   return lit(templeSteps(540, 1345, { n: 7, w0: 1120, dw: 64, sh: SH, glowTop: true })
-      + castShadow(225, 1345 - SH + 4, 2.0, 'hook') + maiden(225, 1345 - SH + 4, 2.0, 0, { mood: 'happy', look: [2, -1] })
-      + castShadow(805, 1345 - 2 * SH + 4, 1.95, 'hook') + maiden(805, 1345 - 2 * SH + 4, 1.95, 1, { flip: true, mood: 'happy', look: [2, -1] }), 'hook')
+      + castShadow(185, JY, 2.3, 'hook') + seq((op) => joachim(185, JY, 2.3, { armL: [16, 2, 3], ...op }),
+        [[0, { mood: 'tender', armR: [20, 2, 3], look: [2.4, -1.2] }], [g, { mood: 'happy', armR: [40, 3, 2.4], look: [2.4, -1.4] }],
+          [nb, { mood: 'surprised', armR: [30, 2, 3], look: [2.4, -1.8] }], [ti, { mood: 'tender', armR: [20, 2, 3], look: [2.4, -1.4] }]])
+      + castShadow(840, JY, 2.3, 'hook') + seq((op) => anne(840, JY, 2.3, { flip: true, armL: [16, 2, 3], ...op }),
+        [[0, { mood: 'tender', armR: [24, 2, 3], look: [2.4, -1.2] }], [g, { mood: 'tender', armR: [40, 3, 2.4], look: [2.4, -1.4] }],
+          [nb, { mood: 'awe', armR: [34, 2, 3], look: [2.4, -1.8] }], [ti, { mood: 'happy', armR: [24, 2, 3], look: [2.4, -1.4] }]]), 'hook')
     + `<g opacity="0"${fadeIn(g, 0.8)}>${glow(540, 980, 360, 0.4)}</g>`
     + lit(`<g${punch(ti, 0.04, 540, 900)}><g${M.tw([{ at: cl, dur: 0.9, from: { y: 0 }, to: { y: -SH }, ease: 'power2.inOut' }])}>`
       + seq(Mary, [[0, { mood: 'awe', look: [0, -1.5] }], [g, { mood: 'happy', look: [0, -2.4] }], [nb, { mood: 'awe', look: [0, -2.6] }], [ti, { mood: 'happy', look: [0, 0] }], [vm, { mood: 'tender' }]])
