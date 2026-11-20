@@ -79,14 +79,14 @@ export function temple3d({ stone = '#f2e6d0', gold = '#e8b84a', glow = 0.6 } = {
   // pilasters on the porch front
   for (const x of [-15.5, -10.5, 10.5, 15.5]) { const p = box(1.2, 14.4, 0.6, lam(mixc(stone, '#fff8ec', 0.4))); p.position.set(x, Y + 7.6, 2.2); g.add(p); }
   // the great doorway: dark recess, glowing veil light, a golden vine frieze above
-  const dr = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 13), lam('#4a3424')); dr.position.set(0, Y + 6.8, 2.25); g.add(dr);
-  const veil = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 11.8), glowMat(mixc('#6a3a2a', '#ffd890', glow).getStyle())); veil.position.set(0, Y + 6.6, 2.3); g.add(veil);
-  const frame = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.32, 6, 24, Math.PI), gm); frame.position.set(0, Y + 13.2, 2.3); g.add(frame);
-  const vine = box(8.4, 1.0, 0.5, gm); vine.position.set(0, Y + 14.2, 2.3); g.add(vine);
-  for (let k = 0; k < 7; k++) { const gr = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 6), gm); gr.position.set(-3.6 + k * 1.2, Y + 13.4 - (k % 2) * 0.3, 2.6); g.add(gr); }
+  const dr = new THREE.Mesh(new THREE.PlaneGeometry(6.4, 13), lam('#4a3424')); dr.position.set(0, Y + 6.8, 2.4); g.add(dr);
+  const veil = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 11.8), glowMat(mixc('#6a3a2a', '#ffd890', glow).getStyle())); veil.position.set(0, Y + 6.6, 2.5); g.add(veil);
+  const frame = new THREE.Mesh(new THREE.TorusGeometry(3.6, 0.32, 6, 24, Math.PI), gm); frame.position.set(0, Y + 13.2, 2.6); g.add(frame);
+  const vine = box(8.4, 1.0, 0.5, gm); vine.position.set(0, Y + 14.2, 2.6); g.add(vine);
+  for (let k = 0; k < 7; k++) { const gr = new THREE.Mesh(new THREE.SphereGeometry(0.42, 8, 6), gm); gr.position.set(-3.6 + k * 1.2, Y + 13.4 - (k % 2) * 0.3, 2.9); g.add(gr); }
   const glowS = sprite(holy, 26, 0.55 * glow, true); glowS.position.set(0, Y + 8, 4); g.add(glowS);
   // windows high on the centre
-  for (const x of [-4.5, 4.5]) { const wn = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.6), lam('#5a4432')); wn.position.set(x, Y + 18.5, 2.25); g.add(wn); }
+  for (const x of [-4.5, 4.5]) { const wn = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 2.6), lam('#5a4432')); wn.position.set(x, Y + 18.5, 2.4); g.add(wn); }
   g.userData.glow = glowS; g.userData.veil = veil;
   return g;
 }
