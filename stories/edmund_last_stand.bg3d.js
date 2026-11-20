@@ -177,8 +177,9 @@ const MODES = {
     cloudLit: '#ffc4a4', cloudShade: '#8a6a98', stars: 80, abbey: [800, 1080, 420, 1], ships: [], smoke: [], air: 'gold', move: 'arc' },
 };
 
-export function anglia(mode = 'hook') {
-  const P = MODES[mode], r = rng(mode.length * 13 + 7);
+/** anglia(mode) or anglia(name, { base, ...overrides }): a custom set-up built on one of the modes above (2026-11-20, guardian wolf). */
+export function anglia(mode = 'hook', extra = null) {
+  const P = extra ? { ...MODES[extra.base || 'oak'], ...extra } : MODES[mode], r = rng(mode.length * 13 + 7);
   const scene = new THREE.Scene();
   scene.background = skyTex(P.sky);
   scene.fog = new THREE.Fog(P.fog, 160, 1500);
@@ -223,14 +224,14 @@ export function anglia(mode = 'hook') {
   });
   const smokes = (P.smoke || []).map(([sx, sy, d, s], k) => { const p = atScreen(cam, sx, sy, d); const sm = smoke3d(p.x, GL, p.z, s * d / 300, k + 3); scene.add(sm.group); return sm; });
   const mist = [[-240, -4, -420, 520, 50], [160, -5, -480, 640, 60], [520, -4, -400, 480, 50], [-520, -6, -520, 520, 50]].map(([x, y, z, w, h], k) => {
-    const m = sprite(mistTex, 1, mode === 'oak' ? 0.7 : 0.5); m.scale.set(w, h, 1); m.position.set(x, y, z); scene.add(m); return [m, x, k]; });
+    const m = sprite(mistTex, 1, P.wood ? 0.7 : 0.5); m.scale.set(w, h, 1); m.position.set(x, y, z); scene.add(m); return [m, x, k]; });
   // the hall, the abbey
   if (P.hall) { const hl = hall3d({ lit: 1 }); hl.position.set(0, 0, -P.hall[1]); hl.rotation.y = -0.1; scene.add(hl);
     for (let k = 0; k < 6; k++) scene.add(oak3d(-40 + k * 16 + (r() - 0.5) * 6, -P.hall[1] - 18 - r() * 10, 16 + r() * 6, 50 + k, { leaves: GREEN })); }
   if (P.abbey) { const [sx, sy, d, lit] = P.abbey, p = atScreen(cam, sx, sy, d); const ab = abbey3d({ lit }); ab.position.set(p.x, GL, p.z); ab.scale.setScalar(d / 230 * 0.95); ab.rotation.y = -0.35; scene.add(ab); }
   // the oak wood: big trunks close by on both sides, canopies framing the sky gap at the top
   if (P.wood) {
-    [[-22, -26, 26, 1], [-34, -46, 30, 2], [-16, -70, 28, 3], [24, -30, 27, 4], [36, -52, 32, 5], [14, -84, 26, 6], [-48, -90, 34, 7], [52, -96, 34, 8], [0, -140, 30, 9], [-30, -150, 32, 10], [34, -160, 30, 11]]
+    (P.woodTrees || [[-22, -26, 26, 1], [-34, -46, 30, 2], [-16, -70, 28, 3], [24, -30, 27, 4], [36, -52, 32, 5], [14, -84, 26, 6], [-48, -90, 34, 7], [52, -96, 34, 8], [0, -140, 30, 9], [-30, -150, 32, 10], [34, -160, 30, 11]])
       .forEach(([x, z, h, s]) => scene.add(oak3d(x, z, h, s, { leaves: GREEN })));
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(700, 260), lam('#3e5228')); floor.rotation.x = -Math.PI / 2; floor.position.set(0, -0.02, -130); scene.add(floor);
   }
@@ -283,7 +284,7 @@ export function anglia(mode = 'hook') {
       else {   // arc: orbit around the character plane, looking at it, with a slight roll
         const a = (-0.05 + 0.1 * p) * A; cam.position.set(P0.x + D * Math.sin(a), P0.y, P0.z - D + D * Math.cos(a) - 0.3 * A); ry = a; rz = (p - 0.5) * 0.016;
       }
-      const k = mode === 'oak' ? Math.min(1, 0.2 + t * 0.11) : 1;   // the light breaking through the wood swells over the scene
+      const k = (P.swell ?? mode === 'oak') ? Math.min(1, 0.2 + t * 0.11) : 1;   // the light breaking through the wood swells over the scene
       if (rays) rays.update(t, k);
       if (breakGlow) breakGlow.material.opacity = 0.12 + 0.3 * k;
       if (sunGlow) sunGlow.material.opacity = P.sun[2] * 0.85 * (0.94 + 0.06 * Math.sin(t * 0.7));
