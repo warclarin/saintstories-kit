@@ -13,7 +13,7 @@
 // 'tonsure' (hair with a shaved crown), ph (bob / blink phase 0..1, so copies of one character move together).
 // Nuns (opt-in, 2026-11-18, St. Rose Philippine Duchesne): veil (colour: hood over the head + drape down the back, hides
 // hair and ears), wimple (colour: band framing the face), ruche: true (fluted frill on that band, as on the Sacred Heart
-// bonnet).
+// bonnet). veilHair: true (2026-11-20): with a veil and no wimple, show centre-parted hair under the hood (laywomen, Mary).
 // Helpers: seq(draw, steps) changes a character's look on a word; wordTimes(slug) finds when a word is spoken.
 // Not covered yet (use person() or add it here): sitting, crowns, trousers/camisa, habits with hoods. Extend this file
 // for those, keeping old options unchanged.
@@ -151,6 +151,11 @@ export function hd(x, y, s, o = {}) {
     if (o.wimple) g.push(`<path d="${band}" stroke="${o.wimple}" stroke-width="13" fill="none" stroke-linecap="round"/>`
       + `<path d="M-35 -230 Q-42 -290 0 -294" stroke="${dark(o.wimple, 0.12)}" stroke-width="2" fill="none" opacity=".6"/>`
       + (o.ruche ? `<path d="${band}" stroke="${dark(o.wimple, 0.2)}" stroke-width="12" fill="none" stroke-dasharray="1.6 5" opacity=".7"/>` : ''));
+    // veilHair (opt-in, 2026-11-20, Presentation of Mary): without a wimple the bare forehead dome under the hood read as a
+    // bald head, so show centre-parted hair from the hood down to the temples, with a lock falling on each side of the face
+    if (o.veilHair && !o.wimple) g.push(`<path d="M-48 -256 Q-50 -304 0 -307 Q50 -304 48 -256 Q47 -232 42 -212 Q36 -216 37 -236 Q36 -262 22 -274 Q10 -278 2 -273 L0 -269 L-2 -273 Q-10 -278 -22 -274 Q-36 -262 -37 -236 Q-36 -216 -42 -212 Q-47 -232 -48 -256Z" fill="${HC}"/>`
+      + strands('M-3 -300 Q-14 -290 -26 -276 Q-36 -262 -40 -232 M3 -300 Q14 -290 26 -276 Q36 -262 40 -232', hSh, 2, 0.55)
+      + strands('M-8 -298 Q-22 -288 -30 -272 M8 -298 Q22 -288 30 -272', hHi, 2, 0.5));
     g.push(`<path d="M-51 -256 Q-54 -320 0 -320 Q54 -320 51 -256 Q46 -302 0 -306 Q-46 -302 -51 -256Z" fill="${veil}"/>`
       + strands('M-40 -296 Q-20 -314 6 -314', light(veil, 0.35), 3, 0.5) + strands('M48 -262 Q48 -296 30 -310', dark(veil, 0.3), 2.4, 0.5));
   } else {   // short wavy; 'tonsure' adds a shaved crown

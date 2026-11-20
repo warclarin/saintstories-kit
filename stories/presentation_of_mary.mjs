@@ -87,7 +87,7 @@ export const maryChild = (x, y, s, { over = '', dance = false, ...o } = {}) => {
   return dance ? `<g${M.sway(5, 1.1, 0, x, y)}>${fig}</g>` : fig;
 };
 /** St. Anne: red tunic, green mantle, cream veil. */
-export const anne = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#b0343e', mantle: '#3e6e4e', lining: '#f2c46b', veil: '#f2ead8', trim: GOLD,
+export const anne = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#b0343e', mantle: '#3e6e4e', lining: '#f2c46b', veil: '#f2ead8', veilHair: true, trim: GOLD,
   skin: '#e6b894', hair: '#5a3a24', beard: null, age: 'mid', iris: '#4a3020', belt: '#c8963e', shoes: '#6a4428', ...o, over });
 /** St. Joachim: blue-violet tunic, ochre mantle, white hair and long beard, a shepherd's staff. */
 export const joachim = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#5a5a8a', mantle: '#b8863e', lining: '#f2dca0', trim: '#e2b45a',
@@ -97,7 +97,7 @@ export const templePriest = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, {
   skin: '#e2b48f', hair: '#e8e2d8', beard: '#e8e2d8', beardStyle: 'long', age: 'old', iris: '#4a3a2a', shoes: '#8a6a4a', ...o, over: bells + breastplate + turban + over });
 const MAIDS = [['#e8a0b0', '#f8ecec'], ['#a8c8e8', '#f0f4fa'], ['#f0d080', '#fbf4e0'], ['#b8d8a8', '#f2f8ee']];
 /** A young daughter of Jerusalem in a pastel dress and veil, carrying a lamp (i picks the colours). */
-export const maiden = (x, y, s, i = 0, { over = '', ...o } = {}) => hd(x, y, s, { top: MAIDS[i % 4][0], veil: MAIDS[i % 4][1], mantle: null, trim: light(MAIDS[i % 4][0], 0.3),
+export const maiden = (x, y, s, i = 0, { over = '', ...o } = {}) => hd(x, y, s, { top: MAIDS[i % 4][0], veil: MAIDS[i % 4][1], veilHair: true, mantle: null, trim: light(MAIDS[i % 4][0], 0.3),
   skin: ['#efc6a2', '#e2b48f', '#d9a47e', '#f0caa8'][i % 4], beard: null, age: 'young', belt: dark(MAIDS[i % 4][0], 0.25), iris: '#4a3020', shoes: '#8a6a4a',
   armR: 38, propR: handLamp(true), ...o, over });
 const monk = (x, y, s, o = {}) => hd(x, y, s, { top: '#26222a', plain: true, belt: false, trim: '#3a343e', skin: '#e2b48f', hair: '#6a5a4a', hairStyle: 'tonsure',
@@ -201,7 +201,7 @@ function scene4() {
   const q0 = at(4, 'The Lord'), qe = at(4, 'generations', 0.7), dn = at(4, 'Then she danced'), il = at(4, 'all Israel');
   const MX = 420, MY = 1345 - 3 * SH + 4;
   const people = [[60, '#7a5a4a', '#e2b48f', 0], [150, '#4a6a8a', '#d9a47e', 1], [245, '#8a6a3a', '#efc6a2', 2]].map(([x, c, sk, k]) =>
-    `<g opacity="0"${fadeIn(il + k * 0.2, 0.6)}>${castShadow(x, 1262, 1.55, 'altar')}${hd(x, 1262, 1.55, { top: c, mantle: k === 1 ? '#c8963e' : null, veil: k === 2 ? '#f2ead8' : null, skin: sk,
+    `<g opacity="0"${fadeIn(il + k * 0.2, 0.6)}>${castShadow(x, 1262, 1.55, 'altar')}${hd(x, 1262, 1.55, { top: c, mantle: k === 1 ? '#c8963e' : null, veil: k === 2 ? '#f2ead8' : null, veilHair: true, skin: sk,
       hair: ['#4a3424', '#8a8078', '#2a1c14'][k], beard: k === 1 ? '#8a8078' : null, mood: 'joy', look: [2.6, -0.6], armL: [16, 2, 3], armR: k === 0 ? [120, 6, 1.2] : [20, 2, 3], age: k === 1 ? 'old' : 'mid' })}</g>`).join('');
   return MID(lit(people, 'altar'))
     + lit(templeSteps(MX, 1345, { n: 3, w0: 560, dw: 70, sh: SH, c: '#efe2c8', glowTop: false }), 'altar')
