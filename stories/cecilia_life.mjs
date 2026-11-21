@@ -201,7 +201,6 @@ function scene7() {
   return lit(castShadow(520, 1345, 2.35, 'cGlory') + seq((op) => ceciliaHD(520, 1345, 2.35, { crown: true, halo: true, armL: 34, propL: palm_frond(1.0, -6, 2), armR: 40, propR: organ(1.25), ...op }),
       [[0, { mood: 'happy', look: [0, 0] }], [mu, { mood: 'happy', look: [2.2, -0.4] }], [pr, { mood: 'tender', look: [0, 0] }]]), 'cGlory')
     + `<g opacity="0"${fadeIn(mu, 0.6)}>${notes(8, { x0: 640, x1: 900, y0: 640, y1: 1000, seed: 12 })}</g>`
-    + sticker(0.6, 'What song helps you pray? Share below.')
     + `<g opacity="0"${fadeIn(pr, 0.8)}>${sparkles(14, 280, 760, 560, 900, { seed: 21 })}</g>`
     + NEAR(bokeh(7, { seed: 25 }) + foliage('l', 1640, { color: '#2a2440', seed: 13 }) + foliage('r', 1660, { color: '#2a2440', seed: 14 }));
 }
