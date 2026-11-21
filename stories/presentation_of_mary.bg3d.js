@@ -161,9 +161,11 @@ const MODES = {
     rays: { op: 0.09, dir: -0.4, spread: 1.6, up: true }, cloudLit: '#ffc8a8', cloudShade: '#8a6a98', stars: 70, glow: 1, templeZ: -104, air: 'gold' },
 };
 
-/** jerusalem3d(mode): one of the set-ups above (a court of the Temple or the parents' house across the valley). */
-export function jerusalem3d(mode = 'hook') {
-  const P = MODES[mode], r = rng(mode.length * 17 + 3), court = P.loc === 'court';
+/** jerusalem3d(mode): one of the set-ups above (a court of the Temple or the parents' house across the valley).
+ * jerusalem3d(name, { base, ...overrides }) (2026-11-21, St. Rufus): a custom set-up built on one of the modes; extra option
+ * crosses: [sx, sy, dist] puts the hill of Golgotha with its three crosses there (house locale). */
+export function jerusalem3d(mode = 'hook', extra = null) {
+  const P = extra ? { ...MODES[extra.base || 'hook'], ...extra } : MODES[mode], r = rng(mode.length * 17 + 3), court = P.loc === 'court';
   const scene = new THREE.Scene();
   scene.background = skyTex(P.sky);
   scene.fog = new THREE.Fog(P.fog, 180, 1600);
@@ -220,6 +222,15 @@ export function jerusalem3d(mode = 'hook') {
     for (let k = 0; k < 60; k++) { const hh = 6 + r() * 8; const h = house3d(8 + r() * 6, hh, 8, mixc('#ecdcc4', '#c8b090', r()).getStyle(), r, { lit }); h.position.set(p.x - 380 + k * 13 + (r() - 0.5) * 6, GL - 4 + r() * 6, p.z + 60 + r() * 50); h.scale.setScalar(d / 700); scene.add(h); }
     const mist = [[-200, -2, -380, 600, 50], [260, -3, -420, 640, 60]].map(([x, y, z, w, h], k) => { const m = sprite(mistTex, 1, 0.45); m.scale.set(w, h, 1); m.position.set(x, y, z); scene.add(m); return [m, x, k]; });
     scene.userData.mist = mist;
+    if (P.crosses) {   // Golgotha: a bare rocky hill outside the walls with three crosses
+      const [cx, cy, cd] = P.crosses, q = atScreen(cam, cx, cy, cd), s = cd / 300;
+      const hill = new THREE.Mesh(new THREE.SphereGeometry(1, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), lam(mixc('#7a6a5a', P.fog, 0.22).getStyle()));
+      hill.scale.set(70 * s, 15 * s, 34 * s); hill.position.set(q.x, GL - 1, q.z); scene.add(hill);
+      const cm = lam('#3a2a26');
+      [[-16, 0.78], [0, 1], [16, 0.78]].forEach(([dx, k]) => { const g = new THREE.Group();
+        const up = box(0.9, 16 * k, 0.9, cm); up.position.y = 8 * k; g.add(up); const bm = box(8 * k, 0.8, 0.8, cm); bm.position.y = 12.4 * k; g.add(bm);
+        g.position.set(q.x + dx * s, GL - 1 + 15 * s * Math.sqrt(1 - (dx / 70) ** 2) - 0.5 * s, q.z); g.scale.setScalar(s); scene.add(g); });
+    }
     if (!P.noYard) {
       // the courtyard: a low stone wall with a gate, the house to the side, a fig tree
       const yw = stoneTex('#d8c4a0', 11); yw.repeat.set(10, 1);
