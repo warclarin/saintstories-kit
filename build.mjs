@@ -65,6 +65,7 @@ if (cmd === 'say') {
     fix: STORY.fix || {}, lead: LEADS, tail: TAILS, fps: FPS,
     ...(FLOW?.gap ? { gap: FLOW.gap } : {}), scenes: STORY.scenes.map((s) => s.say),
     // opt-in: character voices for quoted lines (STORY.cast + say {text, who}) and per-scene narrator tone (scene.tone)
+    ...(STORY.voicefx === false ? { voicefx: false } : {}),   // narrate.py's cinematic voice finish is on unless false
     ...(STORY.cast ? { cast: STORY.cast } : {}), ...(STORY.scenes.some((s) => s.tone) ? { tones: STORY.scenes.map((s) => s.tone || null) } : {}),
   }, null, 1));
   console.log(path.join(OUT, 'say.json'));

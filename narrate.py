@@ -149,5 +149,26 @@ for i, w in enumerate(wavs):
     start += dur[i]
 track = track[:int(total * SR)]
 track = track / max(1e-6, np.abs(track).max()) * 0.9
-sf.write(os.path.join(D, "narration.wav"), track, SR)
-print("narration.wav", round(total, 2), "s")
+
+# Cinematic voice (standard since 2026-11-22, user's choice after an A/B on St. Edmund): every narration gets a film-narrator
+# finish after Kokoro: about half a semitone deeper (rubberband, same length, so timings and captions don't move), warm low
+# end, less boxiness, presence, a little air, de-essing, gentle compression, a short subtle hall, and a limiter. The dry
+# Kokoro mix is kept as narration_raw.wav. say.json "voicefx": false (STORY.voicefx = false) skips it.
+VOICE_FX = ("rubberband=pitch=0.97,highpass=f=70,equalizer=f=110:t=q:w=0.9:g=3,equalizer=f=320:t=q:w=1.2:g=-2.5,"
+            "equalizer=f=3200:t=q:w=1.0:g=2,treble=g=1.5:f=8000,deesser=i=0.3,"
+            "acompressor=threshold=-22dB:ratio=3:attack=8:release=180:makeup=5dB,"
+            "aecho=in_gain=0.9:out_gain=0.9:delays=35|60|95:decays=0.10|0.07|0.04,alimiter=limit=0.89")
+raw, final = os.path.join(D, "narration_raw.wav"), os.path.join(D, "narration.wav")
+if cfg.get("voicefx", True) is False:
+    sf.write(final, track, SR)
+else:
+    import subprocess
+    sf.write(raw, track, SR)
+    # apad + atrim keep the exact length (the hall adds a short tail; rubberband can shave a few samples)
+    fx = f"{VOICE_FX},apad,atrim=end_sample={len(track)}"
+    r = subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-y", "-i", raw, "-af", fx, "-ar", str(SR), "-ac", "1", final])
+    if r.returncode != 0:
+        sys.exit("voice fx failed (ffmpeg with rubberband needed); narration_raw.wav is the dry mix")
+    w, _ = sf.read(final, dtype="float32")   # same peak as the dry mix (0.9), so step-8 checks still read about -1 dB
+    sf.write(final, w / max(1e-6, np.abs(w).max()) * 0.9, SR)
+print("narration.wav", round(total, 2), "s", "(dry)" if cfg.get("voicefx", True) is False else "(cinematic voice)")
