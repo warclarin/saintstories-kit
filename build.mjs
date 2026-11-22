@@ -13,6 +13,8 @@
 //                                                --no-browser-gpu. Pass --workers N (10 on a 24-core PC).
 //   node build.mjs <story.mjs> thumb          -> thumb_<slug>.png (1080x1920) + thumb_<slug>_square.png
 //   node build.mjs <story.mjs> clean          -> remove previews and check frames from work/<slug>
+//   node build.mjs <story.mjs> music prompt|check|mix  -> background music made in Gemini: a timed prompt, a score of each
+//                                                track against it, and a mix under the narration (see music.mjs)
 // The MP4 and cover go to FINAL: $SAINTSTORIES_OUT, else ~/Videos/SaintStories if it exists, else work/<slug>.
 import fs from 'fs';
 import os from 'os';
@@ -351,4 +353,8 @@ else if (cmd === 'preview') {
   console.log(path.join(FINAL, name));
 } else if (cmd === 'thumb') await buildThumb();
 else if (cmd === 'clean') { clean(); console.log('cleaned', OUT); }
+else if (cmd === 'music') {   // music prompt | check [files] | mix [file]: outside-generated background music (music.mjs)
+  const { musicCmd } = await import('./music.mjs');
+  await musicCmd({ STORY, OUT, FINAL, TIM, STARTS, DUR, LEADS, TOTAL, rest });
+}
 else console.error('unknown command', cmd);
