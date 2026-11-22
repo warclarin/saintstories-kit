@@ -129,7 +129,11 @@ export async function musicCmd(ctx) {
     console.log(`${txt}\n\n(saved to ${f}; climax/quiet ${P.quiet ? mmss(P.quiet[0]) + '–' + mmss(P.quiet[1]) : 'none'}, peak ${P.peak.toFixed(1)} s, total ${P.total.toFixed(1)} s)`);
     return;
   }
-  const list = files.length ? files : newestAudio(path.join(os.homedir(), 'Downloads'));
+  // default: tracks downloaded after this reel was rendered (else the last 24 h), so other reels' tracks don't get scored
+  const recent = newestAudio(path.join(os.homedir(), 'Downloads'));
+  const since = fs.existsSync(video) ? fs.statSync(video).mtimeMs - 60e3 : 0;
+  const fresh = recent.filter((f) => fs.statSync(f).mtimeMs > since);
+  const list = files.length ? files : fresh.length ? fresh : recent;
   if (!list.length) { console.log('No audio files given and none in ~/Downloads from the last 24 h.'); process.exit(1); }
   const results = list.map((f) => check(f, P)).sort((a, b) => b.score - a.score);
   if (sub === 'check' || results.length > 1) for (const r of results) {
