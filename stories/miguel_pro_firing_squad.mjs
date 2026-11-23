@@ -280,6 +280,7 @@ export const STORY = {
   thumb_hook: 'He faced the rifles with open arms', thumb_title: 'Blessed Miguel Pro', thumb_scene: 0, thumb_t: 4.6, thumb_shift: 0,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
   fix: {
+    'lˈɔŋ lˈaɪv': 'lˈɔŋ lˈɪv',                                 // Long live (as in life, not 'live music')
     'blˈɛst miːɡˈɛl': 'blˈɛsᵻd miːɡˈɛl',                     // Blessed (title) -> BLESS-id
     'noʊvˈɛmbɚ twˈɛnti θɹˈiː': 'noʊvˈɛmbɚ twˈɛnti θˈɜːd',   // November 23 -> November twenty-third
   },
