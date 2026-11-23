@@ -17,7 +17,10 @@
 // 'parted' or true (Western-style Mary), 'long' (young girls: veil set back, long locks over the shoulders), 'hidden' (no
 // hair: the veil comes low on the forehead over a white under-cloth edge, `undercloth` colour; most depictions of St. Anne).
 // Helpers: seq(draw, steps) changes a character's look on a word; wordTimes(slug) finds when a word is spoken.
-// Not covered yet (use person() or add it here): sitting, crowns, trousers/camisa, habits with hoods. Extend this file
+// Suits and uniforms (opt-in, 2026-11-23, Bl. Miguel Pro): trousers (colour: two trouser legs and a jacket that ends at
+// the hip; closed shoes by default), lapels (shirt colour: shirt V, collar points and jacket lapels with two buttons),
+// tie (colour), buckle (colour: a plain belt band with a buckle, no knot; for uniforms).
+// Not covered yet (use person() or add it here): sitting, crowns, camisa, habits with hoods. Extend this file
 // for those, keeping old options unchanged.
 import fs from 'fs';
 import { M, GOLD, INK, dark, light, mix, uid, f } from './art.mjs';
@@ -32,6 +35,7 @@ export function hd(x, y, s, o = {}) {
   const bs = o.beardStyle === undefined ? (beard ? (age === 'old' ? 'long' : 'full') : null) : o.beardStyle;
   const skSh = dark(skin, 0.24), skHi = light(skin, 0.42), sh = dark(top, 0.3), hi = light(top, 0.3);
   const hSh = dark(hair, 0.32), hHi = light(hair, 0.4), iris = o.iris || '#6a4228', belt = o.belt || '#7a5434';
+  const shoes = o.shoes || (o.trousers ? '#221c20' : null), tr = o.trousers || null;
   const g = [];
   g.push(`<defs><linearGradient id="${id}r" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${hi}"/><stop offset=".42" stop-color="${top}"/><stop offset="1" stop-color="${sh}"/></linearGradient>`
     + `<radialGradient id="${id}f" cx=".36" cy=".34" r=".78"><stop offset="0" stop-color="${skHi}"/><stop offset=".5" stop-color="${skin}"/><stop offset="1" stop-color="${skSh}"/></radialGradient>`
@@ -70,23 +74,28 @@ export function hd(x, y, s, o = {}) {
   if (hs === 'long' || hs === 'wild') g.push(`<path d="M-44 -262 Q-56 -214 -50 -180 Q-30 -170 -20 -190 L20 -190 Q30 -170 50 -180 Q56 -214 44 -262Z" fill="${hSh}"/>`);
   // feet in sandals / kneeling knees
   if (o.kneel) {
-    g.push(`<ellipse cx="-66" cy="-92" rx="17" ry="10" fill="${skSh}"/><ellipse cx="66" cy="-92" rx="17" ry="10" fill="${skSh}"/>`);
+    g.push(tr ? `<ellipse cx="-66" cy="-92" rx="17" ry="10" fill="${shoes}"/><ellipse cx="66" cy="-92" rx="17" ry="10" fill="${shoes}"/>`
+      : `<ellipse cx="-66" cy="-92" rx="17" ry="10" fill="${skSh}"/><ellipse cx="66" cy="-92" rx="17" ry="10" fill="${skSh}"/>`);
   } else {
-    if (o.shoes) for (const sx of [-1, 1]) g.push(`<ellipse cx="${sx * 17}" cy="-4" rx="17" ry="8" fill="${o.shoes}"/><ellipse cx="${sx * 17 - 5}" cy="-7" rx="7" ry="2.6" fill="${light(o.shoes, 0.3)}" opacity=".5"/>`);
+    if (tr) for (const sx of [-1, 1]) g.push(`<path d="M${sx * 2} -114 L${sx * 37} -114 L${sx * 31} -9 L${sx * 5} -9Z" fill="${sx < 0 ? light(tr, 0.12) : dark(tr, 0.12)}"/>`
+      + `<path d="M${sx * 20} -100 L${sx * 18} -14" stroke="${dark(tr, 0.35)}" stroke-width="2" fill="none" opacity=".55"/>`);
+    if (shoes) for (const sx of [-1, 1]) g.push(`<ellipse cx="${sx * 17}" cy="-4" rx="17" ry="8" fill="${shoes}"/><ellipse cx="${sx * 17 - 5}" cy="-7" rx="7" ry="2.6" fill="${light(shoes, 0.3)}" opacity=".5"/>`);
     else for (const sx of [-1, 1]) g.push(`<g transform="translate(${sx * 17},-6)"><ellipse cx="0" cy="3" rx="17" ry="6" fill="#5a3a22"/>`
       + `<ellipse cx="${sx * 2}" cy="-1" rx="14" ry="7.5" fill="${skin}"/><ellipse cx="${sx * 6}" cy="-3" rx="6" ry="3" fill="${skHi}" opacity=".5"/>`
       + `<path d="M-11 -2 Q0 -8 11 -2 M-3 -7 L-1 4" stroke="#6a4428" stroke-width="2.6" fill="none" stroke-linecap="round"/></g>`);
   }
   // tunic (gradient lit from the left), clavus stripes, folds, rim light, embroidered hem
-  const hemY = o.kneel ? -96 : -8;
+  const hemY = o.kneel ? -96 : tr ? -104 : -8;
   if (o.kneel) {
     g.push(`<path d="M-37 -207 Q0 -218 37 -207 L68 -96 Q0 -78 -68 -96Z" fill="${R}"/>`
-      + `<ellipse cx="-32" cy="-92" rx="36" ry="14" fill="${dark(top, 0.08)}"/><ellipse cx="32" cy="-92" rx="36" ry="14" fill="${dark(top, 0.18)}"/>`);
+      + `<ellipse cx="-32" cy="-92" rx="36" ry="14" fill="${dark(tr || top, 0.08)}"/><ellipse cx="32" cy="-92" rx="36" ry="14" fill="${dark(tr || top, 0.18)}"/>`);
+  } else if (tr) {
+    g.push(`<path d="M-37 -207 Q0 -218 37 -207 Q42 -150 47 -104 Q0 -92 -47 -104 Q-42 -150 -37 -207Z" fill="${R}"/>`);
   } else {
     g.push(`<path d="M-37 -207 Q0 -218 37 -207 Q46 -110 58 -8 Q0 4 -58 -8 Q-46 -110 -37 -207Z" fill="${R}"/>`);
   }
   g.push((o.plain ? '' : `<path d="M-17 -206 Q-20 -110 -26 ${hemY - 2} M17 -206 Q20 -110 26 ${hemY - 2}" stroke="${dark(top, 0.45)}" stroke-width="5" fill="none" opacity=".45"/>`)
-    + `<path d="M-6 -140 Q-10 -70 -14 ${hemY} M8 -120 Q14 -60 20 ${hemY} M-34 -100 Q-40 -50 -44 ${hemY}" stroke="${sh}" stroke-width="2.4" fill="none" opacity=".5" stroke-linecap="round"/>`
+    + `<path d="M-6 -140 Q-10 -70 -14 ${hemY} M8 -120 Q14 -60 20 ${hemY}${tr && !o.kneel ? '' : ` M-34 -100 Q-40 -50 -44 ${hemY}`}" stroke="${sh}" stroke-width="2.4" fill="none" opacity=".5" stroke-linecap="round"/>`
     + `<path d="M-35 -196 Q-42 -110 -52 ${hemY - 4}" stroke="${light(top, 0.55)}" stroke-width="3" fill="none" opacity=".55" stroke-linecap="round"/>`);
   if (o.shaggy) {   // camel-hair edge
     let z = `M-58 ${hemY}`; for (let k = 0; k <= 14; k++) z += ` L${-58 + k * 8.3} ${hemY + (k % 2 ? 10 : 0)}`;
@@ -99,7 +108,8 @@ export function hd(x, y, s, o = {}) {
     g.push(`<path d="M-58 ${hemY} Q0 ${hemY + 12} 58 ${hemY} L56 ${hemY - 18} Q0 ${hemY - 6} -56 ${hemY - 18}Z" fill="${trim}"/>${dots}`);
   }
   // belt with a knot and hanging ends
-  if (o.belt !== false) g.push(`<path d="M-45 -126 Q0 -114 45 -126 L46 -110 Q0 -98 -46 -110Z" fill="${belt}"/><path d="M-45 -124 Q0 -112 45 -124" stroke="${light(belt, 0.3)}" stroke-width="2" fill="none" opacity=".7"/>`
+  if (o.buckle) g.push(`<path d="M-43 -130 Q0 -118 43 -130 L44 -116 Q0 -104 -44 -116Z" fill="${belt}"/><rect x="-8" y="-126" width="16" height="13" rx="2" fill="none" stroke="${o.buckle}" stroke-width="3.2"/>`);
+  else if (o.belt !== false) g.push(`<path d="M-45 -126 Q0 -114 45 -126 L46 -110 Q0 -98 -46 -110Z" fill="${belt}"/><path d="M-45 -124 Q0 -112 45 -124" stroke="${light(belt, 0.3)}" stroke-width="2" fill="none" opacity=".7"/>`
     + `<g transform="translate(-16,-112)"><path d="M-2 4 Q-8 30 -4 52 M3 4 Q6 28 10 46" stroke="${belt}" stroke-width="6" fill="none" stroke-linecap="round"/><ellipse rx="8" ry="6" fill="${dark(belt, 0.15)}"/></g>`);
   // mantle, front drape (left shoulder to right hip) with lining edge, folds and trim
   if (mantle) {
@@ -127,7 +137,12 @@ export function hd(x, y, s, o = {}) {
   g.push(arm(-1, o.armL ?? 8, o.propL));
   // neck, embroidered neckline
   g.push(`<path d="M-10 -230 L10 -230 L11 -204 L-11 -204Z" fill="${skSh}"/>`
-    + `<path d="M-19 -210 Q0 -190 19 -210" stroke="${trim}" stroke-width="4.5" fill="none"/>` + (o.plain ? '' : `<path d="M-19 -210 Q0 -190 19 -210" stroke="${dark(trim, 0.3)}" stroke-width="1.2" fill="none" stroke-dasharray="3 4"/>`));
+    + (o.lapels ? `<path d="M-16 -212 L0 -174 L16 -212Z" fill="${o.lapels}"/><path d="M-16 -212 L-5 -199 L-1 -210Z M16 -212 L5 -199 L1 -210Z" fill="${light(o.lapels, 0.4)}" stroke="${dark(o.lapels, 0.15)}" stroke-width="1"/>`
+        + (o.tie ? `<path d="M-3.5 -207 L3.5 -207 L5.5 -176 L0 -168 L-5.5 -176Z" fill="${o.tie}"/><path d="M-3 -207 L3 -207 L2 -201 L-2 -201Z" fill="${dark(o.tie, 0.25)}"/>` : '')
+        + `<path d="M-20 -211 L-2 -170 L-8 -160 L-27 -197 L-23 -207Z M20 -211 L2 -170 L8 -160 L27 -197 L23 -207Z" fill="${dark(top, 0.16)}"/>`
+        + `<path d="M-20 -211 L-2 -170 M20 -211 L2 -170" stroke="${light(top, 0.35)}" stroke-width="1.4" fill="none" opacity=".6"/>`
+        + `<circle cx="0" cy="-146" r="3" fill="${dark(top, 0.4)}"/><circle cx="0" cy="-124" r="3" fill="${dark(top, 0.4)}"/>`
+      : `<path d="M-19 -210 Q0 -190 19 -210" stroke="${trim}" stroke-width="4.5" fill="none"/>` + (o.plain ? '' : `<path d="M-19 -210 Q0 -190 19 -210" stroke="${dark(trim, 0.3)}" stroke-width="1.2" fill="none" stroke-dasharray="3 4"/>`)));
   // ears, head, cheek shading, rim light
   g.push((veil ? '' : `<g fill="${skin}"><ellipse cx="-40" cy="-250" rx="8.5" ry="10"/><ellipse cx="40" cy="-250" rx="8.5" ry="10"/></g>`
     + `<path d="M-42 -255 q-3 5 0 10 M42 -255 q3 5 0 10" stroke="${skSh}" stroke-width="2" fill="none"/>`)
