@@ -7,7 +7,7 @@
 // The plan comes from the story: scene 1 is the hook (a hit at frame 0), the scene with the climax line (a say entry with
 // its own speed) is the quiet drop, the second-to-last scene rises to the peak at the end of its last line (the quotable
 // line), the last scene is calm and fades for the seamless loop. Other scenes: tone speed >= 1.05 tense, else steady.
-// STORY.music (optional) = { story: 'one-line summary for the prompt', cues: { <scene index>: 'sound for that scene' },
+// STORY.music (optional) = { story: 'one-line summary for the prompt', cues: { <scene index>: 'sound for that scene' }, under: dB (default 9),
 //   color: "instruments of the reel's place or mood" } (2026-11-24: the genre always stays cinematic; color adds the
 //   setting's instruments on top of the orchestra, e.g. 'Middle Eastern: oud, ney flute, soft frame drum' for Alexandria).
 // Most misses are fixed in the mix (dip under the quiet scene, softer ending, fade, ducking under the voice); regenerate
@@ -66,8 +66,12 @@ export function prompt(ctx) {
 
 /** Score one track against the plan (0-100) and say what the mix will have to fix. */
 export function check(file, P) {
-  const lead = leadSilence(file), len = dur(file) - lead, bin = 0.5;
+  const lead = leadSilence(file), bin = 0.5;
   const c = curve(file, bin).slice(Math.round(lead / bin));
+  // Gemini fades out and leaves ~3 s of near-silence at the end (room for its logo when exported as video; user's note
+  // 2026-11-24): the music really ends at the last bin above -40 dB, so length, ending and fade use that, not the file end.
+  let last = c.length - 1; while (last > 0 && c[last] < -40) last--;
+  const full = dur(file) - lead, len = Math.min(full, (last + 1) * bin), tail = full - len;
   const at = (t0, t1) => c.slice(Math.max(0, Math.floor(t0 / bin)), Math.max(1, Math.ceil(t1 / bin)));
   const sm = c.map((_, k) => mean(c.slice(Math.max(0, k - 2), k + 3)));   // ~2.5 s smoothing
   const notes = [], fixes = [];
@@ -91,9 +95,9 @@ export function check(file, P) {
   const peakT = pk * bin, dPeak = peakT - P.peak;
   if (Math.abs(dPeak) <= 2) score += 25; else if (Math.abs(dPeak) <= 4) { score += 12; notes.push(`peak ${dPeak > 0 ? 'late' : 'early'} by ${Math.abs(dPeak).toFixed(1)} s`); } else notes.push(`peak at ${mmss(peakT)}, planned ${mmss(P.peak)}`);
   // calm ending
-  const endDrop = sm[pk] - mean(at(P.calm[0] + 1, P.total));
+  const endDrop = sm[pk] - mean(at(P.calm[0] + 1, Math.min(P.total, Math.max(len, P.calm[0] + 2))));
   if (endDrop >= 8) score += 15; else { score += endDrop >= 4 ? 7 : 0; fixes.push('soften the feast-day ending'); }
-  return { file, lead, len, score, dip, peakT, dPeak, endDrop, notes, fixes,
+  return { file, lead, len, tail, score, dip, peakT, dPeak, endDrop, notes, fixes,
     verdict: score >= 70 ? 'good' : score >= 45 ? 'usable: the mix fixes the rest' : 'regenerate' };
 }
 
@@ -105,9 +109,10 @@ function newestAudio(dir, hours = 24, max = 6) {
 }
 
 /** Mix the track under the reel's narration and write SaintStories_<Name>_music.mp4. */
-export function mix(file, P, R, video, out) {
+export function mix(file, P, R, video, out, under = 9) {
   const T = P.total, voiceI = lufs(video, ['-vn']), musI = lufs(file);
-  const base = (voiceI - 11) - musI;   // music about 11 dB under the voice before ducking
+  // music `under` dB under the voice before ducking (11 until 2026-11-24; the user asked for the music a little louder: 9)
+  const base = (voiceI - under) - musI;
   const vol = ['1'];
   if (P.quiet && R.dip < 6) { const [a, b] = P.quiet, g = R.dip >= 3 ? 0.3 : 0.6;   // -3 / -8 dB, eased in and out
     vol.push(`-${g}*clip((t-${(a - 0.4).toFixed(2)})/0.8,0,1)+${g}*clip((t-${(b - 0.6).toFixed(2)})/1.2,0,1)`); }
@@ -140,7 +145,7 @@ export async function musicCmd(ctx) {
   if (!list.length) { console.log('No audio files given and none in ~/Downloads from the last 24 h.'); process.exit(1); }
   const results = list.map((f) => check(f, P)).sort((a, b) => b.score - a.score);
   if (sub === 'check' || results.length > 1) for (const r of results) {
-    console.log(`${String(r.score).padStart(3)}  ${r.verdict.padEnd(31)} ${path.basename(r.file)}  (${r.len.toFixed(1)} s, drop ${r.dip.toFixed(1)} dB, peak ${r.peakT.toFixed(1)} s vs ${P.peak.toFixed(1)} s, ending -${r.endDrop.toFixed(1)} dB)`);
+    console.log(`${String(r.score).padStart(3)}  ${r.verdict.padEnd(31)} ${path.basename(r.file)}  (${r.len.toFixed(1)} s of music${r.tail > 0.4 ? ` + ${r.tail.toFixed(1)} s silent tail` : ''}, drop ${r.dip.toFixed(1)} dB, peak ${r.peakT.toFixed(1)} s vs ${P.peak.toFixed(1)} s, ending -${r.endDrop.toFixed(1)} dB)`);
     for (const n of r.notes) console.log(`       - ${n}`);
     for (const x of r.fixes) console.log(`       * mix will ${x}`);
   }
@@ -150,6 +155,6 @@ export async function musicCmd(ctx) {
   const best = results[0];
   if (best.verdict === 'regenerate') console.log(`warning: ${path.basename(best.file)} scored ${best.score}; mixing anyway.`);
   const out = path.join(FINAL, `SaintStories_${name}_music.mp4`);
-  const m = mix(best.file, P, best, video, out);
+  const m = mix(best.file, P, best, video, out, STORY.music?.under ?? 9);
   console.log(`mixed ${path.basename(best.file)} -> ${out}\n  ${m.applied.join('\n  ')}\nYouTube: AI music, so answer Yes to the altered or synthetic content question.`);
 }
