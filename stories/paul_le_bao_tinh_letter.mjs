@@ -229,7 +229,7 @@ export const STORY = {
       say: ['But then he wrote:', { text: 'By the grace of God I am full of joy and happiness, because I am not alone, but Christ is with me.', who: 'paul', speed: 0.85 }] },
     { kicker: '1848 – 1857', title: 'Faithful to the End', art: scene5, bg3d: 'pField', front3d: true, cam: { move: 'tilt-up', amt: 0.06, rack: { at: 1, dur: 2.5, blur: 6 } },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
-      say: ['Freed in 1848, he became a priest.', 'Arrested again, he was beheaded in 1857.', 'Chains held his body, but never his joy.'] },
+      say: ['Freed in 1848, he became a priest.', 'Arrested again for serving as a priest, he was beheaded in 1857.', 'Chains held his body, but never his joy.'] },
     { kicker: 'FEAST DAY · NOVEMBER 24', title: 'Saint Paul Lê Bảo Tịnh', art: scene6, bg3d: 'pGlory', front3d: true, cam: { move: 'arc-r', amt: 0.06, oy: 1000 },
       tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
       say: ['He is honored with the 117 Martyrs of Vietnam on November 24.', 'Saint Paul Lê Bảo Tịnh, pray for us.'] },
