@@ -7,7 +7,9 @@
 // The plan comes from the story: scene 1 is the hook (a hit at frame 0), the scene with the climax line (a say entry with
 // its own speed) is the quiet drop, the second-to-last scene rises to the peak at the end of its last line (the quotable
 // line), the last scene is calm and fades for the seamless loop. Other scenes: tone speed >= 1.05 tense, else steady.
-// STORY.music (optional) = { story: 'one-line summary for the prompt', cues: { <scene index>: 'sound for that scene' } }.
+// STORY.music (optional) = { story: 'one-line summary for the prompt', cues: { <scene index>: 'sound for that scene' },
+//   color: "instruments of the reel's place or mood" } (2026-11-24: the genre always stays cinematic; color adds the
+//   setting's instruments on top of the orchestra, e.g. 'Middle Eastern: oud, ney flute, soft frame drum' for Alexandria).
 // Most misses are fixed in the mix (dip under the quiet scene, softer ending, fade, ducking under the voice); regenerate
 // only when the track is too short, has no build at all, or sounds wrong (genre, instruments) to the ear.
 import fs from 'fs';
@@ -57,8 +59,9 @@ export function prompt(ctx) {
     const snd = M.cues?.[i] || (s.role === 'rise' ? SOUND.rise(P.peak) : SOUND[s.role]);
     return `${mmss(s.from)}–${mmss(s.to)} (${s.title.toLowerCase()}) ${snd}`;
   });
+  const color = M.color ? `Colour: ${M.color}, woven into the orchestra from start to finish. ` : '';
   return `Instrumental cinematic film score for a ${Math.round(P.total)}-second story: ${story}. Built on strong contrasts between loud and almost silent. `
-    + 'Reverent, slow 70 BPM, mixed soft under narration. No vocals, no lyrics, no sung words.\n\n' + lines.join('\n');
+    + color + 'Reverent, slow 70 BPM, mixed soft under narration. No vocals, no lyrics, no sung words.\n\n' + lines.join('\n');
 }
 
 /** Score one track against the plan (0-100) and say what the mix will have to fix. */
@@ -124,9 +127,9 @@ export async function musicCmd(ctx) {
   const P = plan(ctx), name = STORY.name || STORY.slug;
   const video = path.join(FINAL, `SaintStories_${name}.mp4`);
   if (sub === 'prompt') {
-    const txt = prompt(ctx), f = path.join(FINAL, `music_prompt_${STORY.slug}.txt`);
-    fs.writeFileSync(f, `Settings: Vocals Instrumental · Genre Cinematic · Length Standard\n\n${txt}\n`);
-    console.log(`${txt}\n\n(saved to ${f}; climax/quiet ${P.quiet ? mmss(P.quiet[0]) + '–' + mmss(P.quiet[1]) : 'none'}, peak ${P.peak.toFixed(1)} s, total ${P.total.toFixed(1)} s)`);
+    // printed only (2026-11-24, user's choice): the prompt goes to the user as a chat message ready to copy, no .txt file
+    const txt = prompt(ctx);
+    console.log(`${txt}\n\n(settings: Vocals Instrumental · Genre Cinematic · Length Standard; climax/quiet ${P.quiet ? mmss(P.quiet[0]) + '–' + mmss(P.quiet[1]) : 'none'}, peak ${P.peak.toFixed(1)} s, total ${P.total.toFixed(1)} s)`);
     return;
   }
   // default: tracks downloaded after this reel was rendered (else the last 24 h), so other reels' tracks don't get scored

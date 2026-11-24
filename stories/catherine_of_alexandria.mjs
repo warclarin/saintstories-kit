@@ -268,6 +268,7 @@ export const STORY = {
   cam3d: { plane: 20, dof: 2 },
   bg3d_vars: { light: LIGHT },
   music: { story: "the life of St. Catherine of Alexandria, the girl who out-argued an emperor's philosophers",
+    color: 'Middle Eastern, ancient Alexandria: oud, ney flute, soft frame drum and a warm low drone',
     cues: { 1: 'Wonder: soft pulsing low drum, then a shimmer of high strings and harp rising as a heavenly light appears.',
       4: 'Hushed and dark: a low cello line, almost still, then a tender lift of strings as hope arrives.' } },
   cast: { catherine: { voice: 'bf_emma', speed: 0.95 }, philosopher: { voice: { bm_lewis: 0.6, am_onyx: 0.4 }, speed: 0.9 } },
