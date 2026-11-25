@@ -179,6 +179,24 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
       camAttr += ` data-rack="${r.at ?? 1} ${r.dur ?? 2} ${r.blur ?? 6}"`;
       rackDef = `<defs><filter class="rack" id="rack${i}" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="0"/></filter></defs>`;
     }
+    // cam.zoom (cam3d only, 2026-11-25): timed zooms to one spot of the frame (makeRig in bakhita_freedom.bg3d.js).
+    // One zoom or a list: { at, to: [x, y], style: 'snap' | 'smooth' | 'fly', z, in, hold ('end' = stay), out, center, ease }
+    //  snap   = editor's punch-in (fast, no parallax), smooth = slow lens zoom, fly = the camera flies in (parallax).
+    if (c.zoom) {
+      if (!c3) console.warn(`scene ${i}: cam.zoom needs STORY.cam3d and a bg3d scene; ignored`);
+      else {
+        const ST = { snap: { z: 1.5, in: 0.2, hold: 1.2, out: 0.3, center: 0.5, ease: 'expo', fly: 0 },
+          smooth: { z: 1.35, in: 0.8, hold: 1.5, out: 0.8, center: 0.5, ease: 'sio', fly: 0 },
+          fly: { z: 1.8, in: 1.0, hold: 1.5, out: 0.9, center: 0.35, ease: 'sio', fly: 1 } };
+        const zs = [].concat(c.zoom).map((q) => {
+          const o = { ...(ST[q.style] || ST.smooth), ...q }, [x, y] = o.to || [o.x ?? 540, o.y ?? 900];
+          return { at: +o.at || 0, x: +x, y: +y, z: Math.max(1, Math.min(o.fly ? 2.5 : 3, +o.z)), in: Math.max(0.05, +o.in),
+            hold: o.hold === 'end' ? -1 : Math.max(0, +o.hold), out: Math.max(0.05, +o.out), center: Math.max(0, Math.min(1, +o.center)),
+            ease: o.ease, fly: o.fly ? 1 : 0 };
+        });
+        camAttr += ` data-zoom='${JSON.stringify(zs)}'`;
+      }
+    }
   }
   // fx.handheld: a slow hand-held wobble on top of the camera move (own <g>, so it never fights the move's transform)
   const hh = FX.handheld && !c3 ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';

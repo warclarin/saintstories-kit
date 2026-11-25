@@ -89,6 +89,13 @@ Signature moves (use each once per reel at most, except the hook):
 - `'arc-l'` / `'arc-r'`: slow pan with a slight roll, like circling the character. Final portrait.
 - Rack focus on any move: `cam: { move: 'tilt-up', rack: { at: 1, dur: 2.5, blur: 6 } }` blurs layers farther
   than depth 0.9 while the characters stay sharp. Prayer, death, glory. Heavier to render: one scene per reel.
+- Zoom to a spot (cam3d scenes only): `cam: { move: 'drift-l', zoom: { at: 2.4, to: [520, 880], style: 'snap' } }`
+  zooms in on one part of the frame mid-scene and back out, on top of the move (a list gives several). Styles:
+  `'snap'` an editor's punch-in (0.2 s in, 1.5x, no parallax), `'smooth'` a slow lens zoom (0.8 s, 1.35x),
+  `'fly'` the camera flies in toward the spot (1 s, 1.8x, true parallax, near cards rush past). Override any of
+  `z` (zoom factor; max 3, fly max 2.5), `in`, `hold` (s, or `'end'` to stay in), `out`, `center` (0..1, how far the
+  spot slides to the frame centre), `ease` (`expo|p3o|sio`). `to` is in art coordinates (a face, a hand, a prop);
+  time `at` with `wordTimes()` so the zoom lands on the word. Never zoom in scene 1 at t = 0 (the loop seam).
 
 Wrap parts of a scene in depth layers so camera moves create parallax: `FAR(sky…)`, `BACK(hills…)`,
 `MID(set…)`, characters unwrapped (depth 1), `NEAR(foliage…)`, or `layer(depth, svg)` for a custom depth.

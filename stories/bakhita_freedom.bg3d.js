@@ -429,11 +429,47 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   const camEl = sc.querySelector('.cam');
   const [move = 'push', amt = 0.07, ox = 540, oy = 1150, shift = 0, plane = 20] = (camEl?.dataset.cam3d || '').trim().split(/\s+/).map((x, i) => (i ? +x : x));
   const rack = camEl?.dataset.rack ? camEl.dataset.rack.trim().split(/\s+/).map(Number) : null;
+  // cam.zoom (opt-in, 2026-11-25): timed zooms to one spot of the frame on top of the move: an editor's punch-in
+  // (lens zoom, no parallax) or the camera flying in to a detail (fly: true parallax, near cards rush past).
+  // data-zoom = JSON list of { at, x, y, z, in, hold, out, center, ease, fly } (build.mjs fills the style defaults).
+  // The spot (x, y in art coords) is a point on the character plane, so it follows the move; `center` (0..1) slides it
+  // toward the frame centre while zoomed. Everything stays crisp: the SVG is vector and the 3D re-renders at full size.
+  const zooms = camEl?.dataset.zoom ? JSON.parse(camEl.dataset.zoom) : [];
+  const ZE = { expo: (x) => (x >= 1 ? 1 : 1 - 2 ** (-10 * x)), p3o: EASE.p3o, sio: EASE.sio };
+  const zLevel = (q, t) => {
+    if (t <= q.at) return 0;
+    const a = (t - q.at) / q.in; if (a < 1) return (ZE[q.ease] || ZE.sio)(a);
+    if (q.hold < 0) return 1;
+    const b = (t - q.at - q.in - q.hold) / q.out; if (b <= 0) return 1;
+    return b >= 1 ? 0 : 1 - EASE.sio(b);
+  };
   v.rig?.({ move, amt, ox, oy, plane });
   const cam0 = v.cam.clone(); cam0.updateMatrixWorld(); cam0.updateProjectionMatrix();
   const f0 = (H / 2) / Math.tan(cam0.fov * Math.PI / 360);
   const ptsAt = (z) => [[540, 960], [640, 960], [540, 1060]].map(([sx, sy]) => cam0.localToWorld(new THREE.Vector3((sx - W / 2) / f0 * z, -(sy - H / 2) / f0 * z, -z)));
   const on = !!camEl?.dataset.cam3d;
+  const zP = zooms.map((q) => cam0.localToWorld(new THREE.Vector3((q.x - W / 2) / f0 * plane, -(q.y + shift - H / 2) / f0 * plane, -plane)));
+  const zPos = new THREE.Vector3(), zM = new THREE.Matrix4();
+  const zoomAt = (t) => {   // poses the zoom on v.cam; returns null or { focus, fly } (restore with zoomEnd)
+    let i = -1, e = 0;
+    zooms.forEach((q, j) => { const l = zLevel(q, t); if (l > 0.0005) { i = j; e = l; } });
+    if (i < 0) return null;
+    const q = zooms[i], zf = 1 + (q.z - 1) * e, cam = v.cam;
+    let focus = plane;
+    if (q.fly) {
+      zPos.copy(cam.position); const d = zP[i].clone().sub(cam.position);
+      cam.position.addScaledVector(d, 1 - 1 / zf); cam.updateMatrixWorld(); focus = d.length() / zf;
+    }
+    const c = zP[i].clone().project(cam), lz = q.fly ? 1 : zf, k = 1 - lz - q.center * e;
+    zM.set(lz, 0, 0, c.x * k, 0, lz, 0, c.y * k, 0, 0, 1, 0, 0, 0, 0, 1);
+    cam.projectionMatrix.premultiply(zM); cam.projectionMatrixInverse.copy(cam.projectionMatrix).invert();
+    return { focus, fly: q.fly };
+  };
+  const zoomEnd = (z) => {
+    if (!z) return;
+    if (z.fly) { v.cam.position.copy(zPos); v.cam.updateMatrixWorld(); }
+    v.cam.updateProjectionMatrix?.();
+  };
   const P1 = ptsAt(plane);
   const layers = on ? [...camEl.querySelectorAll('[data-depth]')].map((el) => ({ el, P: ptsAt(plane / Math.max(0.05, +el.dataset.depth)), up: null })) : [];
   layers.forEach((L) => { const pe = L.el.parentElement?.closest('[data-depth]'); L.up = pe && camEl.contains(pe) ? layers.find((o) => o.el === pe) : null; });
@@ -469,6 +505,7 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   return { ...view, renderer, draw(T) {
     if (!view.active(T)) return;
     view.pose(T); v.cam.updateMatrixWorld(); v.cam.updateProjectionMatrix?.();
+    const zs = zooms.length ? zoomAt(Math.max(0, T - view.Z)) : null;
     if (on) {
       const S1 = aff(proj(P1)), S1i = S1.inverse();
       camEl.setAttribute('transform', str(S1));
@@ -481,12 +518,14 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     let mb = dof;
     if (rack) { const [at = 1, dur = 2, b = 6] = rack, k = Math.min(1, Math.max(0, (t - at) / dur)), e = k * k * (3 - 2 * k); mb = dof + (2 * b - dof) * e; }
     qm.uniforms.maxBlur.value = mb; qm.uniforms.cNear.value = v.cam.near; qm.uniforms.cFar.value = v.cam.far;
+    qm.uniforms.focus.value = zs ? zs.focus : plane;
     if (fctx) {
       renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(v.front, v.cam);
       fctx.clearRect(0, 0, W, H); fctx.drawImage(cv, 0, 0);
     }
     renderer.setRenderTarget(rt); renderer.render(v.scene, v.cam);
     renderer.setRenderTarget(null); renderer.render(qs, qc);
+    zoomEnd(zs);
   } };
 }
 
