@@ -623,13 +623,12 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     if (wfe) { if (xs && xs.blur > 0.5) { camEl.setAttribute('filter', `url(#whip-${sc.id})`); wfe.setAttribute('stdDeviation', `${(xs.blur / 2).toFixed(1)} 0`); } else camEl.removeAttribute('filter'); }
     if (fctx) {
       renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(v.front, v.cam);
-      fctx.clearRect(0, 0, W, H); fctx.drawImage(S ? S.canvas : cv, 0, 0);
+      fctx.clearRect(0, 0, W, H); fctx.drawImage(cv, 0, 0);
     }
     renderer.setRenderTarget(rt); renderer.render(v.scene, v.cam);
     renderer.setRenderTarget(null); renderer.render(qs, qc);
     zoomEnd(zs);
     extrasEnd(xs);
-    if (S) { out2d.clearRect(0, 0, W, H); out2d.drawImage(S.canvas, 0, 0); }
   } };
 }
 
