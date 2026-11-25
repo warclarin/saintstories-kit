@@ -180,7 +180,8 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
       rackDef = `<defs><filter class="rack" id="rack${i}" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="0"/></filter></defs>`;
     }
     // cam.zoom (cam3d only, 2026-11-25): timed zooms to one spot of the frame (makeRig in bakhita_freedom.bg3d.js).
-    // One zoom or a list: { at, to: [x, y], style: 'snap' | 'smooth' | 'fly', z, in, hold ('end' = stay), out, center, ease }
+    // One zoom or a list: { at, to: [x, y], depth, style: 'snap' | 'smooth' | 'fly', z, in, hold ('end' = stay), out, center, ease }
+    // to = the face (or prop) of whoever the line is about: on a voiced quote, the SPEAKER; depth = that character's layer depth.
     //  snap   = editor's punch-in (fast, no parallax), smooth = slow lens zoom, fly = the camera flies in (parallax).
     if (c.zoom) {
       if (!c3) console.warn(`scene ${i}: cam.zoom needs STORY.cam3d and a bg3d scene; ignored`);
@@ -192,7 +193,7 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
           const o = { ...(ST[q.style] || ST.smooth), ...q }, [x, y] = o.to || [o.x ?? 540, o.y ?? 900];
           return { at: +o.at || 0, x: +x, y: +y, z: Math.max(1, Math.min(o.fly ? 2.5 : 3, +o.z)), in: Math.max(0.05, +o.in),
             hold: o.hold === 'end' ? -1 : Math.max(0, +o.hold), out: Math.max(0.05, +o.out), center: Math.max(0, Math.min(1, +o.center)),
-            ease: o.ease, fly: o.fly ? 1 : 0 };
+            ease: o.ease, fly: o.fly ? 1 : 0, depth: Math.max(0.3, +o.depth || 1) };
         });
         camAttr += ` data-zoom='${JSON.stringify(zs)}'`;
       }

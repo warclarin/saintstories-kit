@@ -95,7 +95,8 @@ Signature moves (use each once per reel at most, except the hook):
   `'fly'` the camera flies in toward the spot (1 s, 1.8x, true parallax, near cards rush past). Override any of
   `z` (zoom factor; max 3, fly max 2.5), `in`, `hold` (s, or `'end'` to stay in), `out`, `center` (0..1, how far the
   spot slides to the frame centre), `ease` (`expo|p3o|sio`). `to` is in art coordinates (a face, a hand, a prop);
-  time `at` with `wordTimes()` so the zoom lands on the word. Never zoom in scene 1 at t = 0 (the loop seam).
+  time `at` with `wordTimes()` so the zoom lands on the word. On a voiced quote (`who`) zoom on the speaker, not the
+  saint; give `depth` when that character stands on a `layer(d, …)` card (e.g. `depth: 0.97`). Never zoom in scene 1 at t = 0 (the loop seam).
 
 Wrap parts of a scene in depth layers so camera moves create parallax: `FAR(sky…)`, `BACK(hills…)`,
 `MID(set…)`, characters unwrapped (depth 1), `NEAR(foliage…)`, or `layer(depth, svg)` for a custom depth.

@@ -433,7 +433,7 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   // (lens zoom, no parallax) or the camera flying in to a detail (fly: true parallax, near cards rush past).
   // data-zoom = JSON list of { at, x, y, z, in, hold, out, center, ease, fly } (build.mjs fills the style defaults).
   // The spot (x, y in art coords) is a point on the character plane, so it follows the move; `center` (0..1) slides it
-  // toward the frame centre while zoomed. Everything stays crisp: the SVG is vector and the 3D re-renders at full size.
+  // toward the frame centre while zoomed; `depth` puts the spot on a layer(depth, …) card (a secondary speaker). Everything stays crisp: the SVG is vector and the 3D re-renders at full size.
   const zooms = camEl?.dataset.zoom ? JSON.parse(camEl.dataset.zoom) : [];
   const ZE = { expo: (x) => (x >= 1 ? 1 : 1 - 2 ** (-10 * x)), p3o: EASE.p3o, sio: EASE.sio };
   const zLevel = (q, t) => {
@@ -448,7 +448,8 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   const f0 = (H / 2) / Math.tan(cam0.fov * Math.PI / 360);
   const ptsAt = (z) => [[540, 960], [640, 960], [540, 1060]].map(([sx, sy]) => cam0.localToWorld(new THREE.Vector3((sx - W / 2) / f0 * z, -(sy - H / 2) / f0 * z, -z)));
   const on = !!camEl?.dataset.cam3d;
-  const zP = zooms.map((q) => cam0.localToWorld(new THREE.Vector3((q.x - W / 2) / f0 * plane, -(q.y + shift - H / 2) / f0 * plane, -plane)));
+  // the spot sits on the card of the character it frames: depth 1 = the character plane, 0.97 = layer(0.97, …) etc.
+  const zP = zooms.map((q) => { const z = plane / (q.depth || 1); return cam0.localToWorld(new THREE.Vector3((q.x - W / 2) / f0 * z, -(q.y + shift - H / 2) / f0 * z, -z)); });
   const zPos = new THREE.Vector3(), zM = new THREE.Matrix4();
   const zoomAt = (t) => {   // poses the zoom on v.cam; returns null or { focus, fly } (restore with zoomEnd)
     let i = -1, e = 0;
