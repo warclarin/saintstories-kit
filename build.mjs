@@ -187,15 +187,30 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
       if (!c3) console.warn(`scene ${i}: cam.zoom needs STORY.cam3d and a bg3d scene; ignored`);
       else {
         const ST = { snap: { z: 1.5, in: 0.2, hold: 1.2, out: 0.3, center: 0.5, ease: 'expo', fly: 0 },
+          cut: { z: 1.45, in: 0.03, hold: 1.2, out: 0.03, center: 0.5, ease: 'sio', fly: 0 },   // jump cut: an instant reframe
           smooth: { z: 1.35, in: 0.8, hold: 1.5, out: 0.8, center: 0.5, ease: 'sio', fly: 0 },
           fly: { z: 1.8, in: 1.0, hold: 1.5, out: 0.9, center: 0.35, ease: 'sio', fly: 1 } };
         const zs = [].concat(c.zoom).map((q) => {
           const o = { ...(ST[q.style] || ST.smooth), ...q }, [x, y] = o.to || [o.x ?? 540, o.y ?? 900];
-          return { at: +o.at || 0, x: +x, y: +y, z: Math.max(1, Math.min(o.fly ? 2.5 : 3, +o.z)), in: Math.max(0.05, +o.in),
-            hold: o.hold === 'end' ? -1 : Math.max(0, +o.hold), out: Math.max(0.05, +o.out), center: Math.max(0, Math.min(1, +o.center)),
+          return { at: +o.at || 0, x: +x, y: +y, z: Math.max(1, Math.min(o.fly ? 2.5 : 3, +o.z)), in: Math.max(0.02, +o.in),
+            hold: o.hold === 'end' ? -1 : Math.max(0, +o.hold), out: Math.max(0.02, +o.out), center: Math.max(0, Math.min(1, +o.center)),
             ease: o.ease, fly: o.fly ? 1 : 0, depth: Math.max(0.3, +o.depth || 1) };
         });
         camAttr += ` data-zoom='${JSON.stringify(zs)}'`;
+      }
+    }
+    // camera extras (cam3d only, 2026-11-25): shake, hero (low angle), drone (fly-in from above), whip (whip-pan cut);
+    // makeRig in bakhita_freedom.bg3d.js. cam.whip ('r' | 'l') on a scene also whips the scene before it out.
+    const nx = STORY.scenes[i + 1]?.cam, wOut = nx && typeof nx === 'object' && !Array.isArray(nx) ? nx.whip : null;
+    if (c.shake || c.hero || c.drone || c.whip || wOut) {
+      if (!c3) console.warn(`scene ${i}: cam shake/hero/drone/whip need STORY.cam3d and a bg3d scene; ignored`);
+      else {
+        const fx = {}, wd = (w) => (w === 'l' || w === -1 ? -1 : 1);
+        if (c.shake) fx.shake = [].concat(c.shake).map((q) => (typeof q === 'number' ? { at: q } : q)).map((q) => ({ at: +q.at || 0, dur: q.dur ?? 0.6, amt: q.amt ?? 14 }));
+        if (c.hero) { const h = c.hero === true ? {} : c.hero; fx.hero = { h: h.h ?? 1.5, at: h.at ?? 0, dur: h.dur ?? 0 }; }
+        if (c.drone) { const d = c.drone === true ? {} : c.drone; fx.drone = { h: d.h ?? 9, back: d.back ?? 12, at: d.at ?? 0, dur: d.dur ?? 3 }; }
+        if (c.whip || wOut) fx.whip = { in: c.whip ? wd(c.whip) : 0, out: wOut ? wd(wOut) : 0, dur: XF, amt: 0.55 };
+        camAttr += ` data-camfx='${JSON.stringify(fx)}'`;
       }
     }
   }

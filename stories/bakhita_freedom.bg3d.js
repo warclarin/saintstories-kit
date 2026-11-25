@@ -471,6 +471,58 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     if (z.fly) { v.cam.position.copy(zPos); v.cam.updateMatrixWorld(); }
     v.cam.updateProjectionMatrix?.();
   };
+  // camera extras (opt-in, 2026-11-25, "Ricks Clips" test): data-camfx = { shake: [{ at, dur, amt px }], hero: { h, at, dur },
+  // drone: { h, back, at, dur }, whip: { in: ±1, out: ±1, dur, amt rad } }. hero = a low-angle shot (the camera drops h units
+  // and looks up, so the character looms); drone = the camera starts h units up and `back` units behind, looking down, and
+  // glides down to the scene's pose; whip = a whip-pan cut: the outgoing scene whips away and the incoming one whips in over
+  // the crossfade, with motion blur on the 3D (shader) and the SVG (horizontal blur); shake = a decaying camera shake.
+  const CFX = camEl?.dataset.camfx ? JSON.parse(camEl.dataset.camfx) : null;
+  const xPos = new THREE.Vector3(), fwd = new THREE.Vector3();
+  let wfe = null;
+  if (CFX?.whip && camEl?.ownerSVGElement) {
+    const NS = 'http://www.w3.org/2000/svg', fl = document.createElementNS(NS, 'filter');
+    fl.setAttribute('id', 'whip-' + sc.id); fl.setAttribute('x', '-20%'); fl.setAttribute('width', '140%');
+    wfe = document.createElementNS(NS, 'feGaussianBlur'); wfe.setAttribute('stdDeviation', '0 0'); fl.appendChild(wfe);
+    camEl.ownerSVGElement.insertBefore(fl, camEl.ownerSVGElement.firstChild);
+  }
+  const clamp01x = (x) => Math.min(1, Math.max(0, x));
+  const whipYaw = (T) => {
+    const w = CFX.whip, A = w.amt ?? 0.55, d = w.dur ?? 0.4;
+    if (w.in) { const k = (T - view.C) / d; if (k < 1) return w.in * A * (1 - EASE.p3o(clamp01x(k))); }
+    if (w.out) { const k = (T - (view.C + view.D - d)) / d; if (k > 0) return -w.out * A * clamp01x(k) ** 3; }
+    return 0;
+  };
+  const extras = (T) => {
+    if (!CFX) return null;
+    const cam = v.cam, t = T - view.Z; let moved = false, blur = 0;
+    if (CFX.hero) {
+      const q = CFX.hero, e = q.dur ? EASE.sio(clamp01x((t - q.at) / q.dur)) : (t >= q.at ? 1 : 0);
+      if (e > 0) { if (!moved) xPos.copy(cam.position); moved = true; cam.position.y -= q.h * e; cam.rotation.x += Math.atan2(q.h * e, plane); }
+    }
+    if (CFX.drone) {
+      const q = CFX.drone, e = 1 - EASE.sio(clamp01x((t - q.at) / q.dur));
+      if (e > 0) {
+        if (!moved) xPos.copy(cam.position); moved = true;
+        fwd.set(0, 0, -1).applyQuaternion(cam.quaternion); fwd.y = 0; fwd.normalize();
+        cam.position.addScaledVector(fwd, -q.back * e); cam.position.y += q.h * e;
+        cam.rotation.x -= Math.atan2(q.h * e, plane + q.back * e);
+      }
+    }
+    if (CFX.shake) for (const q of CFX.shake) {
+      const k = (t - q.at) / q.dur; if (k < 0 || k > 1) continue;
+      const dk = (1 - k) ** 2 * q.amt / f0;
+      cam.rotation.y += dk * (Math.sin(t * 91) + 0.6 * Math.sin(t * 53 + 1)) / 1.6;
+      cam.rotation.x += dk * (Math.sin(t * 77 + 2) + 0.6 * Math.sin(t * 41)) / 1.6;
+      cam.rotation.z += dk * 0.5 * Math.sin(t * 67);
+    }
+    if (CFX.whip) {
+      const y0 = whipYaw(T), y1 = whipYaw(T - 1 / 30);
+      cam.rotation.y += y0; blur = Math.min(90, Math.abs(y0 - y1) * f0 * 0.6);
+    }
+    cam.updateMatrixWorld();
+    return { moved, blur };
+  };
+  const extrasEnd = (x) => { if (x?.moved) { v.cam.position.copy(xPos); v.cam.updateMatrixWorld(); } };
   const P1 = ptsAt(plane);
   const layers = on ? [...camEl.querySelectorAll('[data-depth]')].map((el) => ({ el, P: ptsAt(plane / Math.max(0.05, +el.dataset.depth)), up: null })) : [];
   layers.forEach((L) => { const pe = L.el.parentElement?.closest('[data-depth]'); L.up = pe && camEl.contains(pe) ? layers.find((o) => o.el === pe) : null; });
@@ -486,13 +538,20 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   rt.depthTexture = new THREE.DepthTexture(W, H);
   const qm = new THREE.ShaderMaterial({ toneMapped: false, depthTest: false, depthWrite: false,
     uniforms: { tColor: { value: rt.texture }, tDepth: { value: rt.depthTexture }, cNear: { value: v.cam.near }, cFar: { value: v.cam.far },
-      focus: { value: plane }, maxBlur: { value: dof }, res: { value: new THREE.Vector2(W, H) } },
+      focus: { value: plane }, maxBlur: { value: dof }, res: { value: new THREE.Vector2(W, H) }, mblur: { value: new THREE.Vector2() } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
     fragmentShader: `#include <packing>
-      uniform sampler2D tColor; uniform sampler2D tDepth; uniform float cNear, cFar, focus, maxBlur; uniform vec2 res; varying vec2 vUv;
+      uniform sampler2D tColor; uniform sampler2D tDepth; uniform float cNear, cFar, focus, maxBlur; uniform vec2 res; uniform vec2 mblur; varying vec2 vUv;
       float vz(vec2 uv){ return -perspectiveDepthToViewZ(texture2D(tDepth, uv).x, cNear, cFar); }
       float coc(float z){ return clamp(abs(1.0 - focus / z), 0.0, 1.0) * maxBlur; }
       void main(){
+        if (length(mblur) > 0.5) {   // whip-pan motion blur (camera extras)
+          vec3 a = vec3(0.0);
+          for (int i = 0; i < 32; i++) a += texture2D(tColor, vUv + mblur * (float(i) / 31.0 - 0.5) / res).rgb;
+          gl_FragColor = vec4(a / 32.0, 1.0);
+          #include <colorspace_fragment>
+          return;
+        }
         float c0 = coc(vz(vUv)); vec3 acc = texture2D(tColor, vUv).rgb; float ws = 1.0;
         if (c0 > 0.3) for (int i = 0; i < 28; i++) {
           float a = float(i) * 2.39996, r = sqrt((float(i) + 0.5) / 28.0) * c0; vec2 uv = vUv + vec2(cos(a), sin(a)) * r / res;
@@ -506,6 +565,7 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   return { ...view, renderer, draw(T) {
     if (!view.active(T)) return;
     view.pose(T); v.cam.updateMatrixWorld(); v.cam.updateProjectionMatrix?.();
+    const xs = extras(T);
     const zs = zooms.length ? zoomAt(Math.max(0, T - view.Z)) : null;
     if (on) {
       const S1 = aff(proj(P1)), S1i = S1.inverse();
@@ -520,6 +580,8 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     if (rack) { const [at = 1, dur = 2, b = 6] = rack, k = Math.min(1, Math.max(0, (t - at) / dur)), e = k * k * (3 - 2 * k); mb = dof + (2 * b - dof) * e; }
     qm.uniforms.maxBlur.value = mb; qm.uniforms.cNear.value = v.cam.near; qm.uniforms.cFar.value = v.cam.far;
     qm.uniforms.focus.value = zs ? zs.focus : plane;
+    qm.uniforms.mblur.value.set(xs ? xs.blur : 0, 0);
+    if (wfe) { if (xs && xs.blur > 0.5) { camEl.setAttribute('filter', `url(#whip-${sc.id})`); wfe.setAttribute('stdDeviation', `${(xs.blur / 2).toFixed(1)} 0`); } else camEl.removeAttribute('filter'); }
     if (fctx) {
       renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(v.front, v.cam);
       fctx.clearRect(0, 0, W, H); fctx.drawImage(cv, 0, 0);
@@ -527,6 +589,7 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     renderer.setRenderTarget(rt); renderer.render(v.scene, v.cam);
     renderer.setRenderTarget(null); renderer.render(qs, qc);
     zoomEnd(zs);
+    extrasEnd(xs);
   } };
 }
 

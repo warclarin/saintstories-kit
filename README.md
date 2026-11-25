@@ -145,3 +145,12 @@ voice: { am_michael: 0.8, am_onyx: 0.2 } }` or a fast arena `{ speed: 1.0, gap: 
 `stories/calungsod.mjs` is the reference story. Files: `art.mjs` (rig, props, set pieces, motion
 helpers), `reel.js` (runtime), `build.mjs` (composition + CLI), `fastrender.mjs` (standard renderer),
 `narrate.py`, `vendor/` (GSAP, grain; three.js r170 + SVGLoader for the 3D backgrounds).
+
+## Cartoon effects and camera extras (opt-in, 2026-11-25, "Ricks Clips" test)
+- `cartoonfx.mjs`: `sweat`, `steam`, `rage` (persecutors only), `speedLines`, `streaks`, `crack`, `burst` (the big payoff),
+  `squash` (an M.tw attribute for landings and impacts), and `mapCard` / `route` / `pin` for an overhead map of a journey
+  (icons only, no words). Each takes `at` (s from the scene start); see the header of the file.
+- `cam` on cam3d scenes also takes `shake: [{ at, dur, amt }]`, `hero: { h }` (low-angle shot), `drone: { h, back, dur }`
+  (the camera glides down from above at the scene start) and `whip: 'r' | 'l'` (a whip-pan cut from the scene before, with
+  motion blur). `zoom` gains `style: 'cut'` (a jump cut: an instant reframe). Test reel: `stories/catherine_rc_test.mjs`
+  (local only).
