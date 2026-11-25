@@ -382,7 +382,22 @@ else if (cmd === 'preview') {
   const name = `SaintStories_${STORY.name || STORY.slug}.mp4`;
   const { fastRender } = await import('./fastrender.mjs');
   const pi = rest.indexOf('--pages');
-  await fastRender({ dir: OUT, out: path.join(FINAL, name), pages: pi >= 0 ? +rest[pi + 1] : 1 });
+  // STORY.audio (opt-in, long-form): { bitrate: '384k', channels: 2 } for the AAC track (default 160k, mono as narrated)
+  // STORY.video (opt-in): { bitrate, mode: 'constant' } plus a keyframe on every scene change and every cut zoom (see fastrender.mjs)
+  let video = null;
+  if (STORY.video) {
+    const keys = new Set();
+    STORY.scenes.forEach((sc, i) => {
+      keys.add(Math.round(STARTS[i] * FPS));
+      const c = sc.cam && typeof sc.cam === 'object' && !Array.isArray(sc.cam) ? sc.cam : null;
+      for (const z of [].concat(c?.zoom || [])) if (z && z.style === 'cut' && typeof z.at === 'number') {
+        keys.add(Math.round((STARTS[i] + z.at) * FPS));
+        if (typeof z.hold === 'number') keys.add(Math.round((STARTS[i] + z.at + z.hold) * FPS));
+      }
+    });
+    video = { bitrate: STORY.video.bitrate || 14e6, mode: STORY.video.mode || 'constant', keys: [...keys].filter((k) => k > 0).sort((a, b) => a - b) };
+  }
+  await fastRender({ dir: OUT, out: path.join(FINAL, name), pages: pi >= 0 ? +rest[pi + 1] : 1, audio: STORY.audio || null, video });
   clean();
   console.log(path.join(FINAL, name));
 } else if (cmd === 'thumb') await buildThumb();

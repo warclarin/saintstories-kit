@@ -17,7 +17,9 @@
 // Exported for later reels: leonard, popeBenedict, popeToday, noble1750, guard1750, roman1750, station, ruinedArena, italyMap,
 // candle, tricorn, LIGHT, lit, castShadow.
 import { M, GOLD, sparkles, bokeh, foliage, dark, light, f, palm_frond, book, beam, cross_staff, NEAR, MID, layer } from '../art.mjs';
-import { hd, seq, wordTimes } from '../hd.mjs';
+import { hd, seq as seqBase, wordTimes } from '../hd.mjs';
+// pose changes (an arm lifting, kneeling) cross-fade in 0.12 s, not 0.4 s: a slow fade showed two arms and two crosses at once
+const seq = (draw, steps, dur = 0.12) => seqBase(draw, steps, dur);
 import { speedLines, sweat, burst, squash, mapCard, pin, route } from '../cartoonfx.mjs';
 import { walk, walkOut, stonemason } from './peter_of_alexandria_torn_robe.mjs';
 import { friary } from './kolbe.mjs';
@@ -167,7 +169,7 @@ const L0 = [380, 1345, 2.45];
 //     plants his mission cross with a thump, and the fourteen shrines pop up one by one around the arena.
 //     SHOT "This is Saint Leonard…": cut to him; he turns to the viewer.
 function scene0() {
-  const fu = at(0, 'set up'), ft = at(0, 'fourteen'), ch = at(0, 'Christians'), ti = at(0, 'This is'), sl = at(0, 'Saint Leonard');
+  const fu = at(0, 'set up'), ft = at(0, 'fourteen'), ch = at(0, 'in the Colosseum'), ti = at(0, 'This is'), sl = at(0, 'Saint Leonard');
   return MID(lit(ruinedArena() + stationsPop(ft, 0.14), 'lHook'))
     + `<g opacity="0"${fadeIn(ch, 0.8)}>${glow(540, 980, 480, 0.4)}${sparkles(14, 120, 960, 760, 1180, { seed: 4 })}</g>`
     + speedLines(L0[0] + 150, 860, { at: fu, dur: 0.7, r0: 300, op: 0.4, color: '#fff4d8', seed: 2 })
@@ -305,6 +307,7 @@ export const STORY = {
     'roma.bg3d.js': './gelasius.bg3d.js' },
   voice: 'am_michael', speed: 0.95, flow: true,
   fx: { handheld: false, leak: true, loop: true },   // no hand-held sway (Ricks Clips motion standard)
+  video: { bitrate: 14e6, mode: 'constant' },   // sharp cuts: constant bitrate + a keyframe on every cut (fastrender.mjs)
   cam3d: { plane: 20, dof: 2 },
   bg3d_vars: { light: LIGHT },
   music: { story: 'the Colosseum, an arena built for blood, turned into a Way of the Cross by a barefoot friar, St. Leonard of Port Maurice',

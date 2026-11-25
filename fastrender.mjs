@@ -15,7 +15,10 @@ import { createRequire } from 'module';
 const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.json': 'application/json',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.wav': 'audio/wav', '.mp3': 'audio/mpeg' };
 
-export async function fastRender({ dir, out, fps = 30, pages = 1, bitrate = 10e6, chrome = process.env.HYPERFRAMES_BROWSER_PATH, log = console.log }) {
+// video (opt-in, STORY.video, 2026-11-25): { bitrate, mode: 'constant' | 'variable', keys: [frame indices] }. The GPU encoder in its
+// default variable mode spent only ~3.9 Mbps of a 10 Mbps target, so hard cuts (scene changes, cut zooms) looked soft for a few
+// frames; a constant bitrate and a keyframe on every cut keep them sharp. Stories without `video` encode exactly as before.
+export async function fastRender({ dir, out, fps = 30, pages = 1, bitrate = 10e6, audio = null, video = null, chrome = process.env.HYPERFRAMES_BROWSER_PATH, log = console.log }) {
   const require = createRequire(import.meta.url);
   let pw; try { pw = require('playwright'); } catch { pw = require(execSync('npm root -g').toString().trim() + '/playwright'); }
   const srv = http.createServer((q, s) => {
@@ -32,18 +35,20 @@ export async function fastRender({ dir, out, fps = 30, pages = 1, bitrate = 10e6
   try {
     const probe = await browser.newPage();
     await probe.goto(url);
-    const total = await probe.evaluate(() => window.REEL.total); await probe.close();
+    // frame size from the composition (1080x1920 portrait, 1920x1080 with STORY.format = 'landscape')
+    const [total, VW, VH] = await probe.evaluate(() => { const r = document.getElementById('root'); return [window.REEL.total, +r?.dataset.width || 1080, +r?.dataset.height || 1920]; });
+    await probe.close();
     const N = Math.round(total * fps), per = Math.ceil(N / pages);
     const results = await Promise.all(Array.from({ length: pages }, async (_, k) => {
       const F0 = k * per, F1 = Math.min(N, F0 + per), seg = path.join(tmp, `seg${k}.h264`), fd = fs.openSync(seg, 'w');
-      const page = await browser.newPage({ viewport: { width: 1080, height: 1920 } });
+      const page = await browser.newPage({ viewport: { width: VW, height: VH } });
       const errs = [];
       page.on('pageerror', (e) => errs.push(e.message));
       page.on('console', (m) => { if (m.type() === 'error' && !/favicon|404/.test(m.text())) errs.push(m.text()); });
       await page.exposeFunction('__chunk', (b64) => { fs.writeSync(fd, Buffer.from(b64, 'base64')); });
       await page.goto(url);
       await page.waitForFunction(() => !!window.__timelines?.main, null, { polling: 200, timeout: 60000 });
-      const r = await page.evaluate(pageMain, { F0, F1, fps, bitrate });
+      const r = await page.evaluate(pageMain, { F0, F1, fps, bitrate: video?.bitrate || bitrate, mode: video?.mode || null, keys: video?.keys || null });
       fs.closeSync(fd); await page.close();
       if (r.err) throw new Error(`page ${k}: ${r.err}`);
       if (errs.length) log(`[fast] page ${k} console:`, errs.slice(0, 3).join(' | '));
@@ -67,8 +72,9 @@ export async function fastRender({ dir, out, fps = 30, pages = 1, bitrate = 10e6
 }
 
 // ------------------------------------------------------------------ runs inside the page
-async function pageMain({ F0, F1, fps, bitrate }) {
-  const W = 1080, H = 1920, g = window.gsap, tl = window.__timelines.main;
+async function pageMain({ F0, F1, fps, bitrate, mode = null, keys = null }) {
+  const g = window.gsap, tl = window.__timelines.main;
+  const W = +document.getElementById('root')?.dataset.width || 1080, H = +document.getElementById('root')?.dataset.height || 1920;
   const bR = window.__hf?.buildReady; if (bR) await Promise.all(Object.values(bR));
   await document.fonts.ready;
   const root = document.getElementById('root');
@@ -214,7 +220,9 @@ async function pageMain({ F0, F1, fps, bitrate }) {
 
   // --- encoder: GPU H.264 when the browser has it, else software
   const base = { codec: 'avc1.640033', width: W, height: H, bitrate, framerate: fps, avc: { format: 'annexb' } };
-  let cfg = { ...base, hardwareAcceleration: 'prefer-hardware' };
+  let cfg = { ...base, ...(mode ? { bitrateMode: mode } : {}), hardwareAcceleration: 'prefer-hardware' };
+  if (mode && !(await VideoEncoder.isConfigSupported(cfg)).supported) cfg = { ...base, hardwareAcceleration: 'prefer-hardware' };
+  const keySet = new Set(keys || []);
   if (!(await VideoEncoder.isConfigSupported(cfg)).supported) cfg = { ...base, hardwareAcceleration: 'no-preference' };
   if (!(await VideoEncoder.isConfigSupported(cfg)).supported) return { err: 'H.264 encoding not supported in this browser' };
   let err = null; const pending = [];
@@ -225,7 +233,7 @@ async function pageMain({ F0, F1, fps, bitrate }) {
   for (let i = F0; i < F1 && !err; i++) {
     await frame(i / fps);
     const fr = new VideoFrame(out, { timestamp: Math.round((i * 1e6) / fps), duration: Math.round(1e6 / fps) });
-    enc.encode(fr, { keyFrame: (i - F0) % (fps * 2) === 0 }); fr.close();
+    enc.encode(fr, { keyFrame: (i - F0) % (fps * 2) === 0 || keySet.has(i) }); fr.close();
     if (enc.encodeQueueSize > 8) await new Promise((r) => enc.addEventListener('dequeue', r, { once: true }));
   }
   if (!err) await enc.flush();
