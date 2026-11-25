@@ -17,9 +17,16 @@
 // Exported for later reels: leonard, popeBenedict, popeToday, noble1750, guard1750, roman1750, station, ruinedArena, italyMap,
 // candle, tricorn, LIGHT, lit, castShadow.
 import { M, GOLD, sparkles, bokeh, foliage, dark, light, f, palm_frond, book, beam, cross_staff, NEAR, MID, layer } from '../art.mjs';
-import { hd, seq as seqBase, wordTimes } from '../hd.mjs';
-// pose changes (an arm lifting, kneeling) cross-fade in 0.12 s, not 0.4 s: a slow fade showed two arms and two crosses at once
-const seq = (draw, steps, dur = 0.12) => seqBase(draw, steps, dur);
+import { hd, wordTimes } from '../hd.mjs';
+// pose changes (an arm lifting, kneeling) swap instantly: any fade shows two arms and two crosses at once
+let SNAP = 0;
+const seq = (draw, steps) => {   // an instant swap: each look shows exactly from its time until the next one (no overlap frames)
+  const ph = (++SNAP * 0.37) % 1;
+  return steps.map(([t, o], i) => { const next = steps[i + 1]?.[0], tw = [];
+    if (i) tw.push({ at: t, dur: 0.001, from: { opacity: 0 }, to: { opacity: 1 } });
+    if (next !== undefined) tw.push(i ? { at: next, dur: 0.001, to: { opacity: 0 } } : { at: next, dur: 0.001, from: { opacity: 1 }, to: { opacity: 0 } });
+    return `<g${i ? ' opacity="0"' : ''}${tw.length ? M.tw(tw) : ''}>${draw({ ph, ...o })}</g>`; }).join('');
+};
 import { speedLines, sweat, burst, squash, mapCard, pin, route } from '../cartoonfx.mjs';
 import { walk, walkOut, stonemason } from './peter_of_alexandria_torn_robe.mjs';
 import { friary } from './kolbe.mjs';
@@ -34,7 +41,6 @@ const fadeIn = (t, dur = 0.5) => M.tw([{ at: t, dur, from: { opacity: 0 }, to: {
 const fadeOut = (t, dur = 0.5) => M.tw([{ at: t, dur, from: { opacity: 1 }, to: { opacity: 0 } }]);
 const face = (x, y, s, kneel = false) => [x, Math.round(y - (kneel ? 168 : 252) * s)];
 const PRAY = { armL: -20, armR: -20 };
-const STILL = { move: 'push', amt: 0.002, oy: 1000 };   // a fixed camera (Ricks Clips shots)
 
 // ================================================================ props and set pieces
 /** A tricorn hat (hd body space, on the head). */
@@ -226,7 +232,7 @@ function scene2() {
       + `<g opacity="0"${fadeIn(ye, 0.5)}>${glow(PB[0] - 60, 900, 220, 0.5)}${sparkles(10, 560, 860, 760, 1000, { seed: 7 })}</g>`)
     + lit(castShadow(...L2, 'lPope') + walk(0.1, 1.3, -380, `<g${squash(as + 0.2, L2[0], L2[1], 0.08)}>` + seq((op) => leonard(...L2, { propL: staff(300), armL: [26, 2, 3], ...op }),
       [[0, { mood: 'happy', look: [2.4, 0], armR: [14, 2, 3] }], [as + 0.15, { mood: 'happy', kneel: true, look: [2.6, -1], ...PRAY, armL: [26, 2, 3] }],
-        [ye + 0.3, { mood: 'joy', kneel: true, look: [2.6, -1], ...PRAY, armL: [26, 2, 3] }]], 0.15) + '</g>'), 'lPope');
+        [ye + 0.3, { mood: 'joy', kneel: true, look: [2.6, -1], ...PRAY, armL: [26, 2, 3] }]]) + '</g>'), 'lPope');
 }
 
 // 3 · SHOT "The Pope banned the arena's misuse, and fourteen shrines rose around its floor.": inside the arena; a papal guard holds
@@ -238,7 +244,7 @@ function scene3() {
   const bn = at(3, 'stopped'), sh = at(3, 'fourteen'), de = at(3, 'That December'), pr = at(3, 'preached'), ar = at(3, 'The arena'), wc = at(3, 'Way of the Cross');
   const crowd = [[640, 1262, 1.35, 0], [740, 1262, 1.35, 1], [860, 1262, 1.35, 2], [960, 1262, 1.35, 3]].map(([x, y, s, i], k) =>
     layer(0.78, walk(pr + k * 0.2, 1.0, 300, lit(castShadow(x, y, s, 'lArena') + seq((op) => roman1750(x, y, s, i, { flip: true, look: [2.2, -0.6], ...op }),
-      [[0, { mood: 'happy', armL: 14, armR: 14 }], [pr + k * 0.2 + 1.0, { mood: 'peaceful', kneel: true, ...PRAY }]], 0.15), 'lArena')))).join('');
+      [[0, { mood: 'happy', armL: 14, armR: 14 }], [pr + k * 0.2 + 1.0, { mood: 'peaceful', kneel: true, ...PRAY }]]), 'lArena')))).join('');
   const procession = [0, 1, 2, 3, 4, 5].map((k) => { const x = 1180 + k * 120, y = 1248, s = 0.9;
     return `<g opacity="0"${fadeIn(ar - 0.1, 0.3)}><g${M.tw([{ at: ar - 0.1, dur: 6, from: { x: 0 }, to: { x: -900 }, ease: 'none' }])}>`
       + lit(roman1750(x, y, s, k, { flip: true, mood: 'peaceful', armR: [40, 2, 3], propR: candle, armL: -20 }), 'lArena') + '</g></g>'; }).join('');
@@ -265,7 +271,7 @@ function scene4() {
     + `<g opacity="0"${M.tw([{ at: di - 0.3, dur: 0.8, from: { opacity: 0 }, to: { opacity: 1 } }])}>${beam(L4[0] - 90, L4[0] + 90, L4[0] - 200, L4[0] + 200, 1360, 0.75)}${glow(L4[0], 900, 320, 0.5)}</g>`
     + lit(castShadow(...L4, 'lNight') + walk(0.1, 2.0, -420, `<g${squash(di - 0.1, L4[0], L4[1], 0.07)}>` + seq((op) => leonard(...L4, { propL: staff(290), armL: [20, 2, 3], ...op }),
       [[0, { mood: 'peaceful', look: [2, 1.2], armR: [10, 2, 3] }], [wo, { mood: 'sad', look: [1, 1.6], armR: [10, 2, 3] }],
-        [di - 0.2, { mood: 'peaceful', kneel: true, ...PRAY, armL: [20, 2, 3] }], [di + 0.6, { mood: 'peaceful', kneel: true, halo: di + 0.6, ...PRAY, armL: [20, 2, 3] }]], 0.15) + '</g>', { hop: 6, step: 0.32 }), 'lNight')
+        [di - 0.2, { mood: 'peaceful', kneel: true, ...PRAY, armL: [20, 2, 3] }], [di + 0.6, { mood: 'peaceful', kneel: true, halo: di + 0.6, ...PRAY, armL: [20, 2, 3] }]]) + '</g>', { hop: 6, step: 0.32 }), 'lNight')
     + `<g opacity="0"${fadeIn(di + 0.4, 0.8)}>${sparkles(16, 260, 640, 640, 1160, { seed: 40 })}</g>`;
 }
 
@@ -298,6 +304,7 @@ function scene6() {
     + NEAR(bokeh(7, { seed: 47 }) + foliage('l', 1640, { color: '#2a2440', seed: 13 }));
 }
 
+const GLIDE = { move: 'push', amt: 0.002, oy: 1000 };   // the path does the travelling (cam.path)
 const HOOK = { speed: 1.1, gap: 0.18, gain: 1 };
 const STAND = { speed: 1.0, gap: 0.26, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } };
 export const STORY = {
@@ -319,36 +326,49 @@ export const STORY = {
     'twˈɛnti sˈɪks': 'twˈɛnti sˈɪksθ',      // November 26 -> November twenty-sixth
   },
   scenes: [
-    // Ricks Clips motion: a fixed camera on every shot (STILL), a hard cut (zoom style 'cut') on each new sentence, shakes only on impacts.
+    // Camera paths (cam.path): in each scene the camera travels through the 3D set from subject to subject, arriving on the word
+    // that names each one (truck, push, crane; eased, no sway, no roll, ends at rest); scene changes are the cuts; shakes on impacts.
     { kicker: 'THE COLOSSEUM, ROME · 1750', title: 'Crosses in the Colosseum', art: scene0, bg3d: 'lHook', front3d: true,
-      cam: { ...STILL, shake: { at: at(0, 'set up', 0.05), amt: 12, dur: 0.5 }, zoom: { at: at(0, 'This is'), to: face(...L0), style: 'cut', z: 1.35, hold: 'end' } },
+      cam: { ...GLIDE, shake: { at: at(0, 'set up', 0.05), amt: 12, dur: 0.5 }, path: [
+        { at: at(0, 'fourteen', 0.6), to: [760, 1100], depth: 0.75, z: 1.12, frame: [560, 1060] },
+        { at: at(0, 'Saint Leonard'), to: face(...L0), z: 1.45, frame: [520, 820] }] },
       tone: HOOK,
       say: ['A barefoot friar set up fourteen crosses in the Colosseum.', 'This is Saint Leonard of Port Maurice.'] },
     { kicker: 'THE COLOSSEUM · ANCIENT ROME', title: 'Built for Blood', art: scene1, bg3d: 'lAncient', front3d: true,
-      cam: { ...STILL, zoom: [
-        { at: at(1, 'Tradition'), to: [540, 1000], style: 'cut', z: 1.25, center: 0.3, hold: Math.max(0.5, at(1, 'Later') - at(1, 'Tradition') - 0.05) }] },
+      cam: { ...GLIDE, path: [
+        { at: at(1, 'fight'), to: [540, 980], z: 1.3, frame: [540, 920] },
+        { at: at(1, 'martyred'), to: [540, 1120], z: 1.25, frame: [540, 1000] },
+        { at: at(1, 'weeds'), to: [600, 860], depth: 0.75, z: 0.95, frame: [540, 900] }] },
       tone: HOOK,
       say: ['For centuries, fifty thousand Romans packed this arena to watch men fight and die.', 'Tradition says Christians were martyred here too.', 'Later it became a quarry, a ruin full of weeds.'] },
     { kicker: "SAINT PETER'S · ROME · 1750", title: 'Make It Holy Again', art: scene2, bg3d: 'lPope', front3d: true,
-      cam: { ...STILL, whip: 'r', zoom: { at: at(2, 'The Pope said'), to: face(...PB), depth: 0.97, style: 'cut', z: 1.45, hold: 'end' } },
+      cam: { ...GLIDE, whip: 'r', path: [
+        { at: at(2, 'Pope Benedict'), to: [600, 1000], depth: 0.97, z: 1.12, frame: [560, 980] },
+        { at: at(2, 'yes'), to: face(...PB), depth: 0.97, z: 1.45, frame: [560, 820] }] },
       tone: STAND,
       say: ['Then Leonard asked Pope Benedict XIV to make the arena holy again.', 'The Pope said yes at once.'] },
     { kicker: 'THE COLOSSEUM · DECEMBER 1750', title: 'The Way of the Cross', art: scene3, bg3d: 'lArena', front3d: true,
-      cam: { ...STILL, zoom: [
-        { at: at(3, 'That December'), to: [520, 980], style: 'cut', z: 1.2, center: 0.3, hold: Math.max(0.5, at(3, 'The arena') - at(3, 'That December') - 0.05) }] },
+      cam: { ...GLIDE, path: [
+        { at: at(3, 'fourteen', 0.5), to: [720, 1120], depth: 0.75, z: 1.15, frame: [540, 1080] },
+        { at: at(3, 'preached'), to: face(...L3), z: 1.35, frame: [480, 820] },
+        { at: at(3, 'Way of the Cross', 0.6), to: [540, 900], z: 0.92, frame: [540, 960] }] },
       tone: STAND,
       say: ["The Pope stopped the stealing of its stones, and fourteen shrines rose around the floor.", 'That December, the old friar preached there himself.',
         { text: 'The arena built for blood became a Way of the Cross.', speed: 0.85 }] },
     { kicker: 'THE PALATINE · NOVEMBER 1751', title: 'Home to Die', art: scene4, bg3d: 'lNight', front3d: true,
-      cam: { ...STILL },
+      cam: { ...GLIDE, path: [
+        { at: at(4, 'died', 0.4), to: face(L4[0], L4[1], L4[2], true), z: 1.35, frame: [540, 880] }] },
       tone: { speed: 0.95, gap: 0.3, gain: -1.5, voice: { am_michael: 0.8, am_onyx: 0.2 } },
       say: ['Within a year, he came home to Rome worn out and died that same night.'] },
     { kicker: 'GOOD FRIDAY · TODAY', title: 'Now the World Prays', art: scene5, bg3d: 'lToday', front3d: true,
-      cam: { ...STILL, zoom: { at: at(5, 'Where crowds'), to: [LG[0], Math.round(LG[1] - 252 * LG[2]) + 80], depth: 0.9, style: 'cut', z: 1.4, hold: 'end' } },
+      cam: { ...GLIDE, path: [
+        { at: at(5, 'Way of the Cross'), to: face(...PT5), z: 1.2, frame: [560, 900] },
+        { at: at(5, 'cheered'), to: [LG[0], Math.round(LG[1] - 252 * LG[2])], depth: 0.9, z: 1.3, frame: [560, 760] }] },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['That is why the Pope still prays the Way of the Cross there every Good Friday.', 'Where crowds once cheered for death, the world now prays.'] },
     { kicker: 'FEAST DAY · NOVEMBER 26', title: 'Saint Leonard', art: scene6, bg3d: 'lGlory', front3d: true,
-      cam: { ...STILL, zoom: { at: at(6, 'Saint Leonard'), to: [520, Math.round(1345 - 252 * 2.35)], style: 'cut', z: 1.3, center: 0.4, hold: 'end' } },
+      cam: { ...GLIDE, path: [
+        { at: at(6, 'Saint Leonard', 0.8), to: [520, Math.round(1345 - 252 * 2.35)], z: 1.35, frame: [540, 820] }] },
       tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
       say: ['His feast day is November 26, and he is the patron of preachers.', 'Saint Leonard of Port Maurice, pray for us.'] },
   ],

@@ -454,6 +454,39 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   // the spot sits on the card of the character it frames: depth 1 = the character plane, 0.97 = layer(0.97, …) etc.
   const zP = zooms.map((q) => { const z = plane / (q.depth || 1); return cam0.localToWorld(new THREE.Vector3((q.x - W / 2) / f0 * z, -(q.y + shift - H / 2) / f0 * z, -z)); });
   const zPos = new THREE.Vector3(), zM = new THREE.Matrix4();
+  // cam.path (opt-in, 2026-11-25, after the "animated 3D story" camera rules): the camera TRAVELS through the set from subject to
+  // subject, arriving on the word that names each one. data-path = JSON list of { at, x, y, depth, z, tx, ty }: at time `at` the
+  // camera is placed so that the spot (x, y) in art coords on the layer(depth) card (depth 1 = the character plane) sits at screen
+  // (tx, ty), seen from plane / depth / z units away (z > 1 = closer). The scene's start pose is key 0 at t = 0. Between keys the
+  // camera glides along a centripetal Catmull-Rom curve, timed with a monotone cubic warp (zero speed at the first and last key,
+  // never stopping in between), and ends at rest. It only translates (truck, push, crane): no yaw and no roll, so the horizon stays
+  // level. The depth-of-field focus follows the distance to the current subject.
+  const pathK = camEl?.dataset.path ? JSON.parse(camEl.dataset.path) : [];
+  let pathPos = null;
+  if (pathK.length) {
+    const keys = pathK.filter((k) => k.at > 0.01).sort((a, b) => a.at - b.at);
+    const PT = [cam0.position.clone()], TT = [0], FD = [plane];
+    for (const k of keys) {
+      const zd = plane / (k.depth || 1), d = zd / (k.z || 1);
+      const S = cam0.localToWorld(new THREE.Vector3((k.x - W / 2) / f0 * zd, -(k.y + shift - H / 2) / f0 * zd, -zd));
+      const L = new THREE.Vector3(((k.tx ?? 540) - W / 2) / f0 * d, -((k.ty ?? 900) + shift - H / 2) / f0 * d, -d).applyQuaternion(cam0.quaternion);
+      PT.push(S.clone().sub(L)); TT.push(k.at); FD.push(d);
+    }
+    const curve = PT.length > 2 ? new THREE.CatmullRomCurve3(PT, false, 'centripetal') : null;
+    const warpU = (t) => {   // monotone cubic time warp: path position 0..1 from the key times (from the animated-3D-story rules)
+      const T = TT, n = T.length; if (t <= T[0]) return 0; if (t >= T[n - 1]) return 1;
+      const sec = []; for (let i = 0; i < n - 1; i++) sec.push((1 / (n - 1)) / (T[i + 1] - T[i]));
+      const m = [0]; for (let i = 1; i < n - 1; i++) m.push(2 * sec[i - 1] * sec[i] / (sec[i - 1] + sec[i])); m.push(0);
+      let i = 0; while (t > T[i + 1]) i++;
+      const h = T[i + 1] - T[i], x = (t - T[i]) / h, x2 = x * x, x3 = x2 * x;
+      return (2 * x3 - 3 * x2 + 1) * (i / (n - 1)) + (x3 - 2 * x2 + x) * h * m[i] + (-2 * x3 + 3 * x2) * ((i + 1) / (n - 1)) + (x3 - x2) * h * m[i + 1];
+    };
+    pathPos = (t) => {
+      const u = warpU(t), n = PT.length, s2 = u * (n - 1), i = Math.min(n - 2, Math.floor(s2)), fr = s2 - i;
+      const pos = curve ? curve.getPoint(u) : PT[0].clone().lerp(PT[1], u);
+      return { pos, focus: FD[i] + (FD[i + 1] - FD[i]) * fr };
+    };
+  }
   const zoomAt = (t) => {   // poses the zoom on v.cam; returns null or { focus, fly } (restore with zoomEnd)
     let i = -1, e = 0;
     zooms.forEach((q, j) => { const l = zLevel(q, t); if (l > 0.0005) { i = j; e = l; } });
@@ -567,7 +600,10 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   qs.add(quad);
   return { ...view, renderer, draw(T) {
     if (!view.active(T)) return;
-    view.pose(T); v.cam.updateMatrixWorld(); v.cam.updateProjectionMatrix?.();
+    view.pose(T);
+    const pp = pathPos ? pathPos(Math.max(0, T - view.Z)) : null;
+    if (pp) v.cam.position.copy(pp.pos);
+    v.cam.updateMatrixWorld(); v.cam.updateProjectionMatrix?.();
     const xs = extras(T);
     const zs = zooms.length ? zoomAt(Math.max(0, T - view.Z)) : null;
     if (on) {
@@ -582,17 +618,18 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     let mb = dof;
     if (rack) { const [at = 1, dur = 2, b = 6] = rack, k = Math.min(1, Math.max(0, (t - at) / dur)), e = k * k * (3 - 2 * k); mb = dof + (2 * b - dof) * e; }
     qm.uniforms.maxBlur.value = mb; qm.uniforms.cNear.value = v.cam.near; qm.uniforms.cFar.value = v.cam.far;
-    qm.uniforms.focus.value = zs ? zs.focus : plane;
+    qm.uniforms.focus.value = zs ? zs.focus : pp ? pp.focus : plane;
     qm.uniforms.mblur.value.set(xs ? xs.blur : 0, 0);
     if (wfe) { if (xs && xs.blur > 0.5) { camEl.setAttribute('filter', `url(#whip-${sc.id})`); wfe.setAttribute('stdDeviation', `${(xs.blur / 2).toFixed(1)} 0`); } else camEl.removeAttribute('filter'); }
     if (fctx) {
       renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(v.front, v.cam);
-      fctx.clearRect(0, 0, W, H); fctx.drawImage(cv, 0, 0);
+      fctx.clearRect(0, 0, W, H); fctx.drawImage(S ? S.canvas : cv, 0, 0);
     }
     renderer.setRenderTarget(rt); renderer.render(v.scene, v.cam);
     renderer.setRenderTarget(null); renderer.render(qs, qc);
     zoomEnd(zs);
     extrasEnd(xs);
+    if (S) { out2d.clearRect(0, 0, W, H); out2d.drawImage(S.canvas, 0, 0); }
   } };
 }
 

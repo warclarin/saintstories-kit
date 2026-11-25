@@ -199,6 +199,18 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
         camAttr += ` data-zoom='${JSON.stringify(zs)}'`;
       }
     }
+    // cam.path (cam3d only, opt-in, 2026-11-25): the camera travels through the set from subject to subject, arriving on each
+    // key's word (makeRig in bakhita_freedom.bg3d.js). A list of { at, to: [x, y], depth = 1, z = 1, frame: [tx, ty] = [540, 900] }:
+    // at time `at` the spot `to` (a face: [x, y - 252 * s]) on the layer(depth) card sits at screen `frame`, seen z times closer
+    // than the start. Translation only (truck, push, crane), eased, ends at rest. Pair it with a near-zero `amt` on the move.
+    if (c.path) {
+      if (!c3) console.warn(`scene ${i}: cam.path needs STORY.cam3d and a bg3d scene; ignored`);
+      else {
+        const ps = [].concat(c.path).map((q) => { const [x, y] = q.to || [540, 900], [tx, ty] = q.frame || [540, 900];
+          return { at: +q.at || 0, x: +x, y: +y, depth: Math.max(0.3, +q.depth || 1), z: Math.max(0.5, Math.min(2.2, +q.z || 1)), tx: +tx, ty: +ty }; });
+        camAttr += ` data-path='${JSON.stringify(ps)}'`;
+      }
+    }
     // camera extras (cam3d only, 2026-11-25): shake, hero (low angle), drone (fly-in from above), whip (whip-pan cut);
     // makeRig in bakhita_freedom.bg3d.js. cam.whip ('r' | 'l') on a scene also whips the scene before it out.
     const nx = STORY.scenes[i + 1]?.cam, wOut = nx && typeof nx === 'object' && !Array.isArray(nx) ? nx.whip : null;

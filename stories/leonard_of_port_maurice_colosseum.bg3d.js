@@ -1,6 +1,6 @@
 // three.js backgrounds for St. Leonard of Port Maurice: the Stations in the Colosseum (browser module, build.mjs copies it to
-// work/<slug>/bg3d.mjs). Set-ups of roma() from gelasius.bg3d.js (imported as a library). Every set-up holds a fixed camera
-// (move 'push' with a near-zero amount from the story: the Ricks Clips motion standard, no sway, no tilt).
+// work/<slug>/bg3d.mjs). Set-ups of roma() from gelasius.bg3d.js (imported as a library). The camera travels along each
+// scene's cam.path (makeRig), so every set-up holds move 'push' with a near-zero amount; no sway, no roll.
 //   lHook   golden evening inside the arena (the SVG ruin card covers the city; sky and sand from 3D)
 //   lAncient bright day inside the arena (the games, the martyrs, the ruin; the SVG cards swap stands for ruins)
 //   lPope   dusk at St. Peter's: the basilica's windows lit (the nobles; the Pope says yes)
