@@ -211,12 +211,12 @@ function scene0() {
     + NEAR(bokeh(6, { seed: 12, op: [0.2, 0.45] }));
 }
 
-// 1 · setup: Maximin's soldiers take him through the city at dusk; monks and holy women gather (pan-r + drone)
+// 1 · setup (both sides and the stakes): Maximin's soldiers take him through the city at dusk; monks and holy women gather (pan-r + drone)
 const crowdRow = (y, list, t) => list.map(([x, s, kind, i, fl], k) => `<g opacity="0"${fadeIn(t + k * 0.14, 0.5)}>${castShadow(x, y, s, 'pArrest')}`
   + (kind === 'm' ? monkEG(x, y, s, i, { flip: fl, mood: 'worried', look: [fl ? -2 : 2, 0], armL: k % 2 ? -20 : 14, armR: k % 2 ? -20 : 20 })
     : holyVirgin(x, y, s, i, { flip: fl, mood: 'sad', armL: -20, armR: -20 })) + '</g>').join('');
 function scene1() {
-  const jl = at(1, 'jailed'), mk = at(1, 'Monks'), su = at(1, 'surrounded');
+  const jl = at(1, 'wanted him'), mk = at(1, 'monks'), su = at(1, 'guarded');
   const S1 = [290, 1312, 2.05], S2 = [760, 1312, 2.05];
   return MID(lit(crowdRow(1240, [[330, 0.95, 'v', 2], [660, 0.94, 'v', 0, true], [740, 0.97, 'm', 2, true]], su), 'pArrest'))
     + layer(0.92, lit(crowdRow(1310, [[60, 1.55, 'm', 0], [150, 1.5, 'v', 0]], mk) + crowdRow(1310, [[940, 1.5, 'v', 1, true], [1030, 1.55, 'm', 1, true]], mk + 0.2), 'pArrest'))
@@ -230,7 +230,7 @@ function scene1() {
 // 2 · Arius's clergy beg for him; Peter prays alone; Christ appears as a boy in the torn robe (tilt-up + rack focus)
 const E1 = [690, 1322, 1.95], E2 = [850, 1312, 1.9], PK = [330, 1345, 2.3], CH2 = [740, 1322, 1.5];
 function scene2() {
-  const ar = at(2, 'Arius'), bg = at(2, 'begged'), al = at(2, 'Alone'), ja = at(2, 'Then Jesus'), q1 = at(2, 'Lord, who'), q1e = at(2, 'your robe?', 0.5),
+  const ar = at(2, 'Arius'), bg = at(2, 'begged'), al = at(2, 'Alone'), ja = at(2, 'Jesus appeared'), q1 = at(2, 'Lord, who'), q1e = at(2, 'your robe?', 0.5),
     q2 = at(2, 'Arius tore'), q2e = at(2, 'take him back', 0.6);
   const envoys = `<g${fadeOut(al - 0.3, 0.6)}>`
     + layer(0.95, lit(castShadow(...E1, 'pCell') + seq((op) => envoyPriest(...E1, 0, { flip: true, kneel: true, look: [2.4, -0.6], ...op }),
@@ -254,9 +254,9 @@ function scene2() {
 // 3 · the plan: the soldiers dig through the back wall in a storm; Peter steps out (dolly; crack + shake on the break)
 const MS = [215, 1345, 2.2], TB = [870, 1312, 2.0], PW = [560, 1300, 2.0];
 function scene3() {
-  const rf = at(3, 'refused'), dg = at(3, 'dig'), bw = at(3, 'back wall', 0.3), stm = at(3, 'storm'), q = at(3, 'Do what'), qe = at(3, 'came to do', 0.5);
+  const rf = at(3, 'refused'), dg = at(3, 'dug'), bw = at(3, 'back wall', 0.3), stm = at(3, 'storm'), q = at(3, 'Do what'), qe = at(3, 'came to do', 0.5);
   const brk = bw + 0.25;
-  return layer(0.85, lit(prisonWall({ t: brk, knock: dg - 0.2 }), 'pStorm') + crack(560, 1120, 230, brk - 0.05, { seed: 5, color: '#1a1420' }))
+  return layer(0.85, lit(prisonWall({ t: brk, knock: at(3, 'secret plan') }), 'pStorm') + crack(560, 1120, 230, brk - 0.05, { seed: 5, color: '#1a1420' }))
     + layer(0.9, `<g opacity="0"${M.tw([{ at: brk + 0.5, dur: 0.7, from: { opacity: 0, y: -10, scale: 0.92 }, to: { opacity: 1, y: 0, scale: 1 }, ease: 'power2.out', origin: `${PW[0]} ${PW[1]}` }])}>`
       + lit(castShadow(...PW, 'pStorm') + seq((op) => peterAlex(...PW, { chained: true, look: [1.6, 0], ...op }),
         [[0, { mood: 'determined', armL: [14, 2, 3], armR: [14, 2, 3] }], [q - 0.2, { mood: 'determined', talk: [q, qe], armL: [14, 2, 3], armR: [40, 3, 2.4] }],
@@ -274,10 +274,12 @@ function scene3() {
 // (push + hero + whip-in; jump cut on a soldier; sweat; coins squash; burst on the climax line)
 const TM = [190, 1312, 0.74], PT = [410, 1345, 2.3], SA = [730, 1322, 2.0], SB = [865, 1310, 1.95];
 function scene4() {
-  const ds = at(4, 'No soldier'), gc = at(4, 'five gold'), fd = at(4, 'One finally'), lw = at(4, 'It looked'), sl = at(4, 'But Peter'), se = at(4, 'Seal');
+  const ds = at(4, 'five officers'), gc = at(4, 'five gold'), fd = at(4, 'One finally'), lw = at(4, 'It looked'), sl = at(4, 'But Peter'), se = at(4, 'Seal');
   const coins = [[590, 1350, -8], [620, 1356, 12], [606, 1342, 4], [640, 1346, -16], [574, 1358, 20], [656, 1358, 6]].map(([x, y, r], k) =>
     `<g opacity="0"${M.tw([{ at: gc + k * 0.12, dur: 0.38, from: { opacity: 1, y: -240 }, to: { opacity: 1, y: 0 }, ease: 'bounce.out' }])}>${goldCoin(x, y, 13, r)}</g>`).join('');
-  return layer(0.92, lit(castShadow(TM[0], TM[1], 0.9, 'pTomb') + `<g transform="translate(${TM[0]},${TM[1]})">${markTomb(TM[2])}</g>`, 'pTomb'))
+  const back3 = [[600, 1.15, false], [665, 1.12, true], [995, 1.15, true]].map(([x, sc, fl]) => castShadow(x, 1250, sc, 'pTomb')
+    + soldier(x, 1250, sc, { flip: fl, mood: 'worried', look: [fl ? -2 : 2, 0.4], armL: [12, 2, 3], armR: [14, 2, 3] })).join('');
+  return MID(lit(back3, 'pTomb')) + layer(0.92, lit(castShadow(TM[0], TM[1], 0.9, 'pTomb') + `<g transform="translate(${TM[0]},${TM[1]})">${markTomb(TM[2])}</g>`, 'pTomb'))
     + layer(0.92, lit(castShadow(...SB, 'pTomb') + seq((op) => soldier(...SB, { flip: true, armL: [12, 2, 3], propL: gladiusDown, look: [2.4, 0.6], ...op }),
       [[0, { mood: 'stern' }], [ds + 0.2, { mood: 'worried' }], [gc + 0.2, { mood: 'worried', armR: [28, 2, 3] }], [sl, { mood: 'surprised', look: [2.6, -0.6] }]]), 'pTomb'))
     + layer(0.95, lit(castShadow(...SA, 'pTomb') + seq((op) => soldier(...SA, { flip: true, armL: [12, 2, 3], propL: gladiusDown, look: [2.4, 0.6], ...op }),
@@ -346,35 +348,43 @@ export const STORY = {
     'nɪkˈiə': 'naɪsˈiːə',                // Nicaea
   },
   scenes: [
+    // one sentence = one shot: every spoken sentence gets its own framing (scene change, jump cut, zoom or whip)
     { kicker: 'ALEXANDRIA, EGYPT · 311', title: 'Killed in Secret', art: scene0, bg3d: 'pHook', front3d: true,
-      cam: { move: 'push-fast', oy: 1000, zoom: { at: at(0, 'one bishop'), to: face(...P0), style: 'cut', z: 1.45, hold: 0.8 }, shake: { at: at(0, 'broke'), amt: 20, dur: 0.7 } },
+      cam: { move: 'push-fast', oy: 1000, shake: { at: at(0, 'broke'), amt: 20, dur: 0.7 },
+        zoom: { at: at(0, 'This is'), to: face(...P0), style: 'snap', z: 1.35, hold: 'end' } },
       tone: HOOK,
-      say: ['Rome feared one bishop in chains so much, they broke through his prison wall at night to kill him.', 'This is Saint Peter of Alexandria.'] },
+      say: ['Five Roman officers broke through a prison wall at night to kill one bishop.', 'This is Saint Peter of Alexandria.'] },
     { kicker: 'THE GREAT PERSECUTION', title: 'Jailed by the Emperor', art: scene1, bg3d: 'pArrest', front3d: true,
       cam: { move: 'pan-r', drone: { h: 8, back: 12, dur: 2.8 } },
       tone: HOOK,
-      say: ['In 311, Emperor Maximin jailed him.', 'Monks and holy women surrounded the prison.'] },
+      say: ['Emperor Maximin wanted him dead, but crowds of monks and holy women guarded his prison.'] },
     { kicker: 'THE PRISON CELL', title: 'Who Tore Your Robe?', art: scene2, bg3d: 'pCell', front3d: true,
       cam: { move: 'tilt-up', amt: 0.06, rack: { at: 3, dur: 2.5, blur: 6 }, zoom: [
+        { at: at(2, 'Alone'), to: [540, 1000], style: 'cut', z: 1.25, center: 0.3, hold: Math.max(0.6, at(2, 'Lord, who') - at(2, 'Alone') - 0.1) },
         { at: at(2, 'Lord, who'), to: face(PK[0], PK[1], PK[2], true), style: 'snap', z: 1.4, hold: Math.max(0.6, at(2, 'your robe?', 0.5) - at(2, 'Lord, who') - 0.3) },
         { at: at(2, 'Arius tore'), to: face(...CH2), depth: 0.95, style: 'smooth', z: 1.35, hold: 'end' }] },
       tone: HUSH,
-      say: ['Then Arius, a deacon he had cut off, begged to come back.', 'Alone in chains, Peter prayed.',
-        'Then Jesus appeared as a boy, his robe torn from neck to feet.', { text: 'Lord, who tore your robe?', who: 'peter' }, { text: 'Arius tore it. Do not take him back.', who: 'jesus' }] },
+      say: ['Then Arius, a deacon he had cut off, begged to come back.', 'Alone in chains, Peter prayed, and Jesus appeared as a boy, his robe torn from neck to feet.',
+        { text: 'Lord, who tore your robe?', who: 'peter' }, { text: 'Arius tore it. Do not take him back.', who: 'jesus' }] },
     { kicker: 'A STORMY NIGHT', title: 'Through the Wall', art: scene3, bg3d: 'pStorm', front3d: true,
-      cam: { move: 'dolly', amt: 0.08, ox: 560, oy: 1000, shake: [{ at: at(3, 'back wall', 0.55), amt: 22, dur: 0.7 }, { at: at(3, 'storm', -0.1), amt: 10, dur: 0.5 }] },
+      cam: { move: 'dolly', amt: 0.08, ox: 560, oy: 1000, shake: [{ at: at(3, 'back wall', 0.55), amt: 22, dur: 0.7 }, { at: at(3, 'storm', -0.1), amt: 10, dur: 0.5 }],
+        zoom: { at: at(3, 'Do what'), to: face(...PW), depth: 0.9, style: 'cut', z: 1.4, hold: 'end' } },
       tone: STAND,
-      say: ['So Peter refused.', 'To spare the crowd, he had the soldiers dig through the back wall in a raging storm.', { text: 'Do what you came to do.', who: 'peter' }] },
+      say: ['So Peter refused, and to save the crowd, he made a secret plan.', 'The officers dug through his back wall during a howling storm.', { text: 'Do what you came to do.', who: 'peter' }] },
     { kicker: "SAINT MARK'S TOMB · DAWN", title: 'Seal of the Martyrs', art: scene4, bg3d: 'pTomb', front3d: true,
-      cam: { move: 'push', amt: 0.06, ox: 470, oy: 1000, whip: 'r', hero: { h: 2.2 },
-        zoom: { at: at(4, 'No soldier'), to: face(...SA), depth: 0.95, style: 'cut', z: 1.5, hold: 1.4 } },
+      cam: { move: 'push', amt: 0.06, ox: 470, oy: 1000, whip: 'r', hero: { h: 2.2 }, zoom: [
+        { at: at(4, 'One finally'), to: face(PT[0], PT[1], PT[2], true), style: 'cut', z: 1.45, hold: Math.max(0.5, at(4, 'It looked') - at(4, 'One finally') - 0.1) },
+        { at: at(4, 'It looked'), to: face(...SA), depth: 0.95, style: 'cut', z: 1.5, hold: Math.max(0.5, at(4, 'But Peter') - at(4, 'It looked') - 0.1) },
+        { at: at(4, 'But Peter'), to: face(PT[0], PT[1], PT[2], true), style: 'smooth', z: 1.3, hold: 'end' }] },
       tone: STAND,
-      say: ["At Saint Mark's tomb, no soldier dared to strike.", 'So each put in five gold coins for the one who would.', 'One finally did. It looked like Rome had won.',
+      say: ["At Saint Mark's tomb, the five officers each put in five gold coins for whoever would strike.", 'One finally did.', 'It looked like Rome had won.',
         { text: 'But Peter became the Seal of the Martyrs.', speed: 0.85 }] },
-    { kicker: 'NICAEA · 325', title: 'The Robe Kept Whole', art: scene5, bg3d: 'pNicaea', front3d: true, cam: { move: 'pull', amt: 0.06, oy: 1000 },
+    { kicker: 'NICAEA · 325', title: 'The Robe Kept Whole', art: scene5, bg3d: 'pNicaea', front3d: true,
+      cam: { move: 'pull', amt: 0.06, oy: 1000, zoom: { at: at(5, 'Rome took'), to: [PG[0], PG[1] - 252 * PG[2]], depth: 0.9, style: 'fly', z: 1.5, in: 1.2, hold: 'end' } },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['Fourteen years later, at Nicaea, the Church condemned Arius.', "Rome took his life in secret, but it could not tear Christ's robe."] },
-    { kicker: 'FEAST DAY · NOVEMBER 25', title: 'Saint Peter', art: scene6, bg3d: 'pGlory', front3d: true, cam: { move: 'arc-r', amt: 0.06, oy: 1000 },
+    { kicker: 'FEAST DAY · NOVEMBER 25', title: 'Saint Peter', art: scene6, bg3d: 'pGlory', front3d: true,
+      cam: { move: 'arc-r', amt: 0.06, oy: 1000, zoom: { at: at(6, 'Saint Peter of'), to: [510, 1345 - 252 * 2.35], style: 'smooth', z: 1.2, center: 0.4, hold: 'end' } },
       tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
       say: ['His feast day is November 25.', 'Saint Peter of Alexandria, pray for us.'] },
   ],
