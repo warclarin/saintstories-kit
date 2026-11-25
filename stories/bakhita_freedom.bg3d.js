@@ -401,8 +401,11 @@ export function makeView(cv, build = BUILD) {
     pose(T) {
       const t = Math.max(0, T - Z), p = ease(clamp01((T - at) / span));
       const o = v.update(t, p) || {};
-      const px = yoyo(T, hh0 - 0.3, 2.65, 5), py = yoyo(T, hh0 - 1.1, 2.05, 3.5), rot = yoyo(T, hh0 - 0.7, 3.35, 0.3);
-      v.cam.rotation.set(base.x + (py / 960) * TH, base.y + (px / 960) * TH + (o.ry || 0), base.z + rot * Math.PI / 180 + (o.rz || 0), 'YXZ');
+      // fx.handheld scales the wobble (window.FX_HH, written by build.mjs: 1 when fx.handheld is true or missing, 0 when
+      // false, a number = amount; 2026-11-25, the user asked to remove the sway from new reels)
+      const HA = window.FX_HH ?? 1;
+      const px = HA * yoyo(T, hh0 - 0.3, 2.65, 5), py = HA * yoyo(T, hh0 - 1.1, 2.05, 3.5), rot = HA * yoyo(T, hh0 - 0.7, 3.35, 0.3);
+      v.cam.rotation.set(base.x + (py / (H / 2)) * TH, base.y + (px / (H / 2)) * TH + (o.ry || 0), base.z + rot * Math.PI / 180 + (o.rz || 0), 'YXZ');
     } };
 }
 export function newRenderer(cv) {

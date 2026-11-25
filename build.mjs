@@ -248,11 +248,11 @@ function captionChunks(i) {
 }
 
 function page(body, reel) {
-  return `<!doctype html><html lang="en" data-resolution="portrait"><head><meta charset="UTF-8"><meta name="viewport" content="width=1080, height=1920">
+  return `<!doctype html><html lang="en" data-resolution="${LAND ? 'landscape' : 'portrait'}"><head><meta charset="UTF-8"><meta name="viewport" content="width=${W}, height=${H}">
 <title>${esc(BRAND)} - ${esc(STORY.scenes[0].title)}</title><script src="gsap.min.js"></script><style>${CSS}</style></head><body>
 ${SHARED_DEFS}
 ${body}
-<script>window.REEL=${JSON.stringify(reel)};</script><script src="reel.js"></script>${STORY.bg3d ? '<script>window.BG3D_VARS=' + JSON.stringify(STORY.bg3d_vars || {}) + ';window.CAM3D=' + JSON.stringify(STORY.cam3d || null) + ';window.__hf=window.__hf||{};window.__hf.buildReady=window.__hf.buildReady||{};window.__hf.buildReady.bg3d=new Promise((r)=>{window.__bg3dDone=r;});</script><script type="module" src="bg3d.mjs"></script>' : ''}
+<script>window.REEL=${JSON.stringify(reel)};</script><script src="reel.js"></script>${STORY.bg3d ? '<script>window.BG3D_VARS=' + JSON.stringify(STORY.bg3d_vars || {}) + ';window.CAM3D=' + JSON.stringify(STORY.cam3d || null) + ';window.FX_HH=' + JSON.stringify(STORY.fx?.handheld === undefined ? 1 : STORY.fx.handheld === true ? 1 : +STORY.fx.handheld || 0) + ';window.__hf=window.__hf||{};window.__hf.buildReady=window.__hf.buildReady||{};window.__hf.buildReady.bg3d=new Promise((r)=>{window.__bg3dDone=r;});</script><script type="module" src="bg3d.mjs"></script>' : ''}
 </body></html>`;
 }
 

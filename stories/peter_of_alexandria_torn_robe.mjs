@@ -17,9 +17,10 @@
 // Bloodless (Meta/YouTube): no blow shown; he kneels in prayer, a flash of light, the halo and palm.
 // Exported for later reels: peterAlex, childJesusTorn, omophorion, tornRobe, monkEG, holyVirgin, envoyPriest, bishopHD,
 // stonemason, goldCoin, markTomb, prisonWall, rain, LIGHT, lit, castShadow.
-import { M, GOLD, sparkles, bokeh, foliage, dark, light, f, palm_frond, book, NEAR, MID, layer } from '../art.mjs';
+import { M, GOLD, sparkles, bokeh, foliage, dark, light, f, palm_frond, book, beam, NEAR, MID, layer } from '../art.mjs';
 import { hd, seq, wordTimes } from '../hd.mjs';
-import { speedLines, sweat, crack, burst, squash } from '../cartoonfx.mjs';
+import { speedLines, sweat, steam, rage, crack, burst, squash } from '../cartoonfx.mjs';
+import { emperorMax } from './catherine_of_alexandria.mjs';
 import { legionary } from './rufus_simon_of_cyrene.mjs';
 import { manacle } from './paul_le_bao_tinh_letter.mjs';
 import { pickaxe } from './clement_anchor.mjs';
@@ -171,11 +172,37 @@ export const castShadow = (x, y, s, mode) => {
 };
 
 // ================================================================ scenes
+// Motion copied from the Ricks Clips master prompt (user's choice 2026-11-25): ONE SENTENCE = ONE SHOT = one place, one fixed
+// camera angle, one clear action acted out literally (walking in, kneeling, turning, throwing, stepping through). The camera
+// does not drift or tilt (cam amt ~0, no hand-held sway, no arc roll); each new sentence is a hard cut (zoom style 'cut').
 // cam3d: the character plane (depth 1) is 20 units away; layer(d) at 20 / d. Feet art y: depth 1 ~1345, 0.97 ~1312,
 // 0.95 ~1322, 0.92 ~1310, 0.85 ~1286, 0.78 ~1262, MID 0.75 ~1240.
-const P0 = [350, 1345, 2.5], HX = 770, HY = 1236;
-/** A hole smashed through the cell's back wall (on the 3D wall, depth 0.74) at time t: cracks, stones flying at the camera,
- * a dust puff, then the dark gap with a soldier's torch blazing in it. */
+/** Walk in: the figure starts dx px to the side and walks to its place in dur s, bobbing a step every `step` s. */
+const steps = (t, n, step, hop) => {
+  const ys = [];
+  for (let k = 0; k < n; k++) ys.push(k ? { at: t + k * step, dur: step, to: { y: k % 2 ? 0 : -hop }, ease: 'sine.inOut' } : { at: t, dur: step, from: { y: 0 }, to: { y: -hop }, ease: 'sine.inOut' });
+  ys.push({ at: t + n * step, dur: 0.12, to: { y: 0 } });
+  return ys;
+};
+const walk = (t, dur, dx, svg, { hop = 9, step = 0.24 } = {}) =>
+  `<g${M.tw([{ at: t, dur, from: { x: dx }, to: { x: 0 }, ease: 'power1.out' }])}><g${M.tw(steps(t, Math.max(2, Math.round(dur / step)), step, hop))}>${svg}</g></g>`;
+/** Walk out: from its place to dx px away, starting at t. */
+const walkOut = (t, dur, dx, svg, { hop = 9, step = 0.24 } = {}) =>
+  `<g${M.tw([{ at: t, dur, from: { x: 0 }, to: { x: dx }, ease: 'power1.in' }])}><g${M.tw(steps(t, Math.max(2, Math.round(dur / step)), step, hop))}>${svg}</g></g>`;
+/** An upturned helmet on the ground, used as a bowl for the coins (base centre at 0,0). */
+const helmetBowl = `<g><ellipse cy="6" rx="60" ry="10" fill="#140c14" opacity=".3"/><path d="M-44 -34 Q-42 4 0 6 Q42 4 44 -34Z" fill="#b8a070"/>`
+  + `<path d="M14 4 Q42 4 44 -34 L28 -34 Q28 -4 10 4Z" fill="#8a7448" opacity=".7"/><ellipse cy="-34" rx="44" ry="11" fill="#5a4630"/><ellipse cy="-35" rx="38" ry="8" fill="#3a2a1c"/>`
+  + `<path d="M40 -10 Q74 -18 86 4 Q66 -2 44 2Z" fill="#c8323a"/></g>`;
+/** A stone dais for the emperor (top centre at 0,0). */
+const dais = (w = 300) => `<g><rect x="${-w / 2}" y="0" width="${w}" height="40" rx="6" fill="#d8ccb4"/><rect x="${-w / 2 - 30}" y="40" width="${w + 60}" height="46" rx="6" fill="#c4b698"/>`
+  + `<rect x="${-w / 2}" y="0" width="${w}" height="8" rx="4" fill="#efe6d2"/><rect x="${w / 2 - 50}" y="0" width="50" height="86" fill="#a8987a" opacity=".5"/></g>`;
+/** Arius: a tall, lean priest with long dark hair and beard, a dark mantle. */
+export const arius = (x, y, s, o = {}) => hd(x, y, s, { top: '#4a5a6a', plain: true, trim: '#3a4a5a', mantle: '#2e2a3a', lining: '#5a5468', belt: false, skin: '#d9a47e',
+  hair: '#2a1c12', hairStyle: 'long', beard: '#2a1c12', beardStyle: 'full', age: 'mid', iris: '#2e2018', shoes: '#3a2a20', ...o });
+
+const P0 = [340, 1345, 2.5], HX = 770, HY = 1236;
+/** The cell's back wall smashed open at time t (on the 3D wall, depth 0.74): torchlight seeping through a crack from frame 0,
+ * then cracks, stones flying at the camera, dust, and the dark gap glowing with torchlight. */
 const wallBreach = (t) => {
   const hole = `M${HX - 112} ${HY} L${HX - 118} ${HY - 120} L${HX - 92} ${HY - 196} L${HX - 40} ${HY - 250} L${HX + 18} ${HY - 262} L${HX + 74} ${HY - 228} L${HX + 110} ${HY - 160} L${HX + 120} ${HY - 70} L${HX + 114} ${HY}Z`;
   const pop = M.tw([{ at: t, dur: 0.22, from: { opacity: 0, scale: 0.25 }, to: { opacity: 1, scale: 1 }, ease: 'power3.out', origin: `${HX} ${HY - 130}` }]);
@@ -196,134 +223,169 @@ const wallBreach = (t) => {
     + `<circle cx="${HX}" cy="${HY - 130}" r="170" fill="url(#sunGlow)" opacity=".35"/></g></g>`;
   return seep + `<g transform="translate(${HX},${HY}) scale(1.35) translate(${-HX},${-HY})">`
     + `<g opacity="0"${pop}><path d="${hole}" fill="#1e1214"/><path d="${hole}" fill="none" stroke="#3a2e3e" stroke-width="10" stroke-linejoin="round"/>`
-    + `<circle cx="${HX}" cy="${HY - 120}" r="230" fill="url(#sunGlow)" opacity=".9"/><g transform="translate(${HX + 20},${HY - 60}) scale(1.25)">${torch}</g></g>`
+    + `<circle cx="${HX}" cy="${HY - 120}" r="230" fill="url(#sunGlow)" opacity=".9"/></g>`
     + crack(HX, HY - 130, 250, t - 0.12, { seed: 7, color: '#1a1420', hold: 1.2 }) + '</g>' + chunks + dust;
 };
-// 0 · hook: Peter in chains in his cell; the back wall smashes open behind him, a torch in the gap (push-fast; jump cut on him)
+// 0 · SHOT 1 "Five Roman officers broke through a prison wall…": fixed wide shot of the cell; the wall bursts and the five
+//     officers step through toward the camera with torches.  SHOT 2 "This is Saint Peter…": cut to Peter; he turns to the viewer.
 function scene0() {
-  const ob = at(0, 'one bishop'), br = at(0, 'broke'), kl = at(0, 'to kill'), ti = at(0, 'This is'), sp = at(0, 'Saint Peter');
+  const br = at(0, 'broke'), kl = at(0, 'to kill'), ti = at(0, 'This is'), sp = at(0, 'Saint Peter');
   const P = (op) => peterAlex(...P0, { chained: true, halo: true, armL: [16, 2, 3], armR: [22, 2, 3], ...op });
+  const officer = (x, d, s, k, torchOn) => { const fy = d > 0.77 ? 1262 : 1244;
+    return layer(d, `<g opacity="0"${M.tw([{ at: br + 0.35 + k * 0.18, dur: 0.9, from: { opacity: 0, y: -30, scale: 0.75 }, to: { opacity: 1, y: 0, scale: 1 }, ease: 'power2.out', origin: `${x} ${fy}` }])}>`
+      + lit(soldier(x, fy, s, { flip: true, mood: 'stern', look: [2.4, 0.3], armL: torchOn ? [40, 2, 3] : [14, 2, 3], propL: torchOn ? torch : '', armR: [16, 2, 3], propR: torchOn ? '' : gladiusDown }), 'pHook') + '</g>'); };
   return layer(0.74, wallBreach(br))
+    + officer(735, 0.75, 1.1, 0, false) + officer(830, 0.75, 1.1, 1, true)
+    + officer(680, 0.78, 1.3, 2, true) + officer(790, 0.78, 1.3, 3, false) + officer(900, 0.78, 1.3, 4, true)
     + speedLines(HX, HY - 130, { at: br - 0.02, dur: 0.75, r0: 260, op: 0.45, color: '#ffe0b0', seed: 3 })
-    + `<g opacity="0"${fadeIn(br + 0.1, 0.5)}>${glow(640, 1020, 420, 0.35)}</g>`
-    + lit(castShadow(...P0, 'pHook') + seq(P, [[0, { mood: 'determined', look: [0, 0] }], [ob + 0.3, { mood: 'determined', look: [0.8, 0.6] }],
-      [br + 0.1, { mood: 'surprised', look: [2.6, 0] }], [kl, { mood: 'peaceful' }], [ti, { mood: 'happy', look: [0, 0] }], [sp + 0.6, { mood: 'tender', look: [0, 0] }]]), 'pHook')
+    + `<g opacity="0"${fadeIn(br + 0.1, 0.5)}>${glow(560, 1020, 420, 0.35)}</g>`
+    + lit(castShadow(...P0, 'pHook') + seq(P, [[0, { mood: 'determined', look: [0, 0] }], [br + 0.1, { mood: 'surprised', look: [2.6, 0], armL: [40, 3, 2], armR: [22, 2, 3] }],
+      [kl, { mood: 'determined', look: [2.6, 0.3] }], [ti - 0.1, { mood: 'happy', look: [0, 0] }], [sp + 0.6, { mood: 'tender', look: [0, 0] }]]), 'pHook')
     + NEAR(bokeh(6, { seed: 12, op: [0.2, 0.45] }));
 }
 
-// 1 · setup (both sides and the stakes): Maximin's soldiers take him through the city at dusk; monks and holy women gather (pan-r + drone)
-const crowdRow = (y, list, t) => list.map(([x, s, kind, i, fl], k) => `<g opacity="0"${fadeIn(t + k * 0.14, 0.5)}>${castShadow(x, y, s, 'pArrest')}`
+// 1 · SHOT "Emperor Maximin wanted him dead, but crowds of monks and holy women guarded his prison": a cut close on the emperor
+//     on his dais (he points and fumes: rage + steam), then the wide shot on "but crowds": Peter in chains between two guards
+//     while the crowd walks in from both sides and surrounds them.
+const EM = [175, 1250, 2.0];
+const crowdWalk = (y, list, t, from) => list.map(([x, s, kind, i, fl], k) => walk(t + k * 0.16, 1.1, from, castShadow(x, y, s, 'pArrest')
   + (kind === 'm' ? monkEG(x, y, s, i, { flip: fl, mood: 'worried', look: [fl ? -2 : 2, 0], armL: k % 2 ? -20 : 14, armR: k % 2 ? -20 : 20 })
-    : holyVirgin(x, y, s, i, { flip: fl, mood: 'sad', armL: -20, armR: -20 })) + '</g>').join('');
+    : holyVirgin(x, y, s, i, { flip: fl, mood: 'sad', armL: -20, armR: -20 })))).join('');
 function scene1() {
-  const jl = at(1, 'wanted him'), mk = at(1, 'monks'), su = at(1, 'guarded');
-  const S1 = [290, 1312, 2.05], S2 = [760, 1312, 2.05];
-  return MID(lit(crowdRow(1240, [[330, 0.95, 'v', 2], [660, 0.94, 'v', 0, true], [740, 0.97, 'm', 2, true]], su), 'pArrest'))
-    + layer(0.92, lit(crowdRow(1310, [[60, 1.55, 'm', 0], [150, 1.5, 'v', 0]], mk) + crowdRow(1310, [[940, 1.5, 'v', 1, true], [1030, 1.55, 'm', 1, true]], mk + 0.2), 'pArrest'))
-    + layer(0.97, lit(castShadow(...S1, 'pArrest') + seq((op) => soldier(...S1, { armL: [16, 2, 3], ...op }), [[0, { mood: 'stern', look: [2.4, 0] }], [su, { mood: 'worried', look: [-2.6, 0] }]])
-      + castShadow(...S2, 'pArrest') + seq((op) => soldier(...S2, { flip: true, armL: [24, 2, 3], propL: gladiusDown, ...op }), [[0, { mood: 'stern', look: [2.4, 0] }], [su, { mood: 'worried', look: [-2.6, 0] }]]), 'pArrest'))
-    + lit(castShadow(520, 1345, 2.25, 'pArrest') + seq((op) => peterAlex(520, 1345, 2.25, { chained: true, armL: [10, 2, 3], armR: [10, 2, 3], ...op }),
-      [[0, { mood: 'determined', look: [0, 0.4] }], [jl, { mood: 'sad', look: [0, 1.4] }], [mk + 0.3, { mood: 'tender', look: [-2.4, 0] }]]), 'pArrest')
-    + NEAR(foliage('l', 1650, { color: '#2a2430', seed: 6 }) + foliage('r', 1660, { color: '#2a2430', seed: 2 }));
+  const wd = at(1, 'wanted him'), bc = at(1, 'but crowds'), gd = at(1, 'guarded');
+  const S1 = [440, 1312, 2.0], S2 = [790, 1312, 2.0];
+  return layer(0.92, lit(`<g transform="translate(${EM[0]},1262)">${dais(250)}</g>` + castShadow(EM[0], EM[1], EM[2], 'pArrest')
+      + seq((op) => emperorMax(...EM, { armL: [16, 2, 3], look: [2.4, 0.4], ...op }), [[0, { mood: 'stern', armR: [26, 2, 3] }], [wd, { mood: 'stern', armR: [92, 6, 1.2] }]])
+      + rage(...EM, wd + 0.2, { dur: 2.4 }) + steam(...EM, wd + 0.4, { dur: 2, n: 3 }), 'pArrest'))
+    + MID(lit(crowdWalk(1240, [[300, 0.95, 'v', 2], [650, 0.94, 'v', 0, true], [710, 0.97, 'm', 2, true]], bc, 380), 'pArrest'))
+    + layer(0.92, lit(crowdWalk(1310, [[960, 1.5, 'v', 1, true], [1040, 1.55, 'm', 1, true]], bc + 0.1, 420), 'pArrest'))
+    + layer(0.97, lit(castShadow(...S1, 'pArrest') + seq((op) => soldier(...S1, { armL: [16, 2, 3], ...op }), [[0, { mood: 'stern', look: [2.4, 0] }], [gd, { mood: 'worried', look: [2.6, 0] }]])
+      + castShadow(...S2, 'pArrest') + seq((op) => soldier(...S2, { flip: true, armL: [24, 2, 3], propL: gladiusDown, ...op }), [[0, { mood: 'stern', look: [2.4, 0] }], [gd, { mood: 'worried', look: [-2.6, 0] }]]), 'pArrest'))
+    + lit(castShadow(615, 1345, 2.2, 'pArrest') + seq((op) => peterAlex(615, 1345, 2.2, { chained: true, armL: [10, 2, 3], armR: [10, 2, 3], ...op }),
+      [[0, { mood: 'sad', look: [-2.4, 0.4] }], [bc + 0.6, { mood: 'tender', look: [2.4, 0] }]]), 'pArrest')
+    + NEAR(foliage('r', 1660, { color: '#2a2430', seed: 2 }));
 }
 
-// 2 · Arius's clergy beg for him; Peter prays alone; Christ appears as a boy in the torn robe (tilt-up + rack focus)
-const E1 = [690, 1322, 1.95], E2 = [850, 1312, 1.9], PK = [330, 1345, 2.3], CH2 = [740, 1322, 1.5];
+// 2 · SHOT "Then Arius… begged to come back": two priests walk in and kneel, hands raised, begging.
+//     SHOT "Alone in chains, Peter prayed, and Jesus appeared…": the priests are gone; Peter kneels; a beam of light drops in and
+//     the boy Christ rises in it, holding his torn robe.  SHOT Peter's question (cut on him).  SHOT Christ's answer (cut on him).
+const E1 = [700, 1322, 1.95], E2 = [855, 1312, 1.9], PK = [330, 1345, 2.3], CH2 = [740, 1322, 1.5];
 function scene2() {
-  const ar = at(2, 'Arius'), bg = at(2, 'begged'), al = at(2, 'Alone'), ja = at(2, 'Jesus appeared'), q1 = at(2, 'Lord, who'), q1e = at(2, 'your robe?', 0.5),
+  const bg = at(2, 'begged'), al = at(2, 'Alone'), ja = at(2, 'Jesus appeared'), q1 = at(2, 'Lord, who'), q1e = at(2, 'your robe?', 0.5),
     q2 = at(2, 'Arius tore'), q2e = at(2, 'take him back', 0.6);
-  const envoys = `<g${fadeOut(al - 0.3, 0.6)}>`
-    + layer(0.95, lit(castShadow(...E1, 'pCell') + seq((op) => envoyPriest(...E1, 0, { flip: true, kneel: true, look: [2.4, -0.6], ...op }),
-      [[0, { mood: 'happy', armL: 20, armR: 20 }], [bg, { mood: 'worried', armL: 60, armR: [80, 4, 1.6] }]]), 'pCell'))
-    + layer(0.92, lit(castShadow(...E2, 'pCell') + seq((op) => envoyPriest(...E2, 1, { flip: true, kneel: true, look: [2.4, -0.6], ...op }),
-      [[0, { mood: 'happy', armL: 20, armR: 20 }], [bg + 0.2, { mood: 'worried', ...PRAY }]]), 'pCell')) + '</g>';
-  const child = layer(0.95, `<g opacity="0"${M.tw([{ at: ja - 0.2, dur: 1.0, from: { opacity: 0, y: 40 }, to: { opacity: 1, y: 0 }, ease: 'power2.out' }])}>`
+  const arrive = 1.3;
+  const envoy = (E, i, d, t0) => layer(d, walk(t0, arrive, 460, lit(castShadow(...E, 'pCell') + seq((op) => envoyPriest(...E, i, { flip: true, look: [2.4, -0.4], ...op }),
+    [[0, { mood: 'worried', armL: 14, armR: 14 }], [t0 + arrive, { mood: 'worried', kneel: true, armL: 60, armR: [84, 5, 1.4] }]]), 'pCell')));
+  const child = layer(0.95, `<g opacity="0"${M.tw([{ at: ja - 0.1, dur: 1.0, from: { opacity: 0, y: 70 }, to: { opacity: 1, y: 0 }, ease: 'power2.out' }])}>`
     + glow(CH2[0], 980, 380, 0.85) + `<g${M.bob(5, 3.2)}>` + lit(seq((op) => childJesusTorn(...CH2, { look: [-2.4, 0], ...op }),
       [[0, { mood: 'sad' }], [q2 - 0.2, { mood: 'sad', talk: [q2, q2e] }], [q2e, { mood: 'tender' }]]), 'pHook') + '</g>'
     + sparkles(16, 580, 900, 620, 1200, { seed: 9 }) + '</g>');
-  return envoys + child
-    + `<g opacity="0"${fadeIn(ja - 0.2, 0.3)}>${speedLines(CH2[0], 1060, { at: ja - 0.1, dur: 0.8, r0: 300, op: 0.4, color: '#fff4d8', seed: 6 })}</g>`
-    + lit(castShadow(...PK, 'pCell') + seq((op) => peterAlex(...PK, { chained: true, ...op }),
-      [[0, { mood: 'determined', look: [2.6, 0.6], armL: [14, 2, 3], armR: [14, 2, 3] }], [ar + 0.4, { mood: 'sad', look: [2.6, 0.8], armL: [14, 2, 3], armR: [14, 2, 3] }],
-        [al - 0.2, { mood: 'worried', kneel: true, ...PRAY }], [al + 0.9, { mood: 'peaceful', kneel: true, ...PRAY }],
-        [ja, { mood: 'awe', kneel: true, look: [2.6, -1.2], ...PRAY }], [q1 - 0.2, { mood: 'awe', kneel: true, look: [2.6, -1.2], talk: [q1, q1e], ...PRAY }],
-        [q1e, { mood: 'sad', kneel: true, look: [2.6, -1.0], ...PRAY }], [q2e, { mood: 'determined', kneel: true, look: [2.6, -1.0], ...PRAY }]]), 'pCell')
+  return `<g${fadeOut(al - 0.25, 0.25)}>${envoy(E1, 0, 0.95, 0.15)}${envoy(E2, 1, 0.92, 0.45)}</g>`
+    + `<g opacity="0"${M.tw([{ at: ja - 0.4, dur: 0.5, from: { opacity: 0 }, to: { opacity: 1 } }])}>${beam(660, 800, 600, 880, 1330, 0.75)}</g>`
+    + child
+    + speedLines(CH2[0], 1060, { at: ja - 0.1, dur: 0.8, r0: 300, op: 0.4, color: '#fff4d8', seed: 6 })
+    + lit(castShadow(...PK, 'pCell') + `<g${squash(al + 0.1, PK[0], PK[1], 0.08)}>` + seq((op) => peterAlex(...PK, { chained: true, ...op }),
+      [[0, { mood: 'determined', look: [2.6, 0.6], armL: [14, 2, 3], armR: [14, 2, 3] }], [bg, { mood: 'sad', look: [2.6, 0.8], armL: [14, 2, 3], armR: [-10, 2, 3] }],
+        [al, { mood: 'worried', kneel: true, ...PRAY }], [al + 0.9, { mood: 'peaceful', kneel: true, ...PRAY }],
+        [ja, { mood: 'awe', kneel: true, look: [2.6, -1.2], ...PRAY }], [q1 - 0.2, { mood: 'awe', kneel: true, look: [2.6, -1.2], talk: [q1, q1e], armL: -20, armR: [38, 3, 2] }],
+        [q1e, { mood: 'sad', kneel: true, look: [2.6, -1.0], ...PRAY }], [q2e, { mood: 'determined', kneel: true, look: [2.6, -1.0], ...PRAY }]]) + '</g>', 'pCell')
     + `<g opacity="0"${fadeIn(ja, 1.0)}>${glow(PK[0], 900, 300, 0.35)}</g>`;
 }
 
-// 3 · the plan: the soldiers dig through the back wall in a storm; Peter steps out (dolly; crack + shake on the break)
-const MS = [215, 1345, 2.2], TB = [870, 1312, 2.0], PW = [560, 1300, 2.0];
+// 3 · SHOT "So Peter refused… a secret plan": outside the back wall at night; two officers with torches march in from the
+//     right, a mason from the left; Peter's knock rings out on the wall.  SHOT "The officers dug through his back wall during
+//     a howling storm": cut closer; the mason swings, lightning, the wall bursts toward the camera.  SHOT "Do what you came to
+//     do": cut on Peter stepping out through the gap toward the camera.
+const MS = [200, 1345, 2.2], TB = [905, 1312, 2.0], TC = [775, 1310, 1.9], PW = [545, 1300, 2.0];
 function scene3() {
-  const rf = at(3, 'refused'), dg = at(3, 'dug'), bw = at(3, 'back wall', 0.3), stm = at(3, 'storm'), q = at(3, 'Do what'), qe = at(3, 'came to do', 0.5);
+  const sp = at(3, 'secret plan'), bw = at(3, 'back wall', 0.3), stm = at(3, 'storm'), q = at(3, 'Do what'), qe = at(3, 'came to do', 0.5);
   const brk = bw + 0.25;
-  return layer(0.85, lit(prisonWall({ t: brk, knock: at(3, 'secret plan') }), 'pStorm') + crack(560, 1120, 230, brk - 0.05, { seed: 5, color: '#1a1420' }))
-    + layer(0.9, `<g opacity="0"${M.tw([{ at: brk + 0.5, dur: 0.7, from: { opacity: 0, y: -10, scale: 0.92 }, to: { opacity: 1, y: 0, scale: 1 }, ease: 'power2.out', origin: `${PW[0]} ${PW[1]}` }])}>`
+  return layer(0.85, lit(prisonWall({ t: brk, knock: sp }), 'pStorm') + crack(560, 1120, 230, brk - 0.05, { seed: 5, color: '#1a1420' }))
+    + layer(0.9, `<g opacity="0"${M.tw([{ at: brk + 0.45, dur: 0.8, from: { opacity: 0, y: -14, scale: 0.8 }, to: { opacity: 1, y: 0, scale: 1 }, ease: 'power2.out', origin: `${PW[0]} ${PW[1]}` }])}>`
       + lit(castShadow(...PW, 'pStorm') + seq((op) => peterAlex(...PW, { chained: true, look: [1.6, 0], ...op }),
-        [[0, { mood: 'determined', armL: [14, 2, 3], armR: [14, 2, 3] }], [q - 0.2, { mood: 'determined', talk: [q, qe], armL: [14, 2, 3], armR: [40, 3, 2.4] }],
+        [[0, { mood: 'determined', armL: [14, 2, 3], armR: [14, 2, 3] }], [q - 0.2, { mood: 'determined', talk: [q, qe], armL: [14, 2, 3], armR: [50, 3, 2.4] }],
           [qe, { mood: 'peaceful', armL: [14, 2, 3], armR: [14, 2, 3] }]]), 'pStorm') + '</g>')
-    + layer(0.97, lit(castShadow(...TB, 'pStorm') + seq((op) => soldier(...TB, { flip: true, armL: [34, 2, 3], propL: torch, armR: [16, 2, 3], look: [2.4, 0], ...op }),
-      [[0, { mood: 'stern' }], [brk + 0.1, { mood: 'surprised' }], [q, { mood: 'worried' }]]), 'pStorm'))
-    + lit(castShadow(...MS, 'pStorm') + `<g${squash(brk, MS[0], MS[1], 0.08)}>` + seq((op) => stonemason(...MS, { look: [2.4, -0.4], ...op }),
-      [[0, { armR: [150, 22, 0.7], propR: pickaxe(1.0), armL: [40, 2, 3] }], [brk, { mood: 'surprised', armL: [26, 2, 3], propL: pickaxe(1.0), armR: [52, 3, 2] }]]) + '</g>', 'pStorm')
+    + layer(0.92, walk(0.5, 1.4, 420, lit(castShadow(...TC, 'pStorm') + seq((op) => soldier(...TC, { flip: true, armL: [34, 2, 3], propL: torch, armR: [16, 2, 3], look: [2.4, 0], ...op }),
+      [[0, { mood: 'stern' }], [brk + 0.1, { mood: 'surprised' }]]), 'pStorm')))
+    + layer(0.97, walk(0.2, 1.4, 420, lit(castShadow(...TB, 'pStorm') + seq((op) => soldier(...TB, { flip: true, armL: [34, 2, 3], propL: torch, armR: [16, 2, 3], look: [2.4, 0], ...op }),
+      [[0, { mood: 'stern' }], [brk + 0.1, { mood: 'surprised' }], [q, { mood: 'worried' }]]), 'pStorm')))
+    + walk(0.3, 1.3, -380, lit(castShadow(...MS, 'pStorm') + `<g${squash(brk, MS[0], MS[1], 0.08)}>` + seq((op) => stonemason(...MS, { look: [2.4, -0.4], ...op }),
+      [[0, { armR: [30, 2, 3], propR: pickaxe(1.0), armL: [20, 2, 3] }], [Math.max(1.8, bw - 1.6), { armR: [150, 22, 0.7], propR: pickaxe(1.0), armL: [40, 2, 3] }],
+        [brk, { mood: 'surprised', armL: [26, 2, 3], propL: pickaxe(1.0), armR: [24, 3, 2] }]]) + '</g>', 'pStorm'))
     + lightning(stm - 0.1)
     + `<g opacity="0"${fadeIn(brk, 0.1)}><g${fadeOut(brk + 0.4, 1.2)}>${glow(560, 1150, 360, 0.6)}${sparkles(14, 420, 700, 980, 1280, { seed: 21, color: '#e0d8e8' })}</g></g>`
     + layer(1.25, rain({ op: 0.3 }));
 }
 
-// 4 · St. Mark's tomb at dawn: no soldier dares; five gold coins each; the death in light; the Seal of the Martyrs
-// (push + hero + whip-in; jump cut on a soldier; sweat; coins squash; burst on the climax line)
-const TM = [190, 1312, 0.74], PT = [410, 1345, 2.3], SA = [730, 1322, 2.0], SB = [865, 1310, 1.95];
+// 4 · SHOT "At Saint Mark's tomb, the five officers each put in five gold coins…": Peter kneels at the tomb; one by one the
+//     five officers toss coins into an upturned helmet.  SHOT "One finally did.": cut on Peter's face, a flash of light (no blow
+//     is shown).  SHOT "It looked like Rome had won.": cut on the officers; they turn and walk away.  SHOT the climax line: cut
+//     back to Peter: a beam from the sky, the halo, a palm, the burst of light.
+const TM = [150, 1312, 0.72], PT = [380, 1345, 2.3], HB = [565, 1362], SA = [730, 1322, 2.0], SB = [870, 1310, 1.95];
+const BACK = [[650, 1262, 1.45], [790, 1262, 1.45], [940, 1262, 1.45]];
 function scene4() {
-  const ds = at(4, 'five officers'), gc = at(4, 'five gold'), fd = at(4, 'One finally'), lw = at(4, 'It looked'), sl = at(4, 'But Peter'), se = at(4, 'Seal');
-  const coins = [[590, 1350, -8], [620, 1356, 12], [606, 1342, 4], [640, 1346, -16], [574, 1358, 20], [656, 1358, 6]].map(([x, y, r], k) =>
-    `<g opacity="0"${M.tw([{ at: gc + k * 0.12, dur: 0.38, from: { opacity: 1, y: -240 }, to: { opacity: 1, y: 0 }, ease: 'bounce.out' }])}>${goldCoin(x, y, 13, r)}</g>`).join('');
-  const back3 = [[600, 1.15, false], [665, 1.12, true], [995, 1.15, true]].map(([x, sc, fl]) => castShadow(x, 1250, sc, 'pTomb')
-    + soldier(x, 1250, sc, { flip: fl, mood: 'worried', look: [fl ? -2 : 2, 0.4], armL: [12, 2, 3], armR: [14, 2, 3] })).join('');
-  return MID(lit(back3, 'pTomb')) + layer(0.92, lit(castShadow(TM[0], TM[1], 0.9, 'pTomb') + `<g transform="translate(${TM[0]},${TM[1]})">${markTomb(TM[2])}</g>`, 'pTomb'))
-    + layer(0.92, lit(castShadow(...SB, 'pTomb') + seq((op) => soldier(...SB, { flip: true, armL: [12, 2, 3], propL: gladiusDown, look: [2.4, 0.6], ...op }),
-      [[0, { mood: 'stern' }], [ds + 0.2, { mood: 'worried' }], [gc + 0.2, { mood: 'worried', armR: [28, 2, 3] }], [sl, { mood: 'surprised', look: [2.6, -0.6] }]]), 'pTomb'))
-    + layer(0.95, lit(castShadow(...SA, 'pTomb') + seq((op) => soldier(...SA, { flip: true, armL: [12, 2, 3], propL: gladiusDown, look: [2.4, 0.6], ...op }),
-      [[0, { mood: 'stern' }], [ds, { mood: 'worried', look: [-2, 0] }], [gc, { mood: 'worried', armR: [28, 2, 3] }], [sl, { mood: 'surprised', look: [2.6, -0.6] }]])
-      + sweat(...SA, ds + 0.1, { side: -1, dur: 2.4 }), 'pTomb'))
-    + `<g${squash(gc + 0.7, 615, 1356, 0.2)}>${coins}</g>`
+  const fo = at(4, 'five officers'), gc = at(4, 'five gold'), fd = at(4, 'One finally'), lw = at(4, 'It looked'), sl = at(4, 'But Peter'), se = at(4, 'Seal');
+  const tT = (k) => gc + 0.2 + k * 0.55;   // when officer k tosses (order: back 0, back 1, front A, back 2, front B)
+  const toss = (hx, hy, t, k) => [0, 1, 2].map((j) => `<g opacity="0"${M.tw([{ at: t + j * 0.07, dur: 0.05, from: { opacity: 0 }, to: { opacity: 1 } }])}>`
+    + `<g${M.tw([{ at: t + j * 0.07, dur: 0.55, from: { x: f(hx - HB[0]) }, to: { x: (j - 1) * 8 }, ease: 'none' }])}><g${M.tw([{ at: t + j * 0.07, dur: 0.55, from: { y: f(hy - HB[1]) }, to: { y: -58 - j * 4 }, ease: 'back.in(2.2)' }])}>`
+    + goldCoin(HB[0], HB[1], 16, (k * 30 + j * 17) % 40 - 20) + '</g></g></g>').join('');
+  const tosses = [[BACK[0][0] - 40, 1110, 0], [BACK[1][0] - 40, 1110, 1], [SA[0] - 70, 1110, 2], [BACK[2][0] - 40, 1110, 3], [SB[0] - 70, 1110, 4]]
+    .map(([x, y, k]) => toss(x, y, tT(k), k)).join('');
+  const off = (E, d, i, k) => layer(d, `<g${fadeOut(sl - 0.3, 0.3)}>` + walkOut(lw + 0.2, 1.6, 620, lit(castShadow(...E, 'pTomb') + seq((op) => soldier(...E, { armL: [12, 2, 3], propL: gladiusDown, ...op }),
+      [[0, { flip: true, mood: 'stern', look: [2.4, 0.6] }], [fo + 0.2 + i * 0.1, { flip: true, mood: 'worried', look: [2.4, 0.6] }],
+        [tT(k) - 0.15, { flip: true, mood: 'worried', armR: [70, 2, 2] }], [tT(k) + 0.4, { flip: true, mood: 'worried', armR: [20, 2, 3] }],
+        [lw, { flip: false, mood: 'stern', look: [2.4, 0] }]]), 'pTomb')) + '</g>');
+  return BACK.map((E, i) => { const k = [0, 1, 3][i];
+      return layer(0.8, `<g${fadeOut(lw + 0.3, 0.6)}>` + lit(castShadow(...E, 'pTomb') + seq((op) => soldier(...E, { flip: true, armL: [12, 2, 3], look: [2.4, 0.6], ...op }),
+        [[0, { mood: 'stern' }], [fo + 0.1 * i, { mood: 'worried' }], [tT(k) - 0.15, { mood: 'worried', armR: [70, 2, 2] }], [tT(k) + 0.4, { mood: 'worried', armR: [20, 2, 3] }]]), 'pTomb') + '</g>'); }).join('')
+    + layer(0.92, lit(castShadow(TM[0], TM[1], 0.9, 'pTomb') + `<g transform="translate(${TM[0]},${TM[1]})">${markTomb(TM[2])}</g>`, 'pTomb'))
+    + off(SB, 0.92, 1, 4) + off(SA, 0.95, 0, 2)
+    + `<g${fadeOut(sl - 0.3, 0.3)}>` + lit(`<g transform="translate(${HB[0]},${HB[1]}) scale(1.7)">${helmetBowl}</g>`, 'pTomb') + tosses + '</g>'
+    + `<g opacity="0"${M.tw([{ at: sl - 0.2, dur: 0.5, from: { opacity: 0 }, to: { opacity: 1 } }])}>${beam(PT[0] - 90, PT[0] + 90, PT[0] - 200, PT[0] + 200, 1360, 0.8)}</g>`
     + lit(castShadow(...PT, 'pTomb') + seq((op) => peterAlex(...PT, { kneel: true, ...PRAY, ...op }),
-      [[0, { mood: 'peaceful', look: [-2.6, -0.6] }], [ds, { mood: 'peaceful' }], [fd, { mood: 'peaceful', halo: fd + 0.3 }],
-        [sl, { mood: 'tender', halo: true, armR: -20, armL: [60, 3, 2.4], propL: palm_frond(1.0, 6) }]]), 'pTomb')
+      [[0, { mood: 'peaceful', look: [-2.6, -0.6] }], [fd, { mood: 'peaceful', halo: fd + 0.3 }],
+        [sl, { mood: 'tender', halo: true, look: [0, -1.4], armR: -20, armL: [60, 3, 2.4], propL: palm_frond(1.0, 6) }]]), 'pTomb')
     + flash(fd + 0.2, '#fff8ea', 0.7)
     + `<g opacity="0"${fadeIn(lw - 0.2, 0.6)}><g${fadeOut(sl - 0.1, 0.4)}><rect x="-300" y="-300" width="1680" height="2520" fill="#1a1428" opacity=".35"/></g></g>`
-    + burst(PT[0], 930, 520, se) + `<g opacity="0"${fadeIn(se, 0.6)}>${glow(PT[0], 940, 420, 0.6)}${sparkles(18, 280, 680, 700, 1180, { seed: 30 })}</g>`
+    + burst(PT[0], 930, 520, se) + `<g opacity="0"${fadeIn(se, 0.6)}>${glow(PT[0], 940, 420, 0.6)}${sparkles(18, 200, 640, 700, 1180, { seed: 30 })}</g>`
     + NEAR(foliage('l', 1650, { color: '#3a3428', seed: 4 }));
 }
 
-// 5 · Nicaea, 325: Alexander and the bishops condemn Arius; Peter in glory over them (pull)
-const AX = [520, 1345, 2.2], PG = [790, 980, 1.2];
+// 5 · SHOT "Fourteen years later, at Nicaea, the Church condemned Arius.": the council; Alexander raises the creed scroll; Arius
+//     turns and walks out of the frame.  SHOT the quotable line: Peter comes down from the sky on a cloud, in glory.
+const AX = [400, 1345, 2.2], AR = [840, 1322, 2.0], PG = [720, 960, 1.3];
 function scene5() {
-  const ni = at(5, 'Nicaea'), co = at(5, 'condemned'), rm = at(5, 'Rome took'), ct = at(5, 'could not');
-  return MID(lit(castShadow(200, 1240, 1.0, 'pNicaea') + bishopHD(200, 1240, 1.0, 1, { mood: 'happy', look: [2, 0], armL: 20, armR: 20 })
-      + castShadow(330, 1240, 0.97, 'pNicaea') + bishopHD(330, 1240, 0.97, 2, { mood: 'happy', look: [2, 0], armL: 14, armR: [26, 2, 3], propR: scroll(0.8) })
-      + castShadow(880, 1240, 0.98, 'pNicaea') + bishopHD(880, 1240, 0.98, 2, { flip: true, mood: 'happy', look: [2, 0], armL: 20, armR: 20 }), 'pNicaea'))
+  const co = at(5, 'condemned'), rm = at(5, 'Rome took'), ct = at(5, 'could not');
+  return MID(lit(castShadow(170, 1240, 1.0, 'pNicaea') + bishopHD(170, 1240, 1.0, 1, { mood: 'happy', look: [2, 0], armL: 20, armR: 20 })
+      + castShadow(290, 1240, 0.97, 'pNicaea') + bishopHD(290, 1240, 0.97, 2, { mood: 'happy', look: [2, 0], armL: 14, armR: [26, 2, 3], propR: scroll(0.8) })
+      + castShadow(650, 1240, 0.98, 'pNicaea') + bishopHD(650, 1240, 0.98, 1, { flip: true, mood: 'happy', look: [-2, 0], armL: 20, armR: 20 }), 'pNicaea'))
+    + layer(0.95, walkOut(co + 0.6, 2.2, 520, lit(castShadow(...AR, 'pNicaea') + seq((op) => arius(...AR, { armL: [14, 2, 3], armR: [14, 2, 3], ...op }),
+      [[0, { flip: true, mood: 'stern', look: [2.4, 0] }], [co, { flip: true, mood: 'sad', look: [2.4, 1.2] }], [co + 0.5, { flip: false, mood: 'sad', look: [2, 1.4] }]]), 'pNicaea')))
     + lit(castShadow(...AX, 'pNicaea') + seq((op) => bishopHD(...AX, 0, { armL: [16, 2, 3], ...op }),
-      [[0, { mood: 'happy', armR: [20, 2, 3], propR: scroll(1.1) }], [co - 0.2, { mood: 'determined', armR: [128, 4, 2], propR: scroll(1.1) }],
-        [rm, { mood: 'tender', look: [2.4, -1.6], armR: [40, 2, 3], propR: scroll(1.1) }]]), 'pNicaea')
-    + `<g opacity="0"${fadeIn(co, 0.5)}>${glow(AX[0] + 90, 760, 160, 0.6)}${sparkles(8, 560, 720, 640, 820, { seed: 17 })}</g>`
-    + layer(0.9, `<g opacity="0"${M.tw([{ at: rm - 0.3, dur: 1.2, from: { opacity: 0, y: 50 }, to: { opacity: 1, y: 0 }, ease: 'power2.out' }])}>`
-      + glow(PG[0], 760, 280, 0.8) + `<g transform="translate(${PG[0]},${PG[1] + 10})"><ellipse rx="140" ry="32" fill="#fff8ec" opacity=".9"/><ellipse cx="-60" cy="-12" rx="60" ry="30" fill="#fffdf6"/><ellipse cx="54" cy="-14" rx="66" ry="32" fill="#fffdf6"/></g>`
-      + `<g${M.bob(6, 3.4)}>${lit(peterAlex(...PG, { halo: true, mood: 'tender', look: [-2, 0.4], armL: [24, 2, 3], armR: [40, 2, 3], propR: palm_frond(0.9, -6) }), 'pNicaea')}</g>`
-      + `<g opacity="0"${fadeIn(ct, 0.8)}>${sparkles(14, 640, 920, 560, 940, { seed: 23 })}</g></g>`)
-    + NEAR(bokeh(6, { seed: 33 }) + foliage('l', 1650, { color: '#3e4a2a', seed: 8 }));
+      [[0, { mood: 'happy', look: [2.4, 0], armR: [20, 2, 3], propR: scroll(1.1) }], [co - 0.2, { mood: 'determined', look: [2.4, 0], armR: [128, 4, 2], propR: scroll(1.1) }],
+        [rm, { mood: 'tender', look: [0.6, -2], armR: [40, 2, 3], propR: scroll(1.1) }]]), 'pNicaea')
+    + `<g opacity="0"${fadeIn(co, 0.5)}>${glow(AX[0] + 90, 760, 160, 0.6)}${sparkles(8, 520, 680, 640, 820, { seed: 17 })}</g>`
+    + layer(0.9, `<g opacity="0"${M.tw([{ at: rm - 0.2, dur: 1.4, from: { opacity: 0, y: -520 }, to: { opacity: 1, y: 0 }, ease: 'power2.out' }])}>`
+      + glow(PG[0], 760, 300, 0.85) + `<g transform="translate(${PG[0]},${PG[1] + 10})"><ellipse rx="150" ry="34" fill="#fff8ec" opacity=".9"/><ellipse cx="-64" cy="-12" rx="62" ry="30" fill="#fffdf6"/><ellipse cx="58" cy="-14" rx="68" ry="32" fill="#fffdf6"/></g>`
+      + `<g${M.bob(6, 3.4)}>${lit(seq((op) => peterAlex(...PG, { halo: true, look: [0, 0.4], armL: [24, 2, 3], propR: palm_frond(0.9, -6), ...op }),
+        [[0, { mood: 'tender', armR: [40, 2, 3] }], [ct, { mood: 'happy', armR: [120, 4, 2] }]]), 'pNicaea')}</g>`
+      + `<g opacity="0"${fadeIn(ct, 0.8)}>${sparkles(14, 560, 880, 520, 900, { seed: 23 })}</g></g>`)
+    + NEAR(bokeh(6, { seed: 33 }));
 }
 
-// 6 · feast-day portrait: halo, palm, Gospel book, omophorion; the Pharos at sunset (arc-r)
+// 6 · SHOT "His feast day is November 25.": the portrait at sunset; he lifts the palm.  SHOT "Saint Peter of Alexandria, pray
+//     for us.": cut closer; he opens the Gospel book, tender.
 function scene6() {
-  const nv = at(6, 'November'), pr = at(6, 'pray for us');
-  return lit(castShadow(510, 1345, 2.35, 'pGlory') + seq((op) => peterAlex(510, 1345, 2.35, { halo: true, armR: [28, 2, 3], propR: palm_frond(1.1, -8), ...op }),
-      [[0, { mood: 'happy', look: [0, 0], armL: [30, 2, 3], propL: book(false) }], [nv, { mood: 'happy', look: [-1.2, 0.4], armL: [40, 2, 3], propL: book(true) }],
-        [pr, { mood: 'tender', armL: [40, 2, 3], propL: book(true) }]]), 'pGlory')
+  const nv = at(6, 'November'), pr = at(6, 'Saint Peter of');
+  return lit(castShadow(510, 1345, 2.35, 'pGlory') + seq((op) => peterAlex(510, 1345, 2.35, { halo: true, propR: palm_frond(1.1, -8), ...op }),
+      [[0, { mood: 'happy', look: [0, 0], armR: [28, 2, 3], armL: [30, 2, 3], propL: book(false) }], [nv, { mood: 'happy', look: [-1.2, 0.4], armR: [64, 3, 2.4], armL: [30, 2, 3], propL: book(false) }],
+        [pr, { mood: 'tender', armR: [40, 2, 3], armL: [44, 2, 3], propL: book(true) }]]), 'pGlory')
     + `<g opacity="0"${fadeIn(nv, 0.7)}>${glow(510, 740, 240, 0.45)}${sparkles(8, 390, 650, 660, 820, { seed: 35 })}</g>`
     + `<g opacity="0"${fadeIn(pr, 0.8)}>${sparkles(14, 300, 760, 520, 900, { seed: 29 })}</g>`
     + NEAR(bokeh(7, { seed: 47 }) + foliage('l', 1640, { color: '#2a2440', seed: 13 }));
 }
 
+const STILL = { move: 'push', amt: 0.002, oy: 1000 };   // a fixed camera (Ricks Clips shots)
 const HOOK = { speed: 1.1, gap: 0.18, gain: 1 };
 const STAND = { speed: 1.0, gap: 0.26, gain: 0, voice: { am_michael: 0.85, am_onyx: 0.15 } };
 const HUSH = { speed: 0.95, gap: 0.3, gain: -1, voice: { am_michael: 0.8, am_onyx: 0.2 } };
@@ -333,7 +395,7 @@ export const STORY = {
   bg3d_extra: { 'bakhita.bg3d.js': './bakhita_freedom.bg3d.js', 'agnes.bg3d.js': './agnes_of_assisi_too_heavy.bg3d.js', 'edmund.bg3d.js': './edmund_last_stand.bg3d.js',
     'andrew.bg3d.js': './andrew_apostle.bg3d.js', 'roma.bg3d.js': './gelasius.bg3d.js', 'alexandria.bg3d.js': './catherine_of_alexandria.bg3d.js' },
   voice: 'am_michael', speed: 0.95, flow: true,
-  fx: { handheld: true, leak: true, loop: true },
+  fx: { handheld: false, leak: true, loop: true },   // no hand-held sway (user's rule 2026-11-25)
   cam3d: { plane: 20, dof: 2 },
   bg3d_vars: { light: LIGHT },
   music: { story: 'St. Peter of Alexandria, the bishop who saw Christ in a torn robe in his prison cell and was led out through a hole in the wall to die in secret',
@@ -348,43 +410,44 @@ export const STORY = {
     'nɪkˈiə': 'naɪsˈiːə',                // Nicaea
   },
   scenes: [
-    // one sentence = one shot: every spoken sentence gets its own framing (scene change, jump cut, zoom or whip)
+    // Ricks Clips motion: a fixed camera on every shot (STILL), a hard cut (zoom style 'cut') on each new sentence, shakes only on impacts.
     { kicker: 'ALEXANDRIA, EGYPT · 311', title: 'Killed in Secret', art: scene0, bg3d: 'pHook', front3d: true,
-      cam: { move: 'push-fast', oy: 1000, shake: { at: at(0, 'broke'), amt: 20, dur: 0.7 },
-        zoom: { at: at(0, 'This is'), to: face(...P0), style: 'snap', z: 1.35, hold: 'end' } },
+      cam: { ...STILL, shake: { at: at(0, 'broke'), amt: 20, dur: 0.7 },
+        zoom: { at: at(0, 'This is'), to: face(...P0), style: 'cut', z: 1.35, hold: 'end' } },
       tone: HOOK,
       say: ['Five Roman officers broke through a prison wall at night to kill one bishop.', 'This is Saint Peter of Alexandria.'] },
     { kicker: 'THE GREAT PERSECUTION', title: 'Jailed by the Emperor', art: scene1, bg3d: 'pArrest', front3d: true,
-      cam: { move: 'pan-r', drone: { h: 8, back: 12, dur: 2.8 } },
+      cam: { ...STILL, zoom: { at: 0.02, to: face(...EM), depth: 0.92, style: 'cut', z: 1.7, center: 0.6, hold: Math.max(0.6, at(1, 'but crowds') - 0.1) } },
       tone: HOOK,
       say: ['Emperor Maximin wanted him dead, but crowds of monks and holy women guarded his prison.'] },
     { kicker: 'THE PRISON CELL', title: 'Who Tore Your Robe?', art: scene2, bg3d: 'pCell', front3d: true,
-      cam: { move: 'tilt-up', amt: 0.06, rack: { at: 3, dur: 2.5, blur: 6 }, zoom: [
-        { at: at(2, 'Alone'), to: [540, 1000], style: 'cut', z: 1.25, center: 0.3, hold: Math.max(0.6, at(2, 'Lord, who') - at(2, 'Alone') - 0.1) },
-        { at: at(2, 'Lord, who'), to: face(PK[0], PK[1], PK[2], true), style: 'snap', z: 1.4, hold: Math.max(0.6, at(2, 'your robe?', 0.5) - at(2, 'Lord, who') - 0.3) },
-        { at: at(2, 'Arius tore'), to: face(...CH2), depth: 0.95, style: 'smooth', z: 1.35, hold: 'end' }] },
+      cam: { ...STILL, rack: { at: 4, dur: 2.5, blur: 6 }, zoom: [
+        { at: at(2, 'Alone'), to: [540, 1000], style: 'cut', z: 1.25, center: 0.3, hold: Math.max(0.6, at(2, 'Lord, who') - at(2, 'Alone') - 0.05) },
+        { at: at(2, 'Lord, who'), to: face(PK[0], PK[1], PK[2], true), style: 'cut', z: 1.45, hold: Math.max(0.6, at(2, 'Arius tore') - at(2, 'Lord, who') - 0.05) },
+        { at: at(2, 'Arius tore'), to: face(...CH2), depth: 0.95, style: 'cut', z: 1.45, hold: 'end' }] },
       tone: HUSH,
       say: ['Then Arius, a deacon he had cut off, begged to come back.', 'Alone in chains, Peter prayed, and Jesus appeared as a boy, his robe torn from neck to feet.',
         { text: 'Lord, who tore your robe?', who: 'peter' }, { text: 'Arius tore it. Do not take him back.', who: 'jesus' }] },
     { kicker: 'A STORMY NIGHT', title: 'Through the Wall', art: scene3, bg3d: 'pStorm', front3d: true,
-      cam: { move: 'dolly', amt: 0.08, ox: 560, oy: 1000, shake: [{ at: at(3, 'back wall', 0.55), amt: 22, dur: 0.7 }, { at: at(3, 'storm', -0.1), amt: 10, dur: 0.5 }],
-        zoom: { at: at(3, 'Do what'), to: face(...PW), depth: 0.9, style: 'cut', z: 1.4, hold: 'end' } },
+      cam: { ...STILL, shake: [{ at: at(3, 'back wall', 0.55), amt: 22, dur: 0.7 }, { at: at(3, 'storm', -0.1), amt: 10, dur: 0.5 }], zoom: [
+        { at: at(3, 'The officers'), to: [520, 1060], depth: 0.85, style: 'cut', z: 1.3, hold: Math.max(0.6, at(3, 'Do what') - at(3, 'The officers') - 0.05) },
+        { at: at(3, 'Do what'), to: face(...PW), depth: 0.9, style: 'cut', z: 1.45, hold: 'end' }] },
       tone: STAND,
       say: ['So Peter refused, and to save the crowd, he made a secret plan.', 'The officers dug through his back wall during a howling storm.', { text: 'Do what you came to do.', who: 'peter' }] },
     { kicker: "SAINT MARK'S TOMB · DAWN", title: 'Seal of the Martyrs', art: scene4, bg3d: 'pTomb', front3d: true,
-      cam: { move: 'push', amt: 0.06, ox: 470, oy: 1000, whip: 'r', hero: { h: 2.2 }, zoom: [
-        { at: at(4, 'One finally'), to: face(PT[0], PT[1], PT[2], true), style: 'cut', z: 1.45, hold: Math.max(0.5, at(4, 'It looked') - at(4, 'One finally') - 0.1) },
-        { at: at(4, 'It looked'), to: face(...SA), depth: 0.95, style: 'cut', z: 1.5, hold: Math.max(0.5, at(4, 'But Peter') - at(4, 'It looked') - 0.1) },
-        { at: at(4, 'But Peter'), to: face(PT[0], PT[1], PT[2], true), style: 'smooth', z: 1.3, hold: 'end' }] },
+      cam: { ...STILL, whip: 'r', zoom: [
+        { at: at(4, 'One finally'), to: face(PT[0], PT[1], PT[2], true), style: 'cut', z: 1.45, hold: Math.max(0.5, at(4, 'It looked') - at(4, 'One finally') - 0.05) },
+        { at: at(4, 'It looked'), to: face(...SA), depth: 0.95, style: 'cut', z: 1.35, hold: Math.max(0.5, at(4, 'But Peter') - at(4, 'It looked') - 0.05) },
+        { at: at(4, 'But Peter'), to: face(PT[0], PT[1], PT[2], true), style: 'cut', z: 1.3, hold: 'end' }] },
       tone: STAND,
       say: ["At Saint Mark's tomb, the five officers each put in five gold coins for whoever would strike.", 'One finally did.', 'It looked like Rome had won.',
         { text: 'But Peter became the Seal of the Martyrs.', speed: 0.85 }] },
     { kicker: 'NICAEA · 325', title: 'The Robe Kept Whole', art: scene5, bg3d: 'pNicaea', front3d: true,
-      cam: { move: 'pull', amt: 0.06, oy: 1000, zoom: { at: at(5, 'Rome took'), to: [PG[0], PG[1] - 252 * PG[2]], depth: 0.9, style: 'fly', z: 1.5, in: 1.2, hold: 'end' } },
+      cam: { ...STILL, zoom: { at: at(5, 'Rome took'), to: [PG[0], Math.round(PG[1] - 252 * PG[2]) + 80], depth: 0.9, style: 'cut', z: 1.4, hold: 'end' } },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['Fourteen years later, at Nicaea, the Church condemned Arius.', "Rome took his life in secret, but it could not tear Christ's robe."] },
     { kicker: 'FEAST DAY · NOVEMBER 25', title: 'Saint Peter', art: scene6, bg3d: 'pGlory', front3d: true,
-      cam: { move: 'arc-r', amt: 0.06, oy: 1000, zoom: { at: at(6, 'Saint Peter of'), to: [510, 1345 - 252 * 2.35], style: 'smooth', z: 1.2, center: 0.4, hold: 'end' } },
+      cam: { ...STILL, zoom: { at: at(6, 'Saint Peter of'), to: [510, Math.round(1345 - 252 * 2.35)], style: 'cut', z: 1.3, center: 0.4, hold: 'end' } },
       tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
       say: ['His feast day is November 25.', 'Saint Peter of Alexandria, pray for us.'] },
   ],
