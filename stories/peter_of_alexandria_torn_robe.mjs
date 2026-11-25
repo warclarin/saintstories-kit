@@ -15,7 +15,7 @@
 // 25 November 311, "the Seal of the Martyrs", excommunicated Arius; Severus: soldiers feared a riot. Nicaea (325) condemned
 // Arius (Wikipedia "First Council of Nicaea"). Feast November 25 (Vatican News saint of the day, Butler).
 // Bloodless (Meta/YouTube): no blow shown; he kneels in prayer, a flash of light, the halo and palm.
-// Exported for later reels: peterAlex, childJesusTorn, omophorion, tornRobe, monkEG, holyVirgin, envoyPriest, bishopHD,
+// Exported for later reels: walk, walkOut, arius, peterAlex, childJesusTorn, omophorion, tornRobe, monkEG, holyVirgin, envoyPriest, bishopHD,
 // stonemason, goldCoin, markTomb, prisonWall, rain, LIGHT, lit, castShadow.
 import { M, GOLD, sparkles, bokeh, foliage, dark, light, f, palm_frond, book, beam, NEAR, MID, layer } from '../art.mjs';
 import { hd, seq, wordTimes } from '../hd.mjs';
@@ -184,10 +184,10 @@ const steps = (t, n, step, hop) => {
   ys.push({ at: t + n * step, dur: 0.12, to: { y: 0 } });
   return ys;
 };
-const walk = (t, dur, dx, svg, { hop = 9, step = 0.24 } = {}) =>
+export const walk = (t, dur, dx, svg, { hop = 9, step = 0.24 } = {}) =>
   `<g${M.tw([{ at: t, dur, from: { x: dx }, to: { x: 0 }, ease: 'power1.out' }])}><g${M.tw(steps(t, Math.max(2, Math.round(dur / step)), step, hop))}>${svg}</g></g>`;
 /** Walk out: from its place to dx px away, starting at t. */
-const walkOut = (t, dur, dx, svg, { hop = 9, step = 0.24 } = {}) =>
+export const walkOut = (t, dur, dx, svg, { hop = 9, step = 0.24 } = {}) =>
   `<g${M.tw([{ at: t, dur, from: { x: 0 }, to: { x: dx }, ease: 'power1.in' }])}><g${M.tw(steps(t, Math.max(2, Math.round(dur / step)), step, hop))}>${svg}</g></g>`;
 /** An upturned helmet on the ground, used as a bowl for the coins (base centre at 0,0). */
 const helmetBowl = `<g><ellipse cy="6" rx="60" ry="10" fill="#140c14" opacity=".3"/><path d="M-44 -34 Q-42 4 0 6 Q42 4 44 -34Z" fill="#b8a070"/>`
