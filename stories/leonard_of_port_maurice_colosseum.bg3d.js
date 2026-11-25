@@ -2,7 +2,7 @@
 // work/<slug>/bg3d.mjs). Set-ups of roma() from gelasius.bg3d.js (imported as a library). Every set-up holds a fixed camera
 // (move 'push' with a near-zero amount from the story: the Ricks Clips motion standard, no sway, no tilt).
 //   lHook   golden evening inside the arena (the SVG ruin card covers the city; sky and sand from 3D)
-//   lRome   afternoon over Rome with the Colosseum close on the right (he wants the arena made holy; the map of Italy)
+//   lAncient bright day inside the arena (the games, the martyrs, the ruin; the SVG cards swap stands for ruins)
 //   lPope   dusk at St. Peter's: the basilica's windows lit (the nobles; the Pope says yes)
 //   lArena  a cold December evening inside the arena (the edict, the fourteen shrines, the sermon, the Way of the Cross)
 //   lNight  night on the Palatine, stars, light from above (he comes home and dies that night)
@@ -20,7 +20,8 @@ const { roma } = R;
 const INSIDE = { basilica: null, colosseum: null, temples: [], roofs: false, aqueduct: null, palatine: null, pines: false };
 export const SETS = {
   lHook: { base: 'hook', move: 'push', ...INSIDE, near: '#c8ae7c', sun: [880, 760, 0.8], rays: { op: 0.07, dir: -0.5, spread: 1.0 } },
-  lRome: { base: 'city', move: 'push', aqueduct: null, colosseum: [700, 1100, 330] },
+  lAncient: { base: 'hook', move: 'push', ...INSIDE, near: '#d8bc88', sky: [[0, '#3a78b8'], [0.36, '#8cc0e0'], [0.5, '#e4dcbc'], [0.57, '#f0e0b8'], [1, '#f0e0b8']], fog: '#e8dcbc',
+    sun: [860, 620, 0.6], rays: { op: 0.05, dir: -0.5, spread: 0.9 }, hemi: ['#ffffff', '#8a6a44', 1.5], key: ['#fff4d8', 1.5] },
   lPope: { base: 'letter', move: 'push', temples: [] },
   lArena: { base: 'hook', move: 'push', ...INSIDE, near: '#b89e70', sky: [[0, '#2a3460'], [0.28, '#6a6a98'], [0.44, '#d8a088'], [0.54, '#f0c09a'], [0.58, '#f4cca4'], [1, '#f4cca4']],
     fog: '#d0a890', sun: [160, 860, 0.7], rays: { op: 0.06, dir: 0.5, spread: 1.0 }, hemi: ['#ffe0c8', '#4a3a3a', 1.25], key: ['#ffc090', 1.2] },
