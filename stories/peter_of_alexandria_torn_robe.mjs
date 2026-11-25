@@ -142,7 +142,7 @@ const soldier = (x, y, s, o = {}) => legionary(x, y, s, o);
 
 // ================================================================ one light per scene (shared with the 3D set)
 export const LIGHT = {
-  pHook:   { key: '#fff0d0', from: 'r', tint: '#a8b0d8', amt: 0.16, rim: '#fff4d8', rimOp: 0.9 },
+  pHook:   { key: '#ffb878', from: 'r', tint: '#a4a8cc', amt: 0.16, rim: '#ffd0a0', rimOp: 0.9 },
   pArrest: { key: '#ffb880', from: 'back', tint: '#ffbe9a', amt: 0.14, rim: '#ffc08a', rimOp: 0.85 },
   pCell:   { key: '#c8d8ff', from: 'r', tint: '#9aa8d8', amt: 0.22, rim: '#d8e4ff', rimOp: 0.9 },
   pStorm:  { key: '#ffb070', from: 'r', tint: '#7a80a8', amt: 0.24, rim: '#ffc890', rimOp: 0.85 },
@@ -173,16 +173,41 @@ export const castShadow = (x, y, s, mode) => {
 // ================================================================ scenes
 // cam3d: the character plane (depth 1) is 20 units away; layer(d) at 20 / d. Feet art y: depth 1 ~1345, 0.97 ~1312,
 // 0.95 ~1322, 0.92 ~1310, 0.85 ~1286, 0.78 ~1262, MID 0.75 ~1240.
-const P0 = [360, 1345, 2.35], CH0 = [720, 1322, 1.5];
-// 0 · hook: Peter in chains in his cell; the boy Christ in the torn robe stands in the light (push-fast; jump cut on the robe)
+const P0 = [350, 1345, 2.5], HX = 770, HY = 1236;
+/** A hole smashed through the cell's back wall (on the 3D wall, depth 0.74) at time t: cracks, stones flying at the camera,
+ * a dust puff, then the dark gap with a soldier's torch blazing in it. */
+const wallBreach = (t) => {
+  const hole = `M${HX - 112} ${HY} L${HX - 118} ${HY - 120} L${HX - 92} ${HY - 196} L${HX - 40} ${HY - 250} L${HX + 18} ${HY - 262} L${HX + 74} ${HY - 228} L${HX + 110} ${HY - 160} L${HX + 120} ${HY - 70} L${HX + 114} ${HY}Z`;
+  const pop = M.tw([{ at: t, dur: 0.22, from: { opacity: 0, scale: 0.25 }, to: { opacity: 1, scale: 1 }, ease: 'power3.out', origin: `${HX} ${HY - 130}` }]);
+  let chunks = '';
+  for (let k = 0; k < 10; k++) {
+    const a = -2.6 + k * 0.42, D = 220 + (k % 3) * 90, w = 34 + (k % 4) * 12, x0 = HX + Math.cos(a) * 40, y0 = HY - 130 + Math.sin(a) * 40;
+    chunks += `<g opacity="0"${M.tw([{ at: t, dur: 0.04, from: { opacity: 0 }, to: { opacity: 1 } }, { at: t + 0.6, dur: 0.4, to: { opacity: 0 } }])}>`
+      + `<g${M.tw([{ at: t, dur: 0.9, from: { x: 0, y: 0, rotation: 0, scale: 1 }, to: { x: f(Math.cos(a) * D), y: f(Math.sin(a) * D * 0.5 + 300), rotation: (k % 2 ? 1 : -1) * (80 + k * 15), scale: 2.4 }, ease: 'power2.in', origin: `${f(x0)} ${f(y0)}` }])}>`
+      + `<rect x="${f(x0 - w / 2)}" y="${f(y0 - w * 0.35)}" width="${w}" height="${f(w * 0.7)}" rx="5" fill="${['#5c5262', '#655a6a', '#4e4456'][k % 3]}"/></g></g>`;
+  }
+  let dust = '';
+  for (let k = 0; k < 7; k++) { const dx = (k - 3) * 46, r = 50 + (k % 3) * 16;
+    dust += `<g opacity="0"${M.tw([{ at: t + 0.05, dur: 0.15, from: { opacity: 0 }, to: { opacity: 0.3 } }, { at: t + 0.5, dur: 1.2, to: { opacity: 0 } }])}>`
+      + `<g${M.tw([{ at: t + 0.05, dur: 1.6, from: { x: 0, y: 0, scale: 0.5 }, to: { x: dx * 1.6, y: -40 - (k % 2) * 40, scale: 1.6 }, ease: 'power2.out', origin: `${HX + dx} ${HY - 60}` }])}>`
+      + `<circle cx="${HX + dx}" cy="${HY - 60}" r="${r}" fill="#a89aa8" filter="url(#blur14)"/></g></g>`; }
+  const seep = `<g${M.tw([{ at: t, dur: 0.1, from: { opacity: 1 }, to: { opacity: 0 } }])}><g${M.flick(0.9, 0, 0.55)}>`
+    + `<path d="M${HX - 60} ${HY - 40} L${HX - 30} ${HY - 120} L${HX + 10} ${HY - 150} L${HX + 50} ${HY - 230} M${HX + 10} ${HY - 150} L${HX + 70} ${HY - 110} L${HX + 90} ${HY - 30}" stroke="#ffb050" stroke-width="5" fill="none" stroke-linejoin="round"/>`
+    + `<circle cx="${HX}" cy="${HY - 130}" r="170" fill="url(#sunGlow)" opacity=".35"/></g></g>`;
+  return seep + `<g transform="translate(${HX},${HY}) scale(1.35) translate(${-HX},${-HY})">`
+    + `<g opacity="0"${pop}><path d="${hole}" fill="#1e1214"/><path d="${hole}" fill="none" stroke="#3a2e3e" stroke-width="10" stroke-linejoin="round"/>`
+    + `<circle cx="${HX}" cy="${HY - 120}" r="230" fill="url(#sunGlow)" opacity=".9"/><g transform="translate(${HX + 20},${HY - 60}) scale(1.25)">${torch}</g></g>`
+    + crack(HX, HY - 130, 250, t - 0.12, { seed: 7, color: '#1a1420', hold: 1.2 }) + '</g>' + chunks + dust;
+};
+// 0 · hook: Peter in chains in his cell; the back wall smashes open behind him, a torch in the gap (push-fast; jump cut on him)
 function scene0() {
-  const tr = at(0, 'torn robe'), ti = at(0, 'This is'), sp = at(0, 'Saint Peter');
+  const ob = at(0, 'one bishop'), br = at(0, 'broke'), kl = at(0, 'to kill'), ti = at(0, 'This is'), sp = at(0, 'Saint Peter');
   const P = (op) => peterAlex(...P0, { chained: true, halo: true, armL: [16, 2, 3], armR: [22, 2, 3], ...op });
-  return layer(0.95, `<g${M.bob(5, 3.2)}>${glow(CH0[0], 980, 330, 0.85)}${lit(childJesusTorn(...CH0, { look: [-2.4, 0] }), 'pHook')}</g>`
-      + sparkles(12, 600, 860, 640, 1180, { seed: 4 }))
-    + speedLines(CH0[0], 1060, { at: tr - 0.05, dur: 0.85, r0: 280, op: 0.5, color: '#fff4d8', seed: 3 })
-    + lit(castShadow(...P0, 'pHook') + seq(P, [[0, { mood: 'awe', look: [2.6, -0.6] }], [tr + 0.3, { mood: 'surprised', look: [2.6, 0] }],
-      [ti, { mood: 'happy', look: [0, 0] }], [sp + 0.6, { mood: 'tender', look: [0, 0] }]]), 'pHook')
+  return layer(0.74, wallBreach(br))
+    + speedLines(HX, HY - 130, { at: br - 0.02, dur: 0.75, r0: 260, op: 0.45, color: '#ffe0b0', seed: 3 })
+    + `<g opacity="0"${fadeIn(br + 0.1, 0.5)}>${glow(640, 1020, 420, 0.35)}</g>`
+    + lit(castShadow(...P0, 'pHook') + seq(P, [[0, { mood: 'determined', look: [0, 0] }], [ob + 0.3, { mood: 'determined', look: [0.8, 0.6] }],
+      [br + 0.1, { mood: 'surprised', look: [2.6, 0] }], [kl, { mood: 'peaceful' }], [ti, { mood: 'happy', look: [0, 0] }], [sp + 0.6, { mood: 'tender', look: [0, 0] }]]), 'pHook')
     + NEAR(bokeh(6, { seed: 12, op: [0.2, 0.45] }));
 }
 
@@ -314,17 +339,17 @@ export const STORY = {
     cues: { 2: 'Hushed and mysterious in the cell, then a shimmer of high strings and harp as a holy light appears.',
       3: 'Storm: low drums and rumbling strings building, a sudden hit as the wall breaks.' } },
   cast: { peter: { voice: 'bm_george', speed: 0.92 }, jesus: { voice: 'bm_fable', speed: 0.9 } },
-  thumb_hook: 'He saw Christ in a torn robe', thumb_title: 'St. Peter of Alexandria', thumb_scene: 0, thumb_t: 3, thumb_shift: 0,
+  thumb_hook: 'Rome killed him in secret', thumb_title: 'St. Peter of Alexandria', thumb_scene: 0, thumb_t: 3, thumb_shift: 0,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
   fix: {
     'twˈɛnti fˈaɪv': 'twˈɛnti fˈɪfθ',      // November 25 -> November twenty-fifth
     'nɪkˈiə': 'naɪsˈiːə',                // Nicaea
   },
   scenes: [
-    { kicker: 'ALEXANDRIA, EGYPT · 311', title: 'Christ in a Torn Robe', art: scene0, bg3d: 'pHook', front3d: true,
-      cam: { move: 'push-fast', oy: 1000, zoom: { at: at(0, 'torn robe'), to: [CH0[0], 1150], depth: 0.95, style: 'cut', z: 1.45, hold: 0.6 } },
+    { kicker: 'ALEXANDRIA, EGYPT · 311', title: 'Killed in Secret', art: scene0, bg3d: 'pHook', front3d: true,
+      cam: { move: 'push-fast', oy: 1000, zoom: { at: at(0, 'one bishop'), to: face(...P0), style: 'cut', z: 1.45, hold: 0.8 }, shake: { at: at(0, 'broke'), amt: 20, dur: 0.7 } },
       tone: HOOK,
-      say: ['In a Roman prison, a bishop saw Jesus in a torn robe.', 'This is Saint Peter of Alexandria.'] },
+      say: ['Rome feared one bishop in chains so much, they broke through his prison wall at night to kill him.', 'This is Saint Peter of Alexandria.'] },
     { kicker: 'THE GREAT PERSECUTION', title: 'Jailed by the Emperor', art: scene1, bg3d: 'pArrest', front3d: true,
       cam: { move: 'pan-r', drone: { h: 8, back: 12, dur: 2.8 } },
       tone: HOOK,
