@@ -417,7 +417,7 @@ export const STORY = {
   music: { story: 'Our Lady of the Miraculous Medal: a young French novice, Catherine Labouré, sees Mary on a globe with rays of light pouring from her hands in a Paris chapel in 1830; the medal spreads through Paris during the cholera of 1832',
     color: 'France in 1830: a solo harp and celesta for the vision, warm strings, a soft pipe organ and a wordless female choir; gentle and luminous rather than martial',
     cues: { 1: 'A tender memory: a solo harp and a soft music-box celesta over warm strings, childlike and gentle.', 3: 'Doubt and waiting: a lone cello, sparse piano notes, hushed and slow.', 4: 'Plague-gloom in a minor key: low strings and a slow drum, then a bright rising release of choir and organ on the last line.' } },
-  thumb_hook: 'Our Lady gave her a medal', thumb_title: 'The Miraculous Medal', thumb_scene: 0, thumb_t: 6.2, thumb_shift: 0,
+  thumb_hook: 'The Virgin Mary showed her this', thumb_title: 'The Miraculous Medal', thumb_scene: 0, thumb_t: 6.2, thumb_shift: 0,
   wm_spots: [[56, 560, 'l'], [1024, 640, 'r'], [56, 1250, 'l']],
   fix: { 'lˌeɪbɚɹˈeɪ': 'lˌɑːbuːɹˈeɪ', 'ɐlˈeɪdəl': 'ˌɑːlɑːdˈɛl' },   // Labouré = lah-boo-RAY, Aladel = ah-lah-DEL
   scenes: [
