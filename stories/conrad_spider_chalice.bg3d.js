@@ -62,8 +62,8 @@ const CM = {
 };
 /** Inside a Romanesque cathedral: cathedral('hook' | 'altar' | 'choice' | 'later'). The floor is at y = 0, so a character card
  * 20 units away stands on it like on the outdoor ground (feet art y ~1345 at depth 1). */
-export function cathedral(mode = 'hook') {
-  const C = CM[mode], r = rng(mode.length * 11 + 3);
+export function cathedral(mode = 'hook', extra = null) {   // extra (2026-11-26, Miraculous Medal): { base, ...overrides of CM }
+  const C = extra ? { ...CM[extra.base || 'hook'], ...extra } : CM[mode], r = rng(mode.length * 11 + 3);
   const scene = new THREE.Scene();
   scene.background = skyTex(C.bg);
   scene.fog = new THREE.Fog(C.fog, 40, 160);
@@ -125,9 +125,9 @@ export function cathedral(mode = 'hook') {
   // tall candle stands down the nave (between the columns)
   zs.slice(0, 5).forEach((z, k) => { for (const sd of [-1, 1]) {
     const st = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.14, 2.6, 6), lam('#6a5030')); st.position.set(sd * (NX - 1.4), 1.3, z - 1); scene.add(st);
-    candle(sd * (NX - 1.4), 2.6, z - 1, 0.7, 2.2 + (mode === 'later' || mode === 'choice' ? 1.2 : 0)); } });
+    candle(sd * (NX - 1.4), 2.6, z - 1, 0.7, 2.2 + ((C.bigFlames ?? (mode === 'later' || mode === 'choice')) ? 1.2 : 0)); } });
   // hanging lamps at dusk
-  if (mode === 'later') for (const z of [-30, -42, -54]) { const lp = sprite(warm, 6, 0.6, true); lp.position.set(0, 9, z); scene.add(lp); flames.push(lp); }
+  if (C.lamps ?? mode === 'later') for (const z of [-30, -42, -54]) { const lp = sprite(warm, 6, 0.6, true); lp.position.set(0, 9, z); scene.add(lp); flames.push(lp); }
   // dust in the shafts
   window.__conradAirSeed = (window.__conradAirSeed || 0) + 1;
   const air = C.air ? particles(C.air, { seed: mode.length * 5 + 1, n: 200 }) : null;
