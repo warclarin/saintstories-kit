@@ -157,8 +157,15 @@ const MANTLE_BACK = '<path d="M-40 -226 Q-66 -200 -88 -120 Q-112 -50 -106 -4 L10
   + '<path d="M-88 -120 Q-112 -50 -106 -4 M88 -120 Q112 -50 106 -4" stroke="#3f82b8" stroke-width="5" fill="none" opacity=".7"/>';
 const MANTLE_FRONT = [-1, 1].map((sd) => `<path d="M${sd * 34} -216 Q${sd * 58} -202 ${sd * 66} -150 Q${sd * 82} -80 ${sd * 92} -6 L${sd * 68} -4 Q${sd * 62} -88 ${sd * 50} -150 Q${sd * 42} -190 ${sd * 24} -212Z" fill="${sd < 0 ? '#3474aa' : '#2a6296'}"/>`
   + `<path d="M${sd * 50} -150 Q${sd * 62} -88 ${sd * 68} -4" stroke="#5a9ad0" stroke-width="3" fill="none" opacity=".7"/><path d="M${sd * 60} -130 Q${sd * 72} -70 ${sd * 80} -10" stroke="#1c4a76" stroke-width="2.4" fill="none" opacity=".6"/>`).join('');
+/** Two long braids falling from beside her face over the shoulders onto the chest (hd body space). */
+const BRAIDS = [-1, 1].map((sd) => { let b = '';
+  for (let k = 0; k < 8; k++) { const y = -234 + k * 11, x = sd * (37 - k * 1.1);
+    b += `<ellipse cx="${f(x)}" cy="${y}" rx="6" ry="8.2" fill="${k % 2 ? '#8a6038' : '#7a5232'}" transform="rotate(${sd * (k % 2 ? 24 : -24)} ${f(x)} ${y})"/>`; }
+  return b + `<rect x="${f(sd * 28 - 5)}" y="-150" width="10" height="5" rx="2" fill="#d8b060"/><path d="M${sd * 28 - 5} -145 Q${sd * 28} -132 ${sd * 28 + 5} -145Z" fill="#8a6038"/>`
+    + `<path d="M${f(sd * 34)} -236 Q${f(sd * 38)} -200 ${f(sd * 30)} -160" stroke="#5a3a22" stroke-width="1.6" fill="none" opacity=".5"/>`; }).join('');
 export const mary = (x, y, s, { over = '', under = '', ...o } = {}) => hd(x, y, s, { top: '#f4ead2', plain: true, trim: '#e2cc94', mantle: null, belt: '#d8b060', halo: true,
-  skin: '#f2d2b6', hair: '#7a5232', veil: '#f8f2e4', veilHair: 'long', iris: '#5a7aa0', beard: null, age: 'young', mood: 'happy', ...o, under: MANTLE_BACK + under, over: MANTLE_FRONT + over });
+  skin: '#f2d2b6', hair: '#8a6038', veil: '#f6eedc', veilHair: 'parted', iris: '#6a5a4a', beard: null, age: 'young', mood: 'downcast', ...o,
+  under: MANTLE_BACK + under, over: MANTLE_FRONT + BRAIDS + over });
 const collarW = '<path d="M-20 -212 Q0 -192 20 -212 L18 -200 Q0 -184 -18 -200Z" fill="#fbf8f0"/>';
 /** The Daughters of Charity cornette: a starched white headdress with two wide wings (hd body space). */
 const cornette = '<g><path d="M-38 -278 Q-96 -268 -150 -292 Q-166 -318 -140 -334 Q-90 -330 -42 -310Z" fill="#fbfaf6"/><path d="M38 -278 Q96 -268 150 -292 Q166 -318 140 -334 Q90 -330 42 -310Z" fill="#f0eee8"/>'
@@ -179,13 +186,13 @@ const DCS = ['#e2b48f', '#d9a47e', '#efc6a2'];
 /** A Daughter of Charity of 1832 (grey-blue habit, plain white veil). */
 export const sisterDC = (x, y, s, i = 0, { over = '', ...o } = {}) => hd(x, y, s, { ...HABIT, skin: DCS[i % 3], hair: '#4a3424', age: i % 2 ? 'mid' : 'young', ...o, over: collarW + over });
 const topHat = '<g><rect x="-30" y="-372" width="60" height="78" rx="4" fill="#26222c"/><rect x="-30" y="-310" width="60" height="10" fill="#6a2a2a"/><ellipse cx="0" cy="-294" rx="52" ry="11" fill="#1e1a22"/><path d="M10 -372 H30 V-300 H10Z" fill="#3a3640" opacity=".6"/></g>';
-const bonnet = '<g><path d="M-56 -244 Q-62 -320 0 -326 Q62 -320 56 -244 Q44 -298 0 -302 Q-44 -298 -56 -244Z" fill="#e8d8b8"/><path d="M-40 -236 Q0 -224 40 -236" stroke="#8a3a4a" stroke-width="6" fill="none"/></g>';
+const bonnet = '<g><path d="M-56 -244 Q-62 -320 0 -326 Q62 -320 56 -244 Q44 -298 0 -302 Q-44 -298 -56 -244Z" fill="#e8d8b8"/><path d="M-40 -244 Q-34 -206 0 -204 Q34 -206 40 -244" stroke="#8a3a4a" stroke-width="5" fill="none"/></g>';
 const PAR = [['#3a4a6a', '#e2b48f', '#4a3424'], ['#7a3a4a', '#efc6a2', '#6a4a30'], ['#4a5a3a', '#d9a47e', '#2a1c12'], ['#6a5a7a', '#e8bc9a', '#8a5e36']];
 /** A Parisian of 1832: men (even i) in a frock coat and top hat, women (odd i) in a dress and bonnet. medal: wears the medal. */
 export const parisian = (x, y, s, i = 0, { medal = false, over = '', ...o } = {}) => { const [c, skin, hair] = PAR[i % 4], man = i % 2 === 0;
   return hd(x, y, s, man ? { top: c, trousers: dark(c, 0.35), lapels: '#f6f2ea', tie: '#2a2228', belt: false, mantle: null, skin, hair, hairStyle: 'short', beard: i % 4 === 2 ? hair : null,
     beardStyle: i % 4 === 2 ? 'short' : null, age: 'mid', iris: '#3a2a20', ...o, over: (medal ? neckMedal : '') + topHat + over }
-    : { top: c, plain: true, trim: light(c, 0.3), mantle: null, belt: false, skin, hair, veil: '#e8d8b8', veilHair: 'covered', iris: '#3a2a20', age: 'young', shoes: '#3a2a22', ...o,
+    : { top: c, plain: true, trim: light(c, 0.3), mantle: null, belt: false, skin, hair, beard: null, veil: '#e8d8b8', veilHair: 'covered', iris: '#3a2a20', age: 'young', shoes: '#3a2a22', ...o,
       over: (medal ? neckMedal : '') + bonnet + over }); };
 /** An old man of the hospice with a white beard. */
 export const oldMan = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#7a6a5a', plain: true, trim: '#5a4a3a', mantle: '#5a4a44', lining: '#8a7a6a', belt: false, skin: '#e2b48f',
@@ -271,7 +278,7 @@ function scene0() {
   const sm = at(0, 'saw Mary'), lp = at(0, 'light pouring'), ti = at(0, 'This is'), mm = at(0, 'Miraculous Medal');
   const coin = `<g${M.tw([{ at: mm + 0.5, dur: 0.22, from: { scaleX: 1 }, to: { scaleX: 0.02 }, ease: 'power1.in', origin: '0 0' }])}>${medalCoin(92)}</g>`;
   const coinB = `<g opacity="0"${M.tw([{ at: mm + 0.72, dur: 0.02, from: { opacity: 0 }, to: { opacity: 1 } }])}><g${M.tw([{ at: mm + 0.72, dur: 0.22, from: { scaleX: 0.02 }, to: { scaleX: 1 }, ease: 'power1.out', origin: '0 0' }])}>${medalCoin(92, true)}</g></g>`;
-  return vision(G0[0], G0[1], G0[2], G0[3], 'oHook', { raysOn: lp - 0.1, steps: [[0, { mood: 'happy', look: [-2.2, 1.6] }], [ti, { mood: 'happy', look: [0, 0] }]] })
+  return vision(G0[0], G0[1], G0[2], G0[3], 'oHook', { raysOn: lp - 0.1, steps: [[0, { mood: 'downcast', look: [-0.5, 0] }], [ti, { mood: 'downcast', look: [0, 0] }]] })
     + speedLines(G0[0], 700, { at: sm - 0.05, dur: 0.6, r0: 320, r1: 900, op: 0.35, color: '#fff8e0', seed: 4 })
     + lit(castShadow(...K0, 'oHook') + seq((op) => catherineL(...K0, { kneel: true, ...PRAY, ...op }),
       [[0, { mood: 'peaceful' }], [sm, { mood: 'awe', look: [2.6, -2.4] }]]), 'oHook')
@@ -305,7 +312,7 @@ function scene1() {
 const OV = [600, 800, 270, 440], G2 = [600, 1150, 78, 1.72], K2 = [180, 1345, 2.0];
 function scene2() {
   const gw = at(2, 'golden words'), om = at(2, 'O Mary'), tt = at(2, 'Then it turned'), mM = at(2, 'an M'), cr = at(2, 'a cross'), ts = at(2, 'twelve stars'), th = at(2, 'two hearts');
-  const front = vision(G2[0], G2[1], G2[2], G2[3], 'oVision', { steps: [[0, { mood: 'happy', look: [-2.4, 1.6] }]] })
+  const front = vision(G2[0], G2[1], G2[2], G2[3], 'oVision', { steps: [[0, { mood: 'downcast', look: [-0.5, 0] }]] })
     + `<g opacity="0"${M.tw([{ at: gw, dur: 0.6, from: { opacity: 0, scale: 0.6 }, to: { opacity: 1, scale: 1 }, ease: 'back.out(1.4)', origin: `${OV[0]} ${OV[1]}` }])}>`
       + `<g${M.pulse(0.012, 2.2, 0, OV[0], OV[1])}>${medalOval(...OV)}</g></g>`
     + `<g opacity="0"${M.tw([{ at: om, dur: 0.4, from: { opacity: 0 }, to: { opacity: 0.8 } }])}>${glow(OV[0], OV[1] - OV[3] + 60, 260, 0.6)}${glow(OV[0] - OV[2] + 40, OV[1], 220, 0.5)}${glow(OV[0] + OV[2] - 40, OV[1], 220, 0.5)}</g>`;
@@ -325,7 +332,7 @@ function scene2() {
 const G3 = [720, 1265, 92, 1.95], K3 = [290, 1345, 2.05], A3 = [720, 1345, 2.2];
 function scene3() {
   const [q0, q1] = lineSpan(3, 1), bc = at(3, 'But her confessor'), im = at(3, 'imagination'), fa = at(3, 'For almost'), nh = at(3, 'nothing happened');
-  const maryV = vision(G3[0], G3[1], G3[2], G3[3], 'oConfess', { steps: [[0, { mood: 'happy', look: [-2.4, 1.6] }], [q0 - 0.05, { mood: 'happy', talk: [q0, q1], look: [-2.4, 1.6] }], [q1 + 0.1, { mood: 'happy', look: [-2.4, 1.6] }]] });
+  const maryV = vision(G3[0], G3[1], G3[2], G3[3], 'oConfess', { steps: [[0, { mood: 'downcast', look: [-0.5, 0] }], [q0 - 0.05, { mood: 'downcast', talk: [q0, q1], look: [-0.5, 0] }], [q1 + 0.1, { mood: 'downcast', look: [-0.5, 0] }]] });
   return until(bc, maryV + `<g opacity="0"${fadeIn(q0, 0.4)}>${sparkles(10, 560, 880, 520, 900, { seed: 31 })}</g>`)
     + from(bc, walkOut(fa + 0.2, 1.6, 520, lit(castShadow(...A3, 'oConfess') + seq((op) => aladel(...A3, { flip: true, ...op }),
       [[0, { mood: 'stern', look: [2.6, 0.6], armL: [14, 2, 3], armR: [40, 2, 3] }], [im - 0.2, { mood: 'stern', look: [2.6, 0.4], armL: [14, 2, 3], armR: [96, 14, 0.5] }],
@@ -386,7 +393,7 @@ function scene5() {
 const OV6 = [620, 800, 280, 450], G6 = [620, 1150, 80, 1.75], K6 = [230, 1345, 1.95];
 function scene6() {
   const nv = at(6, 'November'), ol = at(6, 'Our Lady');
-  return vision(G6[0], G6[1], G6[2], G6[3], 'oGlory', { steps: [[0, { mood: 'happy', look: [0, 0] }], [ol, { mood: 'tender', look: [0, 0.4] }]] })
+  return vision(G6[0], G6[1], G6[2], G6[3], 'oGlory', { steps: [[0, { mood: 'downcast', look: [0, 0] }], [ol, { mood: 'downcast', look: [0, 0] }]] })
     + `<g${M.pulse(0.01, 2.4, 0, OV6[0], OV6[1])}>${medalOval(...OV6)}</g>`
     + lit(castShadow(...K6, 'oGlory') + catherineL(...K6, { kneel: true, halo: true, ...PRAY, mood: 'peaceful' }), 'oGlory')
     + `<g opacity="0"${fadeIn(nv, 0.7)}>${sparkles(12, 360, 840, 420, 900, { seed: 61 })}</g>`

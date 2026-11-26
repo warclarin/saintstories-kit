@@ -226,6 +226,7 @@ export function hd(x, y, s, o = {}) {
   //   stern (judges, persecutors: heavy V brows, lowered lids, down-turned mouth; never on the saint)
   //   surprised (wide eyes, small pupils, high brows, O mouth)   awe (wonder at a vision: wide eyes looking up, soft open smile)
   //   peaceful (prayer, death, glory: closed eyes, gentle smile)
+  //   downcast (opt-in 2026-11-27, Our Lady of the Miraculous Medal: serene, lids half lowered, eyes looking down, soft smile)
   // Options: look [dx, dy] moves the gaze (face units, about -3..3; flip mirrors it), tears true | fade-in time (a tear on each cheek).
   const MO = {   // lt: upper lid [inner, outer] as a share of the eye height; lb: lower lid share; sc: eye size; ir: iris radius; gz: gaze
     happy:      { lt: [0.12, 0.14], lb: 0.22, sc: 1, ir: 6.4, gz: [0, 0] },
@@ -238,7 +239,12 @@ export function hd(x, y, s, o = {}) {
     awe:        { lt: [0, 0.04], lb: 0.06, sc: 1.1, ir: 5.8, gz: [0, -2.4] },
   }[mood];
   const look = o.look || [0, 0];
-  if (!MO) {   // closed eyes: peaceful (downward arcs) | tender (smiling arcs ^ ^) | pain (squeezed > <)
+  if (!MO && mood === 'downcast') {   // lowered lids looking down: a soft lash curve with a sliver of iris peeking below it
+    g.push([-1, 1].map((sd) => { const cx = sd * 14;
+      return `<path d="M${cx - 9} -251 Q${cx} -242 ${cx + 9} -251 Q${cx} -244.5 ${cx - 9} -251Z" fill="${iris}"/>`
+        + `<path d="M${cx - 10} -252 Q${cx} -244 ${cx + 10} -252" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`
+        + `<path d="M${cx + sd * 10} -252 l${sd * 4} -2.4" stroke="${INK}" stroke-width="2" stroke-linecap="round"/>`; }).join(''));
+  } else if (!MO) {   // closed eyes: peaceful (downward arcs) | tender (smiling arcs ^ ^) | pain (squeezed > <)
     const d = mood === 'tender' ? 'M-22 -248 Q-14 -256 -6 -248 M6 -248 Q14 -256 22 -248'
       : mood === 'pain' ? 'M-22 -255 L-8 -250 L-22 -245 M22 -255 L8 -250 L22 -245' : 'M-22 -251 Q-14 -244 -6 -251 M6 -251 Q14 -244 22 -251';
     g.push(`<path d="${d}" stroke="${INK}" stroke-width="3.4" fill="none" stroke-linecap="round"/>`);
@@ -267,9 +273,9 @@ export function hd(x, y, s, o = {}) {
     happy: 'M-24 -268 Q-16 -275 -7 -270', joy: 'M-24 -271 Q-16 -279 -7 -273', tender: 'M-24 -269 Q-16 -274 -8 -270',
     sad: 'M-25 -265 Q-17 -266 -8 -275', worried: 'M-25 -266 Q-19 -266 -15 -270 Q-11 -274 -7 -276', pain: 'M-25 -264 Q-16 -266 -7 -273',
     determined: 'M-25 -271 Q-16 -274 -7 -270', stern: 'M-25 -274 L-6 -264', surprised: 'M-24 -276 Q-16 -285 -8 -278',
-    awe: 'M-24 -275 Q-16 -283 -8 -277', peaceful: 'M-24 -267 Q-16 -271 -8 -268',
+    awe: 'M-24 -275 Q-16 -283 -8 -277', peaceful: 'M-24 -267 Q-16 -271 -8 -268', downcast: 'M-23 -270 Q-15 -276 -8 -272',
   }[mood] || 'M-24 -268 Q-16 -275 -7 -270';
-  g.push(`<g stroke="${browC}" stroke-width="5" fill="none" stroke-linecap="round"><path d="${BR}"/><path d="${BR}" transform="scale(-1,1)"/></g>`);
+  g.push(`<g stroke="${browC}" stroke-width="${mood === 'downcast' ? 3.2 : 5}" fill="none" stroke-linecap="round"><path d="${BR}"/><path d="${BR}" transform="scale(-1,1)"/></g>`);
   // nose (no red cheeks: user's choice 2026-11-15; `blush: true` brings a faint blush back)
   g.push(`<path d="M-1 -248 Q-5 -241 -1 -239 Q3 -238 5 -241" stroke="${skSh}" stroke-width="2.2" fill="none" stroke-linecap="round"/><circle cx="-2" cy="-245" r="1.6" fill="${skHi}" opacity=".7"/>`
     + (o.blush ? `<ellipse cx="-26" cy="-237" rx="8.5" ry="5" fill="#ef6f6a" opacity=".22"/><ellipse cx="26" cy="-237" rx="8.5" ry="5" fill="#ef6f6a" opacity=".22"/>` : ''));
@@ -296,6 +302,7 @@ export function hd(x, y, s, o = {}) {
       surprised: `<ellipse cx="0" cy="${my + 1}" rx="5.5" ry="7" fill="${dk}" stroke="${lip}" stroke-width="1.8"/>`,
       awe: `<path d="M-6 ${my - 2} Q0 ${my + 9} 6 ${my - 2} Q0 ${my} -6 ${my - 2}Z" fill="${dk}" stroke="${lip}" stroke-width="1.6"/>`,
       peaceful: line(`M-8 ${my - 1} Q0 ${my + 4} 8 ${my - 1}`, 3),
+      downcast: `<path d="M-8 ${my - 1} Q0 ${my + 5} 8 ${my - 1} Q0 ${my + 2} -8 ${my - 1}Z" fill="${lip}"/>`,
     }[mood] || line(`M-9 ${my - 2} Q0 ${my + 6} 9 ${my - 2}`, 3));
   }
   if (o.over) g.push(o.over);
