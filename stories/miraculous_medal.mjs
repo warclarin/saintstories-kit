@@ -147,9 +147,9 @@ const cornette = '<g><path d="M-38 -278 Q-96 -268 -150 -292 Q-166 -318 -140 -334
   + '<path d="M-60 -292 Q-100 -296 -138 -318 M-56 -282 Q-104 -282 -146 -302 M60 -292 Q100 -296 138 -318 M56 -282 Q104 -282 146 -302" stroke="#d8d4cc" stroke-width="2.4" fill="none"/>'
   + '<path d="M-46 -270 Q-50 -310 0 -314 Q50 -310 46 -270 Q30 -292 0 -294 Q-30 -292 -46 -270Z" fill="#fbfaf6"/></g>';
 const HABIT = { top: '#4e5e80', plain: true, trim: '#3e4e70', mantle: null, belt: false, veil: '#f6f2ea', veilHair: 'hidden', beard: null, shoes: '#2a2228', iris: '#5a6a4a' };
-/** St. Catherine Labouré: a Daughter of Charity in a grey-blue habit; as a novice a white cap (default); cornet: the cornette. */
+/** St. Catherine Labouré: a Daughter of Charity in a grey-blue habit; a plain white veil (the cornette was tried and dropped). */
 export const catherineL = (x, y, s, { cornet = false, old = false, over = '', ...o } = {}) => hd(x, y, s, { ...HABIT, skin: '#f0c8a8', hair: '#6a4a30', age: old ? 'mid' : 'young',
-  ...o, over: collarW + (cornet ? cornette : '') + over });
+  ...o, over: collarW + over });   // plain white veil (user's choice 2026-11-27: the cornette read as floppy ears); cornet kept as a no-op
 /** Little Catherine (Zoé) at nine on the farm: a russet dress and apron, long brown hair. Use 0.62 x adult scale. */
 export const girlCath = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#a8583a', trim: '#e8c880', belt: '#5a3a22', skin: '#f0c8a8', hair: '#7a5232', hairStyle: 'long',
   beard: null, age: 'young', iris: '#5a6a4a', shoes: '#4a3424', ...o, over: '<path d="M-30 -150 L30 -150 L40 -14 L-40 -14Z" fill="#f2ead8" opacity=".95"/>' + over });
@@ -158,8 +158,8 @@ const rabat = '<path d="M-7 -208 L-9 -186 L-1 -186 L0 -206 L1 -186 L9 -186 L7 -2
 export const aladel = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#221e28', plain: true, trim: '#141018', mantle: null, belt: '#141018', skin: '#e8bc9a', hair: '#3a2a20',
   hairStyle: 'short', beard: null, age: 'mid', iris: '#3a2a20', shoes: '#1a1418', ...o, over: rabat + over });
 const DCS = ['#e2b48f', '#d9a47e', '#efc6a2'];
-/** A Daughter of Charity of 1832 in the cornette. */
-export const sisterDC = (x, y, s, i = 0, { over = '', ...o } = {}) => hd(x, y, s, { ...HABIT, skin: DCS[i % 3], hair: '#4a3424', age: i % 2 ? 'mid' : 'young', ...o, over: collarW + cornette + over });
+/** A Daughter of Charity of 1832 (grey-blue habit, plain white veil). */
+export const sisterDC = (x, y, s, i = 0, { over = '', ...o } = {}) => hd(x, y, s, { ...HABIT, skin: DCS[i % 3], hair: '#4a3424', age: i % 2 ? 'mid' : 'young', ...o, over: collarW + over });
 const topHat = '<g><rect x="-30" y="-372" width="60" height="78" rx="4" fill="#26222c"/><rect x="-30" y="-310" width="60" height="10" fill="#6a2a2a"/><ellipse cx="0" cy="-294" rx="52" ry="11" fill="#1e1a22"/><path d="M10 -372 H30 V-300 H10Z" fill="#3a3640" opacity=".6"/></g>';
 const bonnet = '<g><path d="M-56 -244 Q-62 -320 0 -326 Q62 -320 56 -244 Q44 -298 0 -302 Q-44 -298 -56 -244Z" fill="#e8d8b8"/><path d="M-40 -236 Q0 -224 40 -236" stroke="#8a3a4a" stroke-width="6" fill="none"/></g>';
 const PAR = [['#3a4a6a', '#e2b48f', '#4a3424'], ['#7a3a4a', '#efc6a2', '#6a4a30'], ['#4a5a3a', '#d9a47e', '#2a1c12'], ['#6a5a7a', '#e8bc9a', '#8a5e36']];
