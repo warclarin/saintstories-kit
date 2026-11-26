@@ -51,14 +51,27 @@ const PRAY = { armL: -20, armR: -20 };
 const INSCR = 'O MARY CONCEIVED WITHOUT SIN PRAY FOR US WHO HAVE RECOURSE TO THEE';
 
 // ================================================================ the medal and the vision
-/** The globe under Mary's feet (centre cx, cy, radius r), with the serpent crushed on top. */
-export const globe = (cx, cy, r) => `<g><circle cx="${cx}" cy="${cy}" r="${r * 1.5}" fill="url(#haloGlow)" opacity=".6"/>`
-  + `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#dfe8f4"/><path d="M${cx + r * 0.2} ${cy - r} A${r} ${r} 0 0 1 ${cx + r * 0.2} ${cy + r} A${r * 0.8} ${r} 0 0 0 ${cx + r * 0.2} ${cy - r}Z" fill="#b8c6da" opacity=".7"/>`
-  + `<ellipse cx="${cx}" cy="${cy}" rx="${r}" ry="${r * 0.32}" fill="none" stroke="#a8b8d0" stroke-width="3" opacity=".7"/><ellipse cx="${cx}" cy="${cy}" rx="${r * 0.42}" ry="${r}" fill="none" stroke="#a8b8d0" stroke-width="3" opacity=".6"/>`
-  + `<circle cx="${cx - r * 0.35}" cy="${cy - r * 0.4}" r="${r * 0.18}" fill="#ffffff" opacity=".7"/>`
-  + `<path d="M${cx - r * 0.95} ${cy - r * 0.42} Q${cx - r * 0.5} ${cy - r * 0.95} ${cx} ${cy - r * 0.86} Q${cx + r * 0.5} ${cy - r * 0.78} ${cx + r * 0.9} ${cy - r * 0.5}" stroke="#4e8a3e" stroke-width="${r * 0.13}" fill="none" stroke-linecap="round"/>`
-  + `<path d="M${cx - r * 0.95} ${cy - r * 0.42} Q${cx - r * 0.5} ${cy - r * 0.95} ${cx} ${cy - r * 0.86} Q${cx + r * 0.5} ${cy - r * 0.78} ${cx + r * 0.9} ${cy - r * 0.5}" stroke="#e8c84a" stroke-width="${r * 0.035}" fill="none" stroke-dasharray="${r * 0.04} ${r * 0.14}" stroke-linecap="round"/>`
-  + `<ellipse cx="${cx + r * 0.92}" cy="${cy - r * 0.5}" rx="${r * 0.12}" ry="${r * 0.08}" fill="#4e8a3e"/></g>`;
+/** The globe under Mary's feet (centre cx, cy, radius r): the blue Earth with green and tan lands, lit from the upper left, and
+ * the serpent coiled over it under her heel (redrawn 2026-11-27 after the user's reference painting). */
+let GID = 0;
+export const globe = (cx, cy, r) => {
+  const id = `glb${++GID}`;
+  const lands = '<path d="M-0.78 -0.36 Q-0.56 -0.64 -0.3 -0.46 Q-0.18 -0.22 -0.38 0 Q-0.28 0.26 -0.44 0.56 Q-0.62 0.42 -0.64 0.1 Q-0.88 -0.04 -0.78 -0.36Z" fill="#7aa65a"/>'
+    + '<path d="M0.04 -0.56 Q0.34 -0.72 0.52 -0.46 Q0.4 -0.3 0.56 -0.1 Q0.62 0.26 0.34 0.58 Q0.18 0.3 0.14 0.06 Q-0.06 -0.1 0.04 -0.56Z" fill="#8aae62"/>'
+    + '<path d="M0.2 -0.2 Q0.4 -0.24 0.44 -0.04 Q0.3 0.06 0.2 -0.2Z M-0.6 -0.2 Q-0.5 -0.3 -0.42 -0.18 Q-0.5 -0.08 -0.6 -0.2Z" fill="#c8b47a"/>'
+    + '<path d="M0.62 0.5 Q0.78 0.44 0.84 0.6 Q0.72 0.72 0.62 0.5Z M-0.2 0.7 Q0 0.62 0.12 0.76 Q-0.04 0.86 -0.2 0.7Z" fill="#7aa65a"/>';
+  const snake = 'M-0.92 -0.36 Q-0.62 -0.98 -0.04 -0.96 Q0.56 -0.92 0.86 -0.56 Q1.04 -0.3 0.98 0.02 Q0.94 0.24 1.1 0.3';
+  return `<defs><radialGradient id="${id}g" cx=".34" cy=".3" r=".8"><stop offset="0" stop-color="#9ccff0"/><stop offset=".55" stop-color="#3a78b4"/><stop offset="1" stop-color="#1c4676"/></radialGradient>`
+    + `<clipPath id="${id}c"><circle cx="${cx}" cy="${cy}" r="${r}"/></clipPath></defs>`
+    + `<g><circle cx="${cx}" cy="${cy}" r="${f(r * 1.55)}" fill="url(#haloGlow)" opacity=".55"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#${id}g)"/>`
+    + `<g clip-path="url(#${id}c)"><g transform="translate(${cx},${cy}) scale(${r})">${lands}</g>`
+    + `<path d="M${f(cx + r * 0.25)} ${f(cy - r)} A${r} ${r} 0 0 1 ${f(cx + r * 0.25)} ${f(cy + r)} A${f(r * 0.78)} ${r} 0 0 0 ${f(cx + r * 0.25)} ${f(cy - r)}Z" fill="#0e2240" opacity=".35"/></g>`
+    + `<ellipse cx="${f(cx - r * 0.38)}" cy="${f(cy - r * 0.42)}" rx="${f(r * 0.3)}" ry="${f(r * 0.18)}" fill="#ffffff" opacity=".3" transform="rotate(-30 ${f(cx - r * 0.38)} ${f(cy - r * 0.42)})"/>`
+    + `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#bfe0ff" stroke-width="${f(r * 0.03)}" opacity=".6"/>`
+    + `<g transform="translate(${cx},${cy}) scale(${r})"><path d="${snake}" stroke="#4a3e2a" stroke-width=".15" fill="none" stroke-linecap="round"/>`
+    + `<path d="${snake}" stroke="#8a7a50" stroke-width=".05" fill="none" stroke-linecap="round" opacity=".8"/>`
+    + '<ellipse cx="1.12" cy="0.3" rx=".13" ry=".085" fill="#4a3e2a" transform="rotate(20 1.12 .3)"/><circle cx="1.16" cy="0.27" r=".022" fill="#e8d070"/></g></g>';
+};
 /** Rays of light streaming from a hand at (hx, hy) down toward the globe, fanned by `spread`, flickering softly. */
 export const rays = (hx, hy, { len = 300, spread = 0.45, dir = 0, n = 7, op = 0.6, seed = 1 } = {}) => {
   let s = '';
@@ -138,9 +151,14 @@ export const smallMedal = (s = 1, glowOp = 0.7) => `<g transform="scale(${s})"><
 const neckMedal = `<path d="M-22 -212 Q0 -160 22 -212" stroke="#4a3a5a" stroke-width="2" fill="none"/><g transform="translate(0,-168)"><circle r="20" fill="url(#sunGlow)" opacity=".8"/>${medalCoin(10)}</g>`;
 
 // ================================================================ characters
-/** Our Lady as Catherine saw her: a white dress, a white veil, a pale blue mantle (she stands on the globe). */
-export const mary = (x, y, s, { over = '', ...o } = {}) => hd(x, y, s, { top: '#fbf8f2', plain: true, trim: '#ecd9a6', mantle: '#dfeaf8', lining: '#fbf8f2', belt: false,
-  skin: '#f2d2b6', hair: '#6a4a30', veil: '#fbf8f0', veilHair: 'parted', iris: '#5a7aa0', beard: null, age: 'young', shoes: '#f4ecd8', mood: 'tender', ...o, over });
+/** Our Lady as on the medal (redrawn 2026-11-27 after the user's reference painting): an ivory dress with a gold sash, a deep blue
+ * mantle from the shoulders that frames her down both sides, a white veil with long brown hair, a halo; she stands on the globe. */
+const MANTLE_BACK = '<path d="M-40 -226 Q-66 -200 -88 -120 Q-112 -50 -106 -4 L106 -4 Q112 -50 88 -120 Q66 -200 40 -226 Q0 -238 -40 -226Z" fill="#245a8a"/>'
+  + '<path d="M-88 -120 Q-112 -50 -106 -4 M88 -120 Q112 -50 106 -4" stroke="#3f82b8" stroke-width="5" fill="none" opacity=".7"/>';
+const MANTLE_FRONT = [-1, 1].map((sd) => `<path d="M${sd * 34} -216 Q${sd * 58} -202 ${sd * 66} -150 Q${sd * 82} -80 ${sd * 92} -6 L${sd * 68} -4 Q${sd * 62} -88 ${sd * 50} -150 Q${sd * 42} -190 ${sd * 24} -212Z" fill="${sd < 0 ? '#3474aa' : '#2a6296'}"/>`
+  + `<path d="M${sd * 50} -150 Q${sd * 62} -88 ${sd * 68} -4" stroke="#5a9ad0" stroke-width="3" fill="none" opacity=".7"/><path d="M${sd * 60} -130 Q${sd * 72} -70 ${sd * 80} -10" stroke="#1c4a76" stroke-width="2.4" fill="none" opacity=".6"/>`).join('');
+export const mary = (x, y, s, { over = '', under = '', ...o } = {}) => hd(x, y, s, { top: '#f4ead2', plain: true, trim: '#e2cc94', mantle: null, belt: '#d8b060', halo: true,
+  skin: '#f2d2b6', hair: '#7a5232', veil: '#f8f2e4', veilHair: 'long', iris: '#5a7aa0', beard: null, age: 'young', mood: 'happy', ...o, under: MANTLE_BACK + under, over: MANTLE_FRONT + over });
 const collarW = '<path d="M-20 -212 Q0 -192 20 -212 L18 -200 Q0 -184 -18 -200Z" fill="#fbf8f0"/>';
 /** The Daughters of Charity cornette: a starched white headdress with two wide wings (hd body space). */
 const cornette = '<g><path d="M-38 -278 Q-96 -268 -150 -292 Q-166 -318 -140 -334 Q-90 -330 -42 -310Z" fill="#fbfaf6"/><path d="M38 -278 Q96 -268 150 -292 Q166 -318 140 -334 Q90 -330 42 -310Z" fill="#f0eee8"/>'
@@ -233,7 +251,9 @@ const vision = (gx, gy, gr, s, mode, { raysOn = 0, steps = [[0, {}]], rayOp = 0.
   const my = gy - gr * 0.78, AR = 34;
   const [lx, ly] = hand(gx, my, s, -1, AR), [rx, ry] = hand(gx, my, s, 1, AR);
   const rr = rays(lx, ly + 10, { len: (gy - ly) * 0.95, dir: 0.32, spread: 0.6, op: rayOp, seed: 2 }) + rays(rx, ry + 10, { len: (gy - ry) * 0.95, dir: -0.32, spread: 0.6, op: rayOp, seed: 5 });
-  return glow(gx, f(my - 252 * s), f(180 * s), 0.7) + globe(gx, gy, gr)
+  let burst = ''; for (let k = 0; k < 40; k++) { const a = k * Math.PI / 20, L = (k % 2 ? 115 : 165) * s; burst += `M${f(Math.cos(a) * 60 * s)} ${f(Math.sin(a) * 60 * s)} L${f(Math.cos(a) * L)} ${f(Math.sin(a) * L)} `; }
+  const radiance = `<g transform="translate(${gx},${f(my - 256 * s)})"><g${M.spin(3)}><path d="${burst}" stroke="#fff0c0" stroke-width="${f(3 * s)}" opacity=".24" stroke-linecap="round"/></g></g>`;
+  return glow(gx, f(my - 252 * s), f(180 * s), 0.7) + radiance + globe(gx, gy, gr)
     + lit(seq((op) => mary(gx, my, s, { armL: [AR, 0.6, 3], armR: [AR, 0.6, 3.2], propL: rings, propR: rings, ...op }), steps), mode)
     + (raysOn ? `<g opacity="0"${fadeIn(raysOn, 0.6)}>${rr}</g>` : rr);
 };
