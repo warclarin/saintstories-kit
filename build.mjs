@@ -55,6 +55,11 @@ if (!process.env.HYPERFRAMES_BROWSER_PATH) {
     : ['/usr/bin/google-chrome', '/usr/bin/chromium', '/usr/bin/chromium-browser']).find((p) => fs.existsSync(p));
   if (c) process.env.HYPERFRAMES_BROWSER_PATH = c;
 }
+// Temp files (HyperFrames frame captures, Chrome profiles) go next to the finished files, not to the system drive:
+// $SAINTSTORIES_TMP, else <FINAL>/.tmp (on the user's PC D:\Videos\SaintStories\.tmp; C: is almost full and a render
+// failed with ENOSPC; user's rule 2026-11-27 "always point to D").
+{ const T = process.env.SAINTSTORIES_TMP || path.join(FINAL, '.tmp');
+  try { fs.mkdirSync(T, { recursive: true }); process.env.TEMP = process.env.TMP = process.env.TMPDIR = T; } catch { /* keep the system temp */ } }
 const sh = (bin, args, opts = {}) => execFileSync(bin, args, { stdio: 'inherit', cwd: OUT, ...opts });
 // npx is npx.cmd on Windows, which only starts through a shell, so quote the arguments ourselves.
 const npx = (args) => (WIN
@@ -230,7 +235,10 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   const hh = FX.handheld && !c3 ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
     + (s.bg3d && STORY.bg3d ? `<canvas class="bg3d" data-bg3d="${s.bg3d}" width="1080" height="1920"></canvas>` : '')
-    + `<svg viewBox="0 0 1080 1920">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g></svg>`
+    // STORY.hud(i) (opt-in, 2026-11-27, countdown reels): screen-fixed SVG drawn over the scene's art, outside .cam, so the
+    // camera never moves it (screen px, times in s from the scene start like the art); e.g. a 5-4-3-2-1 ranking ladder
+    + `<svg viewBox="0 0 1080 1920">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g>`
+    + `${hud && STORY.hud ? `<g class="hud">${STORY.hud(i)}</g>` : ''}</svg>`
     // scene.front3d (cam3d only): a 2D canvas over the SVG that the 3D module fills with the set's foreground (grass in
     // front of the characters' feet), drawn with the same camera, so the SVG characters stand inside the 3D world
     + (c3 && s.front3d ? '<canvas class="front3d" width="1080" height="1920"></canvas>' : '')
