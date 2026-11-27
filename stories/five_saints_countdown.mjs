@@ -185,8 +185,10 @@ const badge = (r, state, label = String(r)) => {
   if (state === 'past') return `<circle r="34" fill="rgba(20,14,30,.66)" stroke="${GOLD}" stroke-width="3.5"/>${txt(label, 36, GOLD, { y: 13 })}`;
   return `<circle r="70" fill="url(#haloGlow)"/><circle r="38" fill="${GOLD}" stroke="#fff4cc" stroke-width="4"/>${txt(label, 40, '#2b1d14', { y: 14 })}`;
 };
-/** The 5 4 3 2 ? ladder for scene i: the current saint's number stamps in big, flies into its badge, the badge lights up. */
-export function rankHud(i) {
+/** The 5 4 3 2 ? ladder for scene i: the current saint's number stamps in big, flies into its badge, the badge lights up.
+ * makeRankHud(at, ranks) builds one for any countdown story: at = that story's wordTimes(), ranks[i] = the rank shown in
+ * scene i (null for the hook; the last scene shows every badge revealed). The number lands on the scene's word 'number'. */
+export const makeRankHud = (at, RANK) => (i) => {
   const cur = RANK[i], t0 = cur ? at(i, 'number', -0.05) : 0, land = t0 + 1.45;
   let out = '';
   for (const r of [5, 4, 3, 2, 1]) {
@@ -206,7 +208,8 @@ export function rankHud(i) {
       + `<g opacity="0"${M.tw([{ at: land - 0.02, dur: 0.05, from: { opacity: 0 }, to: { opacity: 1 } }, { at: land + 0.6, dur: 0.4, to: { opacity: 0 } }])}>${sparkles(10, bx - 70, bx + 70, BY - 60, BY + 60, { seed: 40 + i })}</g>`;
   }
   return out;
-}
+};
+export const rankHud = makeRankHud(at, RANK);
 
 // ================================================================ scenes
 // cam3d: the character plane (depth 1) is 20 units away; feet art y: depth 1 ~1345, 0.95 ~1322, 0.92 ~1310, 0.85 ~1286,
