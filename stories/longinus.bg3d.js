@@ -167,13 +167,16 @@ export function cappadocia() {
 
 export const BUILD = { golStorm: () => golgotha('storm'), golDawn: () => golgotha('dawn'), golDusk: () => golgotha('dusk'), cappadocia };
 
-const views = [...document.querySelectorAll('canvas.bg3d')].map((cv) => { const renderer = newRenderer(cv); return { renderer, ...makeView(cv, BUILD) }; });
-const renderAt = (T) => {
-  for (const w of views) {
-    if (!w.active(T)) continue;
-    w.pose(T); w.renderer.render(w.v.scene, w.v.cam);
-  }
-};
-window.addEventListener('hf-seek', (e) => renderAt(e.detail.time));
-renderAt(0);
-window.__bg3dDone && window.__bg3dDone();
+// window.BG3D_LIB = true before importing: use the builders only (another module wires the canvases)
+if (!window.BG3D_LIB) {
+  const views = [...document.querySelectorAll('canvas.bg3d')].map((cv) => { const renderer = newRenderer(cv); return { renderer, ...makeView(cv, BUILD) }; });
+  const renderAt = (T) => {
+    for (const w of views) {
+      if (!w.active(T)) continue;
+      w.pose(T); w.renderer.render(w.v.scene, w.v.cam);
+    }
+  };
+  window.addEventListener('hf-seek', (e) => renderAt(e.detail.time));
+  renderAt(0);
+  window.__bg3dDone && window.__bg3dDone();
+}

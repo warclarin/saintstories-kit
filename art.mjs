@@ -1,7 +1,9 @@
 // SaintStories art library (HyperFrames edition).
 // Every helper returns an SVG string. Motion is declared with data-* attributes (see M below);
 // reel.js turns them into seekable GSAP tweens, so story files never write timeline code.
-export const W = 1080, H = 1920;
+// 1080x1920 portrait; 1920x1080 when the story imports ../landscape.mjs first (opt-in 16:9 long-form, 2026-11-23)
+const LANDSCAPE = globalThis.SAINT_FORMAT === 'landscape';
+export const W = LANDSCAPE ? 1920 : 1080, H = LANDSCAPE ? 1080 : 1920;
 export const GOLD = '#f2c46b', INK = '#2b1d14', CREAM = '#f6f0e2';
 export const SKIN = { pedro: '#a86d45', priest: '#e2b48f', s0: '#9a6340', s1: '#b97c52', s2: '#8a5534', s3: '#c48a5f', fair: '#f0c9a8' };
 export const SKINS = [SKIN.s0, SKIN.s1, SKIN.s2, SKIN.s3];

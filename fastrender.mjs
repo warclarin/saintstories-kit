@@ -62,7 +62,8 @@ export async function fastRender({ dir, out, fps = 30, pages = 1, bitrate = 10e6
     execFileSync('ffmpeg', ['-v', 'error', '-y', '-r', String(fps), '-f', 'h264', '-i', cat, '-c', 'copy', vOnly]);
     const wav = path.join(dir, 'narration.wav');
     execFileSync('ffmpeg', ['-v', 'error', '-y', '-i', vOnly, ...(fs.existsSync(wav) ? ['-i', wav, '-map', '0:v', '-map', '1:a',
-      '-af', 'alimiter=limit=0.7079:attack=5:release=50:level=disabled', '-c:a', 'aac', '-b:a', '160k', '-ar', '48000', '-shortest'] : []),
+      '-af', 'alimiter=limit=0.7079:attack=5:release=50:level=disabled', '-c:a', 'aac', '-b:a', audio?.bitrate || '160k', '-ar', '48000',
+      ...(audio?.channels ? ['-ac', String(audio.channels)] : []), '-shortest'] : []),
       '-c:v', 'copy', '-movflags', '+faststart', out]);
     fs.rmSync(tmp, { recursive: true, force: true });
     const enc = results[0].codec;
@@ -101,11 +102,14 @@ async function pageMain({ F0, F1, fps, bitrate, mode = null, keys = null }) {
     const maxW = el.clientWidth - pl - pr, words = el.textContent.trim().split(/\s+/), lines = []; let cur = '';
     for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW + 0.5 && cur) { lines.push(cur); cur = w; } else cur = t; }
     if (cur) lines.push(cur);
-    return { el, font, ls, color: cs.color, sh: shadowOf(cs.textShadow), lines, L, A, D, cx: left + pl + maxW / 2, top: top + px(cs.paddingTop) };
+    // text-align left / right (landscape chapter card, brand) or centre (the reels)
+    const al = /left|start/.test(cs.textAlign) ? 'left' : /right|end/.test(cs.textAlign) ? 'right' : 'center';
+    const cx = al === 'left' ? left + pl : al === 'right' ? left + pl + maxW : left + pl + maxW / 2;
+    return { el, font, ls, color: cs.color, sh: shadowOf(cs.textShadow), lines, L, A, D, cx, al, top: top + px(cs.paddingTop) };
   }
   function drawText(t, alpha = 1) {
     const o = P(t.el, 'opacity') * alpha; if (o <= 0.002) return;
-    ctx.save(); ctx.globalAlpha = o; ctx.font = t.font; ctx.letterSpacing = t.ls; ctx.fillStyle = t.color; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    ctx.save(); ctx.globalAlpha = o; ctx.font = t.font; ctx.letterSpacing = t.ls; ctx.fillStyle = t.color; ctx.textAlign = t.al || 'center'; ctx.textBaseline = 'alphabetic';
     setShadow(t.sh);
     const y = t.top + P(t.el, 'y'), x = t.cx + P(t.el, 'x');
     t.lines.forEach((l, k) => ctx.fillText(l, x, y + k * t.L + (t.L - (t.A + t.D)) / 2 + t.A));
@@ -142,7 +146,7 @@ async function pageMain({ F0, F1, fps, bitrate, mode = null, keys = null }) {
     ctx.fillText(w.t.lines.join(' '), w.tx, w.ty + (w.t.L - (w.t.A + w.t.D)) / 2 + w.t.A); ctx.restore();
   }
   // --- full-frame effects (mirror the .vig / .leak / .grain CSS in build.mjs)
-  const vig = mk((x) => { x.translate(540, 0.46 * H); x.scale(1, (0.62 * H) / (0.75 * W)); const r = 0.75 * W;
+  const vig = mk((x) => { x.translate(W / 2, 0.46 * H); x.scale(1, (0.62 * H) / (0.75 * W)); const r = 0.75 * W;
     const gr = x.createRadialGradient(0, 0, 0, 0, 0, r); gr.addColorStop(0.58, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(12,4,22,.45)');
     x.fillStyle = gr; x.fillRect(-W * 2, -H * 2, W * 4, H * 4); });
   const leakImg = (lx, la) => mk((x) => {

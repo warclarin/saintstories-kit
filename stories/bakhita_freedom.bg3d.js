@@ -5,7 +5,10 @@
 // Reusable for later 3D reels: venice(), savanna(), hall() and the helpers are exported.
 import * as THREE from './three.module.min.js';
 
-export const W = 1080, H = 1920, FOV = 38;
+// frame size from the page (#root data-width / data-height: 1920x1080 with STORY.format = 'landscape'), vertical field of view
+// from STORY.cam3d.fov (default 38; the landscape long-form uses a longer lens so characters fill a 1080 px frame)
+const ROOT = typeof document !== 'undefined' ? document.getElementById('root') : null;
+export const W = +ROOT?.dataset.width || 1080, H = +ROOT?.dataset.height || 1920, FOV = (typeof window !== 'undefined' && window.CAM3D?.fov) || 38;
 export const TH = Math.tan((FOV / 2) * Math.PI / 180);   // half-height of the view at distance 1
 export function rng(seed) {   // mulberry32
   return () => { seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
@@ -425,9 +428,22 @@ export function newRenderer(cv) {
 //     = |1 - plane / z| x maxBlur px; maxBlur = opts.dof (gentle, always on) rising to 2 x the scene's rack blur on the
 //     rack timing (data-rack on .cam), so far things blur more than near ones.
 // The set may expose rig(o) to receive { move, amt, ox, oy, plane } before the first update (e.g. to push toward ox, oy).
-export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
-  const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+// shared (opt-in, STORY.cam3d.shared, 2026-11-23 long-form): Chrome keeps only ~16 WebGL contexts alive, and a long video
+// has 30+ scenes, so every rig draws with ONE renderer (and one depth-of-field target) on an offscreen canvas and copies
+// the finished frame into its scene's canvas.bg3d, which is then a plain 2D canvas.
+let SHARED = null;
+function sharedGL() {
+  if (SHARED) return SHARED;
+  const canvas = document.createElement('canvas'); canvas.width = W; canvas.height = H;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(1); renderer.setSize(W, H, false);
+  const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 }); rt.depthTexture = new THREE.DepthTexture(W, H);
+  return (SHARED = { canvas, renderer, rt });
+}
+export function makeRig(cv, build = BUILD, { dof = 2, shared = false } = {}) {
+  const S = shared ? sharedGL() : null, out2d = S ? cv.getContext('2d') : null;
+  const renderer = S ? S.renderer : new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: true, preserveDrawingBuffer: true, powerPreference: 'high-performance' });
+  if (!S) { renderer.setPixelRatio(1); renderer.setSize(W, H, false); }
   const view = makeView(cv, build), { sc, v } = view;
   const camEl = sc.querySelector('.cam');
   const [move = 'push', amt = 0.07, ox = 540, oy = 1150, shift = 0, plane = 20] = (camEl?.dataset.cam3d || '').trim().split(/\s+/).map((x, i) => (i ? +x : x));
@@ -570,8 +586,8 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
   // foreground copy target
   const fcv = sc.querySelector('canvas.front3d'), fctx = fcv && v.front ? fcv.getContext('2d') : null;
   // depth-of-field pass
-  const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });
-  rt.depthTexture = new THREE.DepthTexture(W, H);
+  const rt = S ? S.rt : new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });
+  if (!S) rt.depthTexture = new THREE.DepthTexture(W, H);
   const qm = new THREE.ShaderMaterial({ toneMapped: false, depthTest: false, depthWrite: false,
     uniforms: { tColor: { value: rt.texture }, tDepth: { value: rt.depthTexture }, cNear: { value: v.cam.near }, cFar: { value: v.cam.far },
       focus: { value: plane }, maxBlur: { value: dof }, res: { value: new THREE.Vector2(W, H) }, mblur: { value: new THREE.Vector2() } },
@@ -623,12 +639,13 @@ export function makeRig(cv, build = BUILD, { dof = 2 } = {}) {
     if (wfe) { if (xs && xs.blur > 0.5) { camEl.setAttribute('filter', `url(#whip-${sc.id})`); wfe.setAttribute('stdDeviation', `${(xs.blur / 2).toFixed(1)} 0`); } else camEl.removeAttribute('filter'); }
     if (fctx) {
       renderer.setRenderTarget(null); renderer.setClearColor(0x000000, 0); renderer.clear(); renderer.render(v.front, v.cam);
-      fctx.clearRect(0, 0, W, H); fctx.drawImage(cv, 0, 0);
+      fctx.clearRect(0, 0, W, H); fctx.drawImage(S ? S.canvas : cv, 0, 0);
     }
     renderer.setRenderTarget(rt); renderer.render(v.scene, v.cam);
     renderer.setRenderTarget(null); renderer.render(qs, qc);
     zoomEnd(zs);
     extrasEnd(xs);
+    if (S) { out2d.clearRect(0, 0, W, H); out2d.drawImage(S.canvas, 0, 0); }
   } };
 }
 

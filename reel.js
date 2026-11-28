@@ -43,6 +43,8 @@
         pop: { opacity: 1, scale: 1, ...o }, grow: { scaleY: 1, ...o } }[type] || { opacity: 1 };
       tl.fromTo(el, from, { ...to, duration: dur, ease: type === 'pop' ? 'back.out(1.6)' : 'power3.out' }, Z + delay);
     });
+    // data-out="at dur" (landscape chapter card): fade the element out `at` s after the scene zero
+    each('data-out', (el, [at = 6.5, dur = 0.6]) => tl.to(el, { opacity: 0, duration: dur, ease: 'power1.in' }, Z + at));
     sc.querySelectorAll('[data-tw]').forEach((el) => {
       JSON.parse(el.getAttribute('data-tw')).forEach((s) => {
         const o = s.origin ? org(el, ...nums(s.origin)) : {};

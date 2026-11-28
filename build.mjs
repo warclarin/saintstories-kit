@@ -46,6 +46,11 @@ const TAILS = STORY.scenes.map((_, i) => (!FLOW ? TAIL : i < NS - 1 ? FLOW.tail 
 const BRAND = STORY.brand || 'SaintStories';
 // Opt-in finishing effects: STORY.fx = { handheld: true|amount, leak: true, grain: true } (all off by default).
 const FX = STORY.fx || {};
+// STORY.format = 'landscape' (opt-in, 2026-11-23, long-form YouTube): 1920x1080 instead of 1080x1920. The story must import
+// ../landscape.mjs before ../art.mjs so its art is drawn in 1920x1080 coordinates (checked below).
+const LAND = STORY.format === 'landscape';
+const W = LAND ? 1920 : 1080, H = LAND ? 1080 : 1920;
+{ const A = await import('./art.mjs'); if (A.W !== W) { console.error(`STORY.format is ${STORY.format || 'portrait'} but art.mjs draws ${A.W}x${A.H}: import '../landscape.mjs' first in the story file`); process.exit(1); } }
 const LOOPXF = 0.6;   // fx.loop: length of the end-to-start crossfade
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 // HyperFrames can't download its own headless shell in a sandbox: point it at an installed Chrome.
@@ -92,6 +97,12 @@ if (cmd === 'info') {
     (TIM[i]?.sentences || []).forEach((l) => console.log(`   @${(LEADS[i] + l.start).toFixed(2)}  (${(STARTS[i] + LEADS[i] + l.start).toFixed(2)})  ${l.text.slice(0, 60)}`));
   });
   console.log('preview at', STARTS.map((s, i) => (s + 0.6 * DUR[i]).toFixed(2)).join(','));
+  // scene.chapter (opt-in, long-form): YouTube chapter timestamps (the first chapter must start at 0:00)
+  if (STORY.scenes.some((s) => s.chapter)) {
+    const mmss = (t) => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+    console.log('chapters:');
+    STORY.scenes.forEach((s, i) => { if (s.chapter) console.log(`${mmss(i ? STARTS[i] : 0)} ${s.chapter}`); });
+  }
   process.exit(0);
 }
 
@@ -130,15 +141,30 @@ const SHARED_DEFS = `<svg width="0" height="0" style="position:absolute"><defs>
 <filter id="blur14" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="14"/></filter>
 </defs></svg>`;
 
+// 16:9 layout: brand top-right, kicker + title as a top-left chapter card (fades out after scene.title_out s), captions
+// low in the frame, cover text on the left over a side fade
+const CSS_LAND = `
+.brand{top:34px;padding:0 60px;text-align:right;font:500 26px Poppins}
+.kicker{top:50px;padding:0 84px;text-align:left;font:500 28px Poppins}
+.title{top:92px;padding:0 84px;text-align:left;font:700 62px/1.12 Lora,'DejaVu Serif',serif}
+.cap{top:950px}
+.pill{font:700 44px/80px Poppins;padding:0 28px;border-radius:40px}
+.wm{font:500 26px Poppins}
+.endcard{top:860px;font:500 34px Poppins}
+.thumbfade{background:linear-gradient(to right,rgba(18,12,28,.9) 0,rgba(18,12,28,.72) 34%,rgba(18,12,28,0) 62%)}
+.hook{left:84px;right:auto;text-align:left;font:700 54px Poppins}
+.ttitle{left:80px;right:auto;text-align:left}
+.chip{left:84px;top:72px}
+`;
 const CSS = `
 @font-face{font-family:Lora;src:url(fonts/Lora-Variable.ttf);font-weight:400 700}
 @font-face{font-family:Poppins;src:url(fonts/Poppins-Medium.ttf);font-weight:500}
 @font-face{font-family:Poppins;src:url(fonts/Poppins-Bold.ttf);font-weight:700}
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
-#root{position:relative;width:1080px;height:1920px;overflow:hidden;font-family:Poppins,'DejaVu Sans',sans-serif}
+html,body{width:${W}px;height:${H}px;overflow:hidden;background:#000}
+#root{position:relative;width:${W}px;height:${H}px;overflow:hidden;font-family:Poppins,'DejaVu Sans',sans-serif}
 .clip{position:absolute;inset:0}
-.scene svg,.scene canvas.bg3d,.scene canvas.front3d{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.scene svg,.scene canvas.bg3d,.scene canvas.front3d{position:absolute;left:0;top:0;width:${W}px;height:${H}px}
 .t{position:absolute;left:0;right:0;text-align:center}
 .brand{top:86px;font:500 28px Poppins;color:rgba(255,255,255,.6);letter-spacing:.05em}
 .kicker{top:146px;font:500 32px Poppins;letter-spacing:.14em;color:#ffe2a0;text-shadow:0 3px 10px rgba(0,0,0,.55)}
@@ -157,7 +183,7 @@ html,body{width:1080px;height:1920px;overflow:hidden;background:#000}
 .hook{font:700 46px Poppins;color:#ffd682;letter-spacing:.04em;text-shadow:0 4px 12px rgba(0,0,0,.6)}
 .ttitle{font:700 132px/1.05 Lora,'DejaVu Serif',serif;color:#fffaf0;white-space:nowrap;text-shadow:0 6px 20px rgba(0,0,0,.6)}
 .chip{left:40px;right:auto;top:446px;height:60px;padding:0 26px 0 20px;border-radius:30px;background:rgba(20,14,30,.6);display:flex;align-items:center;gap:12px;font:500 34px Poppins;color:#fff}
-`;
+` + (LAND ? CSS_LAND : '');
 
 const ICON = (c = 'rgba(255,255,255,.75)') =>
   `<svg width="30" height="38" viewBox="-15 -12 30 38"><ellipse cx="0" cy="-5" rx="13" ry="5" fill="none" stroke="${c}" stroke-width="3"/><path d="M0 2 V24 M-8 10 H8" stroke="${c}" stroke-width="4" stroke-linecap="round"/></svg>`;
@@ -176,8 +202,9 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   if (Array.isArray(cam) && !c3) camAttr = `data-cam="${cam.join(' ')}"`;
   else {
     const c = typeof cam === 'string' ? { move: cam } : Array.isArray(cam) ? { move: 'push', amt: cam[2], ox: cam[0], oy: cam[1] } : cam;
-    camAttr = c3 ? `data-cam3d="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift} ${plane}"`
-      : `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${c.ox ?? 540} ${c.oy ?? 1150} ${shift}"`;
+    const ox = c.ox ?? (LAND ? 960 : 540), oy = c.oy ?? (LAND ? 600 : 1150);   // default focus point of push / pull
+    camAttr = c3 ? `data-cam3d="${c.move || 'push'} ${c.amt ?? 0.07} ${ox} ${oy} ${shift} ${plane}"`
+      : `data-camv="${c.move || 'push'} ${c.amt ?? 0.07} ${ox} ${oy} ${shift}"`;
     // rack focus: cam.rack = { at, dur, blur } blurs the background layers (depth < 0.9) while the characters stay sharp
     if (c.rack) {
       const r = c.rack === true ? {} : c.rack;
@@ -234,15 +261,18 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
   // fx.handheld: a slow hand-held wobble on top of the camera move (own <g>, so it never fights the move's transform)
   const hh = FX.handheld && !c3 ? `<g class="hh" data-hh="${FX.handheld === true ? 1 : FX.handheld}">` : '<g>';
   return `<div class="clip scene" id="s${i}" data-start="${start.toFixed(3)}" data-zero="${zero.toFixed(3)}" data-duration="${dur.toFixed(3)}" style="z-index:${z}">`
-    + (s.bg3d && STORY.bg3d ? `<canvas class="bg3d" data-bg3d="${s.bg3d}" width="1080" height="1920"></canvas>` : '')
+    + (s.bg3d && STORY.bg3d ? `<canvas class="bg3d" data-bg3d="${s.bg3d}" width="${W}" height="${H}"></canvas>` : '')
     // STORY.hud(i) (opt-in, 2026-11-27, countdown reels): screen-fixed SVG drawn over the scene's art, outside .cam, so the
     // camera never moves it (screen px, times in s from the scene start like the art); e.g. a 5-4-3-2-1 ranking ladder
-    + `<svg viewBox="0 0 1080 1920">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g>`
+    + `<svg viewBox="0 0 ${W} ${H}">${rackDef}<g class="cam" ${camAttr}>${hh}<g transform="translate(0,${shift})">${s.art()}</g></g></g>`
     + `${hud && STORY.hud ? `<g class="hud">${STORY.hud(i)}</g>` : ''}</svg>`
     // scene.front3d (cam3d only): a 2D canvas over the SVG that the 3D module fills with the set's foreground (grass in
     // front of the characters' feet), drawn with the same camera, so the SVG characters stand inside the 3D world
-    + (c3 && s.front3d ? '<canvas class="front3d" width="1080" height="1920"></canvas>' : '')
-    + (hud ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
+    + (c3 && s.front3d ? `<canvas class="front3d" width="${W}" height="${H}"></canvas>` : '')
+    + (hud && !LAND ? `<div class="t kicker" data-in="rise 0.1 0.5">${esc(s.kicker)}</div><div class="t title" data-in="rise 0.25 0.6">${esc(s.title)}</div>` : '')
+    // landscape: optional kicker / title (empty = none), fading out after scene.title_out s (default 6.5; false keeps it)
+    + (hud && LAND ? ((o) => (s.kicker ? `<div class="t kicker" data-in="rise 0.1 0.5"${o}>${esc(s.kicker)}</div>` : '') + (s.title ? `<div class="t title" data-in="rise 0.25 0.6"${o}>${esc(s.title)}</div>` : ''))(
+      s.title_out === false ? '' : ` data-out="${s.title_out ?? 6.5} 0.6"`) : '')
     + '</div>';
 }
 
@@ -316,20 +346,22 @@ function buildHtml() {
     });
   });
   // anti-reupload watermark: hops between spots every 6 s
-  const spots = STORY.wm_spots || [[56, 560, 'l'], [1024, 900, 'r'], [56, 1250, 'l']];
+  const spots = STORY.wm_spots || (LAND ? [[56, 300, 'l'], [1864, 420, 'r'], [56, 760, 'l']] : [[56, 560, 'l'], [1024, 900, 'r'], [56, 1250, 'l']]);
   for (let k = 0; k * 6 < TOTAL - 0.5; k++) {
     const [x, y, side] = spots[k % spots.length], d = Math.min(6, TOTAL - k * 6);
-    const pos = side === 'r' ? `right:${1080 - x}px;top:${y - 6}px` : `left:${x}px;top:${y - 6}px`;
+    const pos = side === 'r' ? `right:${W - x}px;top:${y - 6}px` : `left:${x}px;top:${y - 6}px`;
     parts.push(`<div class="clip wm ${side}" data-start="${k * 6}" data-duration="${d.toFixed(3)}" style="z-index:75;${pos}">${ICON()}<span>${esc(BRAND)}</span></div>`);
   }
   const ecEnd = FX.loop ? TOTAL - LOOPXF : TOTAL;   // with fx.loop the end card fades out before the seam
-  parts.push(`<div class="clip t endcard"${FX.loop ? ' data-fo="1"' : ''} data-start="${(ecEnd - 2.2).toFixed(3)}" data-duration="2.2" style="z-index:80">Follow ${esc(BRAND)} for more saints</div>`);
+  const ecDur = STORY.endcard_dur || 2.2;   // long-form: hold the end card over the end-screen tail
+  parts.push(`<div class="clip t endcard"${FX.loop ? ' data-fo="1"' : ''} data-start="${(ecEnd - ecDur).toFixed(3)}" data-duration="${ecDur}" style="z-index:80">${esc(STORY.endcard || `Follow ${BRAND} for more saints`)}</div>`);
   if (!FX.loop) {   // a looping reel starts on the hook and never dips to black
-    parts.push(`<div class="clip black" id="fadein" data-start="0" data-duration="0.4" style="z-index:100"></div>`);
+    // fx.fadein: false (long-form) opens on the first scene with no dip from black, like a looping reel
+    if (FX.fadein !== false) parts.push(`<div class="clip black" id="fadein" data-start="0" data-duration="0.4" style="z-index:100"></div>`);
     parts.push(`<div class="clip black" id="fadeout" data-start="${(TOTAL - 0.5).toFixed(3)}" data-duration="0.5" style="z-index:100;opacity:0"></div>`);
   }
   parts.push(`<audio id="vo" class="clip" data-start="0" data-duration="${TOTAL}" src="narration.wav"></audio>`);
-  const body = `<div id="root" data-composition-id="main" data-start="0" data-duration="${TOTAL}" data-width="1080" data-height="1920">\n${parts.join('\n')}\n</div>`;
+  const body = `<div id="root" data-composition-id="main" data-start="0" data-duration="${TOTAL}" data-width="${W}" data-height="${H}">\n${parts.join('\n')}\n</div>`;
   fs.writeFileSync(path.join(OUT, 'index.html'), page(body, { total: TOTAL, xf: XF }));
   console.log(path.join(OUT, 'index.html'), `(${TOTAL.toFixed(2)} s)`);
 }
@@ -337,9 +369,11 @@ function buildHtml() {
 function buildThumb() {
   assets();
   const i = STORY.thumb_scene ?? 0, t = STORY.thumb_t ?? 3.0, shift = STORY.thumb_shift ?? -60;
+  // STORY.thumb_override (opt-in): scene fields (art, bg3d, cam ...) used for the cover only, in place of scene thumb_scene's
+  if (STORY.thumb_override) STORY.scenes[i] = { ...STORY.scenes[i], ...STORY.thumb_override };
   const title = STORY.thumb_title || STORY.scenes[i].title, hook = STORY.thumb_hook || '';
   const f0 = 1080 - Math.max(0, shift + 60);
-  const body = `<div id="root" data-composition-id="main" data-start="0" data-duration="${DUR[i]}" data-width="1080" data-height="1920">`
+  const body = `<div id="root" data-composition-id="main" data-start="0" data-duration="${DUR[i]}" data-width="${W}" data-height="${H}">`
     + sceneDiv(i, { start: 0, zero: 0, dur: DUR[i], z: 1, hud: false, shift })
     + `<div class="clip vig" style="z-index:50"></div><div class="clip grain" style="z-index:60"></div>`
     + `<div class="clip thumbfade" style="z-index:61;--f0:${f0}px"></div>`
@@ -347,7 +381,9 @@ function buildThumb() {
     + (hook ? `<div class="t hook" style="z-index:70;top:var(--hy)">${esc(hook.toUpperCase())}</div>` : '')
     + `<div class="t ttitle" id="tt" style="z-index:70">${esc(title)}</div></div>`
     + `<script>(function(){const e=document.getElementById('tt'),r=document.createRange();r.selectNodeContents(e);`
-    + `const fit=()=>{let s=240;e.style.fontSize=s+'px';while(s>70&&r.getBoundingClientRect().width>980){s-=2;e.style.fontSize=s+'px';}const top=1440-s;e.style.top=top+'px';document.documentElement.style.setProperty('--hy',(top-74)+'px');};`
+    // landscape: the title sits on the left half (max 1040 px wide) a little below the middle, the hook just above it
+    + (LAND ? `const fit=()=>{let s=200;e.style.fontSize=s+'px';while(s>70&&r.getBoundingClientRect().width>1040){s-=2;e.style.fontSize=s+'px';}const top=Math.round(640-s*0.6);e.style.top=top+'px';document.documentElement.style.setProperty('--hy',(top-84)+'px');};`
+      : `const fit=()=>{let s=240;e.style.fontSize=s+'px';while(s>70&&r.getBoundingClientRect().width>980){s-=2;e.style.fontSize=s+'px';}const top=1440-s;e.style.top=top+'px';document.documentElement.style.setProperty('--hy',(top-74)+'px');};`)
     + `fit();document.fonts.ready.then(fit);})();</script>`;
   fs.writeFileSync(path.join(OUT, 'thumb.html'), page(body, { total: DUR[i], xf: XF, seek: t }));
   const require = createRequire(import.meta.url);
@@ -367,7 +403,7 @@ function buildThumb() {
     }
     const chrome = process.env.HYPERFRAMES_BROWSER_PATH;
     const b = await pw.chromium.launch(STORY.bg3d ? { ...(chrome ? { executablePath: chrome } : {}), args: ['--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=d3d11'] } : {});
-    const p = await b.newPage({ viewport: { width: 1080, height: 1920 } });
+    const p = await b.newPage({ viewport: { width: W, height: H } });
     await p.goto(url);
     await p.evaluate(() => document.fonts.ready);
     if (STORY.bg3d) await p.evaluate(async (T) => { await window.__hf?.buildReady?.bg3d; window.dispatchEvent(new CustomEvent('hf-seek', { detail: { time: T, waitUntil() {} } })); }, t);
@@ -376,6 +412,8 @@ function buildThumb() {
     await p.screenshot({ path: png });
     await b.close(); if (srv) srv.close();
     // Square grid crop only on request (STORY.thumb_square): covers are for Reels/Shorts.
+    // landscape: also a 1280x720 JPEG (YouTube thumbnails must be under 2 MB; a 1920x1080 PNG often isn't)
+    if (LAND) sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'scale=1280:720:flags=lanczos', '-q:v', '2', path.join(FINAL, `thumb_${STORY.slug}.jpg`)]);
     if (STORY.thumb_square) sh('ffmpeg', ['-y', '-loglevel', 'error', '-i', png, '-vf', 'crop=1080:1080:0:420', path.join(FINAL, `thumb_${STORY.slug}_square.png`)]);
     console.log(png);
   })();
