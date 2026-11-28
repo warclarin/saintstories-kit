@@ -191,7 +191,7 @@ export function chibi(o = {}) {
     const M = MOODS[at(moodL, t, 0)] || MOODS.happy;
     for (const k in mouths) mouths[k].visible = k === M.m;
     brows.forEach(([gB, b, s]) => { b.position.y = M.bu || 0; b.rotation.z = -s * (M.bt || 0); });
-    const k = (t + ph) % 3.7, blink = k < 0.14 ? Math.abs(Math.cos((k / 0.14) * Math.PI)) * 0.9 + 0.1 : 1;
+    const per = 5 + (Math.abs(ph * 7.3) % 2.5), k = (t + Math.abs(ph) * 1.9) % per, blink = k < 0.12 ? Math.abs(Math.cos((k / 0.12) * Math.PI)) * 0.9 + 0.1 : 1;
     eyes.forEach((e) => { e.scale.setScalar(M.eye || 1); e.scale.y = (M.closed ? 0.14 : blink) * (M.eye || 1); });
   } };
 }
@@ -463,18 +463,18 @@ function farm3d(scene) {
 
 function sFarm() {
   const v = base('#2a2a4a', '#8a84b0', 30, 140), T = { name: tt(1, 'name', 1.6), took: tt(1, 'took', 3.6), slums: tt(1, 'slums', 6.0) };
-  const F = farm3d(v.scene), door = [0.4, -6.3];
-  const wich = chibi({ ...WICH, pos: [0.7, -6.4], face: [[0, 0.5], [T.took, -0.6]], up: [[0, 0]], mood: [[0, 'happy'], [T.took, 'tender']],
+  const F = farm3d(v.scene), door = [0.4, -5.0];
+  const wich = chibi({ ...WICH, pos: [0.7, -5.2], face: [[0, 0.5], [T.took, -0.6]], up: [[0, 0]], mood: [[0, 'happy'], [T.took, 'tender']],
     arms: [[0, [0.12, 0, 0.12, 0]], [T.name + 0.2, [0.12, 0, 0.9, 0.5]], [T.took, [0.12, 0, 0.6, 1.2]]] });
   v.scene.add(wich.group);
   const route = (i, x0, z0, x1, z1, t0, t1, o = {}) => { const c = kid(i, { pos: [x0, z0], walk: [[t0, t1, [x0, z0], [x1, z1]]], face: [[0, yawTo([x0, z0], [x1, z1])], [t1, yawTo([x1, z1], door)]], mood: [[0, 'worried'], [t1, 'happy']], up: [[0, 0.05]], ...o }); v.scene.add(c.group); return c; };
-  const kids = [route(3, -8.6, 4.5, -1.4, -4.8, 0.0, 5.6), route(1, -10.2, 6.0, -2.4, -3.8, 0.4, 6.4), route(5, -12.0, 7.2, -0.6, -3.4, 0.6, 7.2), route(2, -6.4, 3.0, 0.8, -4.4, 0.0, 4.4)];
+  const kids = [route(3, -8.6, 4.5, -1.4, -3.8, 0.0, 5.6), route(1, -10.2, 6.0, -2.4, -3.0, 0.4, 6.4), route(5, -12.0, 7.2, -0.6, -2.8, 0.6, 7.2), route(2, -6.4, 3.0, 0.9, -3.6, 0.0, 4.4)];
   const flakes = motes(v.scene, { n: 160, x: [-16, 14], y: [0, 14], z: [-18, 14], color: '#ffffff', size: 6, seed: 4, rise: -0.9, tex: SNOWT, op: 0.9 });
   const rig = camRig(v.cam, [
     { t: 0, look: [-1, 2.6, -6], r: 26, a: -30, e: 22, fov: 44 },
-    { t: T.name, look: [0.7, 3.4, -6.4], r: 7.6, a: 12, e: -8, fov: 46 },
+    { t: T.name, look: [0.7, 3.2, -5.2], r: 7.6, a: 12, e: -4, fov: 46 },
     { t: T.took, look: [-1.8, 2.0, -2.2], r: 9.5, a: 62, e: 9, fov: 46 },
-    { t: T.slums, look: [-3.4, 2.4, -1], r: 11, a: 118, e: 6, fov: 46 }]);
+    { t: T.slums, look: [-3.4, 2.4, -1], r: 11, a: 100, e: 6, fov: 46 }]);
   return { ...v, update(t) { rig(t); wich.update(t); kids.forEach((k) => k.update(t)); flakes.update(t); F.win.forEach((w, i) => { w.material.opacity = 0.5 + 0.08 * Math.sin(t * 3 + i); }); } };
 }
 
@@ -518,13 +518,13 @@ function sBuild() {
   const wich = chibi({ ...WICH, pos: [-2.1, -3.4], propR: hold.group, face: [[0, yawTo([-2.1, -3.4], WH)]], up: [[0, 0.55], [T.big, 0.2]],
     mood: [[0, 'happy'], [T.fixed, 'think'], [T.big, 'joy']], arms: [[0, [0.12, 0, 0.12, 0]], [T.wheel, [0.12, 0, 0.3, 1.0]], [T.fixed, [0.12, 0, 0.3, 1.25]], [T.big, [0.12, 0, 0.25, 0.2]]] });
   v.scene.add(wich.group);
-  const kids = [[0.4, -6.3], [1.8, -5.7], [-0.9, -6.2], [2.4, -4.4]].map(([x, z], j) => { const c = kid([1, 6, 0, 4][j], { pos: [x, z], face: [[0, yawTo([x, z], WH)]], up: [[0, 0.35]], mood: [[0, 'surprised'], [T.big + j * 0.1, 'joy']] }); v.scene.add(c.group); return c; });
+  const kids = [[-3.4, -5.0], [-2.9, -6.3]].map(([x, z], j) => { const c = kid([1, 6, 0, 4][j], { pos: [x, z], face: [[0, yawTo([x, z], WH)]], up: [[0, 0.35]], mood: [[0, 'surprised'], [T.big + j * 0.1, 'joy']] }); v.scene.add(c.group); return c; });
   const n = wh.candles.length, span = Math.max(1.2, T.big - T.fixed - 0.3);
   const rise0 = T.small + 0.9;
   const rig = camRig(v.cam, [
     { t: 0, look: [-1.1, 2.8, -3.8], r: 6.0, a: 72, e: 36, fov: 56 },
     { t: T.fixed, look: [-0.8, 2.3, -3.9], r: 6.2, a: 58, e: 42, fov: 56 },
-    { t: T.big, look: [0.3, 0.6, -3.0], r: 3.6, a: -20, e: 24, fov: 46 },
+    { t: T.big, look: [0, 0.3, -4], r: 7.0, a: 15, e: 55, fov: 50 },
     { t: rise0 + 0.6, look: [0, 2.4, -4], r: 7.4, a: 0, e: -12, fov: 50, dur: 1.4 }], HALL);
   return { ...v, update(t) {
     rig(t);
@@ -544,7 +544,7 @@ function sFirst() {
   const warm = new THREE.PointLight('#ffb060', 2.6, 14, 1); v.scene.add(warm);
   const kids = circleKids(v.scene, [0, 1, 2, 3, 4, 5], [[0.8, -2.0], [-0.8, -2.1], [1.9, -3.0], [-1.9, -3.1], [0.1, -1.3], [2.2, -5.0]], WH,
     Object.fromEntries([0, 1, 2, 3, 4, 5].map((j) => [j, { up: [[0, 0.05], [T.looked - 0.3 + j * 0.08, 0.55]], mood: [[0, 'happy'], [T.looked + j * 0.08, 'awe'], [T.one + 0.3, 'tender']] }])));
-  const wich = chibi({ ...WICH, pos: [-2.4, -5.2], face: [[0, yawTo([-2.4, -5.2], WH)]], up: [[0, 0.4]], mood: [[0, 'tender']] }); v.scene.add(wich.group);
+  const wich = chibi({ ...WICH, pos: [-2.6, -1.0], face: [[0, yawTo([-2.6, -1.0], WH)]], up: [[0, 0.4]], mood: [[0, 'tender']] }); v.scene.add(wich.group);
   const rig = camRig(v.cam, [
     { t: 0, look: [0, 2.9, -3.2], r: 7.2, a: 0, e: -4, fov: 50 },
     { t: T.looked, look: [0, 2.3, -2.2], r: 4.0, a: 175, e: -2, fov: 50 },
@@ -565,9 +565,9 @@ function sGrow() {
   const n = wh.candles.length, t0 = 0.2, t1 = T.bright + 0.8;
   const count = (t) => 1 + (n - 1) * io3(Math.min(1, Math.max(0, (t - t0) / (t1 - t0))));
   const rig = camRig(v.cam, [
-    { t: 0, look: [0, 4.2, -4], r: 5.6, a: -34, e: -28, fov: 54 },
-    { t: T.dark, look: [0, 3.6, -4], r: 7.8, a: 50, e: -12, fov: 54, dur: 1.6 },
-    { t: T.bright, look: [0, 3.0, -3.8], r: 7.0, a: 100, e: 12, fov: 52, dur: 1.3 }], HALL);
+    { t: 0, look: [0, 4.2, -4], r: 5.6, a: 30, e: -28, fov: 54 },
+    { t: T.dark, look: [0, 3.6, -4], r: 7.8, a: 90, e: -12, fov: 54, dur: 1.6 },
+    { t: T.bright, look: [-0.6, 3.0, -3.6], r: 7.0, a: 150, e: 10, fov: 52, dur: 1.3 }], HALL);
   return { ...v, update(t) {
     rig(t); const c = count(t); wh.set(t, (k) => sm((c - k) / 0.6)); const f = c / n;
     warm.intensity = (2 + 6 * f) * (1 + 0.04 * Math.sin(t * 9)); hemi.intensity = 0.38 + 0.6 * f; hemi.color.set('#7a8ac8').lerp(new THREE.Color('#ffd6a0'), f);
@@ -630,7 +630,7 @@ function sHome() {
   const boy = chibi({ ...BOY, pos: [0.5, -1.9], face: [[0, yawTo([0.5, -1.9], C)]], up: [[0, -0.05]], mood: [[0, 'happy'], [T.one + 0.5, 'joy']], arms: [[0, [0.1, 0, 0.1, 0]], [T.light, [1.3, 0.5, 1.3, 0.5]]] }); v.scene.add(boy.group);
   const lit = (k, t) => sm((t - (T.one - 0.1 + k * Math.max(0.35, (T.light - T.one) / 4))) / 0.25);
   const rig = camRig(v.cam, [
-    { t: 0, look: [0, 1.9, -0.4], r: 6.4, a: 24, e: 24, fov: 50 },
+    { t: 0, look: [0, 2.4, -0.4], r: 6.4, a: 24, e: 20, fov: 50 },
     { t: T.four, look: [0, 1.75, 0], r: 3.3, a: 8, e: 58, fov: 46 },
     { t: T.one, look: [0.4, 2.1, -0.2], r: 3.4, a: -42, e: 6, fov: 46 },
     { t: T.light, look: [0, 2.2, -0.6], r: 6.4, a: 14, e: 12, fov: 50 }], HOME);

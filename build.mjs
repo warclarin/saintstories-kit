@@ -277,6 +277,7 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
     + '</div>';
 }
 
+const CAPC = +STORY.capChars || 0;
 function captionChunks(i) {
   const out = [];
   for (const s of TIM[i].sentences) {
@@ -284,9 +285,10 @@ function captionChunks(i) {
     let cur = [];
     for (const w of words) {
       cur.push(w);
-      if (cur.length >= 4 || (/[,.?!;]$/.test(w) && cur.length >= 2)) { groups.push(cur); cur = []; }
+      if (cur.length >= 4 || (/[,.?!;]$/.test(w) && cur.length >= 2) || (CAPC && cur.join(' ').length >= CAPC)) { groups.push(cur); cur = []; }
     }
-    if (cur.length) { if (groups.length && cur.length === 1) groups[groups.length - 1].push(...cur); else groups.push(cur); }
+    // STORY.capChars (opt-in, 2026-11-28): a lone last word joins the previous group only if the line stays within capChars + 4
+    if (cur.length) { const prev = groups[groups.length - 1]; if (prev && cur.length === 1 && (!CAPC || [...prev, ...cur].join(' ').length <= CAPC + 4)) prev.push(...cur); else groups.push(cur); }
     const total = groups.reduce((a, g) => a + g.join(' ').length, 0);
     let t = s.start;
     for (const g of groups) {

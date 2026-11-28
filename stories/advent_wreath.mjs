@@ -23,7 +23,7 @@ const T = {
   5: { each: at(5, 'Each day'), dark: at(5, 'dark room'), bright: at(5, 'brighter') },
   6: { fir: at(6, 'fir branches'), wheel: at(6, 'the wheel') },
   7: { homes: at(7, 'homes'), four: at(7, 'four candles'), one: at(7, 'One flame'), light: at(7, 'became light') },
-  8: { answer: at(8, 'an answer'), flame: at(8, 'every new'), closer: at(8, 'closer'), advent: at(8, 'Advent begins') },
+  8: { answer: at(8, 'an answer'), flame: at(8, 'every new'), closer: at(8, 'closer'), advent: at(8, 'it all began') },
 };
 
 const scene = (i) => () => '';   // no SVG: everything is drawn in 3D
@@ -37,7 +37,7 @@ export const STORY = {
   bg3d: './advent_wreath.bg3d.js',
   bg3d_extra: { 'bakhita.bg3d.js': './bakhita_freedom.bg3d.js' },
   bg3d_vars: { T },
-  voice: 'am_michael', speed: 0.95, flow: true,
+  voice: 'am_michael', speed: 0.95, flow: true, capChars: 24,
   fx: { handheld: false, leak: true, loop: true },
   video: { bitrate: 14e6, mode: 'constant' },
   music: { story: 'a pastor lights one more candle each day on a wooden wheel for poor children waiting for Christmas, Hamburg 1839',
@@ -63,7 +63,7 @@ export const STORY = {
       say: ['Years later, fir branches wrapped the wheel,'] },
     { kicker: 'THE WREATH TODAY', title: 'Four Candles', art: scene(7), bg3d: 'home', cam: CAM, tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['and homes made it smaller: four candles, one for each Sunday.', 'One flame at a time, the waiting became light.'] },
-    { kicker: 'ADVENT · NOVEMBER 29', title: 'Every Flame Says Closer', art: scene(8), bg3d: 'last', cam: CAM, tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
-      say: ['The children\'s question finally had an answer: every new flame said, closer.', 'Advent begins November 29th.'] },
+    { kicker: 'ADVENT TODAY', title: 'Every Flame Says Closer', art: scene(8), bg3d: 'last', cam: CAM, tone: { speed: 0.9, gap: 0.34, gain: -0.5 },
+      say: ['The children\'s question finally had an answer: every new flame said, closer.', 'And it all began in one small prayer hall, where'] },
   ],
 };
