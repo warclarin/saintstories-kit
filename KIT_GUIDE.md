@@ -271,6 +271,7 @@ Files with only `SETS` (set-ups of the above, read when reusing that reel's look
 
 Import with `import { name } from './<file>.mjs'`. hd()-based helpers are marked **hd**; others are person()-based (redraw on hd() for a main character).
 
+- **advent_wreath** (ALL-3D, no SVG art; in the `.bg3d.js`): chibi(o) (cel-shaded three.js chibi: mood/arms/up/face/walk schedules), wheel3d (Wichern's candle wheel, fir option), wreath3d (4-candle Advent wreath), camRig(cam, keys, bounds) (free orbit/crane/low-high camera, keys `{ t, look, r, a, e, fov }`), betsaalRoom, farm3d (thatched house in snow, Hamburg skyline), homeRoom; word times via `bg3d_vars.T`. `check` can't measure its camera (reads the SVG cam)
 - **agnes_of_assisi_too_heavy** (hd): agnesA, clare, francisHD, knight, monaldo; scissors, monstrance, panzoChurch
 - **albert_of_louvain** (hd): albertL, knight, emperorHenry, popeCelestine; kiteShield, threeSwords
 - **albert_the_great** (hd): dominican, albert, aquinas; quill, crystal, leafSprig, starBurst, glowCross, oxBubble, studyDesk
