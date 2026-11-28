@@ -1,6 +1,7 @@
 // three.js backgrounds for St. Saturninus: the bull of the Capitol (one story; browser module, build.mjs copies it to
 // work/<slug>/bg3d.mjs). Roman Toulouse (Tolosa) in the 250s, built on roma() from gelasius.bg3d.js with the Roman
 // landmarks thinned out (no colosseum, no aqueduct, no Christian basilica: the Capitol temple and red-tiled roofs only).
+//   sDragHook the hook: sunset over the town behind the side-view Capitol steps (the drag)
 //   sHook    the Capitol temple at sunset, gold air                       [roma(), base 'hook', one near temple]
 //   sCity    the town by day, the temple across the roofs                 [roma(), base 'city', temple right]
 //   sTemple  bright afternoon in front of the Capitol (SVG steps + facade) [roma(), base 'hook', far temple only]
@@ -23,6 +24,7 @@ export const TOLOSA = { colosseum: null, aqueduct: null, basilica: null, palatin
 const town = (name, o) => () => R.roma(name, { ...TOLOSA, ...o });
 
 export const BUILD = {
+  sDragHook: town('sDragHook', { base: 'hook', temples: [[880, 1100, 520]], air: 'gold' }),
   sHook:   town('sHook',   { base: 'hook', temples: [[560, 1100, 300]] }),
   sCity:   town('sCity',   { base: 'city', temples: [[800, 1096, 380]] }),
   sTemple: town('sTemple', { base: 'hook', temples: [[200, 1100, 520]], sun: [860, 720, 0.7] }),

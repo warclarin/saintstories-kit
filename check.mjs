@@ -142,7 +142,8 @@ async function pageCheck({ total, step }) {
     // faces
     document.querySelectorAll('circle.hdface').forEach((fc, idx) => {
       if (!active(fc, T) || vis(fc.parentElement) < 0.5) return;
-      const r = fc.getBoundingClientRect(); if (r.width < 24) return;
+      if (fc.closest('.extras')) return;   // background crowd: mob() and other helpers wrap extras in <g class="extras">
+      const r = fc.getBoundingClientRect(); if (r.width < 56) return;   // background extras (head radius under 28 px) are not framed
       const cx = r.x + r.width / 2, cy = r.y + r.height / 2, R = r.width / 2, id = idx, x = Math.round(cx), y = Math.round(cy);
       const add = (rule, note = '') => faces.push({ t: Math.round(T * 100) / 100, rule, id, x, y, note });
       const lp = last.get(idx), sp = lp && T - lp[2] < step * 1.5 ? Math.hypot(cx - lp[0], cy - lp[1]) / step : 0; last.set(idx, [cx, cy, T]);
