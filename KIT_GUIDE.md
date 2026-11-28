@@ -23,7 +23,7 @@ Template reel (current house standard: all-3D, cam3d, hd(), Ricks Clips motion, 
 | line times | `node build.mjs stories/<file>.mjs info` (`@<s in scene> (<s in reel>)` per line) |
 | preview | `node build.mjs stories/<file>.mjs preview [t1 t2 …]` → `work/<slug>/preview/contact-sheet.jpg` |
 | cover | `node build.mjs stories/<file>.mjs thumb` → `$SAINTSTORIES_OUT/thumb_<slug>.png` |
-| render | `node build.mjs stories/<file>.mjs render --workers 10` (final MP4s; `fast` starves frames, see memory) |
+| render | `node build.mjs stories/<file>.mjs render --workers 10` (final MP4s; `fast` starved frames on Nov 27: drafts only) |
 | music | `… music prompt` · `… music check [files]` · `… music mix [file]` |
 | tidy | `… clean` |
 
@@ -314,3 +314,12 @@ Import with `import { name } from './<file>.mjs'`. hd()-based helpers are marked
 - **theophane_venard_cage** (hd): theophane, guardVN, mandarin, executioner, villagerVN, therese; bambooCage, notes, goat, letterProp, saber, pictureFrame, mandarinDesk
 
 Keep this catalog current: when a new reel exports helpers or a new 3D set, add one line here in the same commit.
+
+## 10. Before you render (technical checks, in order)
+
+1. Art run (`info` or `preview`) prints no `[wordTimes] "…" not found` warning (stale anchors fire at the line start).
+2. Narration 55–70 s (`narrate.py` total); climax line has `speed: 0.85` and no `beat`.
+3. Every scene: `bg3d` key present in `BUILD` and in `LIGHT`, `front3d: true`, `tone`, `cam.path` keys timed with `at()`.
+4. `STORY` has `flow`, `fx { handheld: false, leak, loop }`, `video { bitrate: 14e6, mode: 'constant' }`, `cam3d`, `bg3d_vars`, `music`, `thumb_title` naming the saint; every set file the `.bg3d.js` imports is aliased in `bg3d_extra`.
+5. Preview clean (skill step 6), loop seam `0` = `<total − 0.05>`.
+6. Render with `render --workers 10`; then smallest frame (`ffprobe … packet=pkt_size`) above ~1 KB and mid-motion frames sharp.
