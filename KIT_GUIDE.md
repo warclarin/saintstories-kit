@@ -286,6 +286,7 @@ Import with `import { name } from './<file>.mjs'`. hd()-based helpers are marked
 - **george_dragon**: george, princess, dragon, dragonNeck; lance, crossShield, beltProp
 - **joan_of_arc**: joan; fleur, standard, sword, chateau, gothic · joan_of_arc_orleans: tourellesSvg
 - **john_berchmans** (hd): johnB, shoemaker, altarBoy, jesuitStudent; ruleBook, threeTreasures, shoe, purse
+- **james_of_the_marches_cup** (hd): jamesHD (Observant Franciscan), friarOFM(x, y, s, i), tvrtko, dorothea; snake(s, t), snakeCup(s, snakeAt), throneSeat; 3D `COURT` (torchlit royal hall overrides for cathedral)
 - **jude**: jude; medallion, headFlame, club
 - **kolbe**: kolbe, prisoner; glasses, medal, crownProp, WHITE_CROWN, fence, tower, barracks, woodChurch, cottage, friary, press, magazines
 - **leo_the_great**: leo, attila; pallium, ferula, hunHat, oldStPeters
