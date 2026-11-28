@@ -95,7 +95,7 @@ function scene3() {
     + from(ye, lit(castShadow(...O3, 'oHidden') + oldMan(...O3, { flip: true, mood: 'tender', look: [2.4, 0.2], armL: [16, 2, 3], armR: [40, 2, 3] })
       + castShadow(...C3, 'oHidden') + seq((o) => catherineL(...C3, { ...OLD, look: [2.4, 0.2], armL: [16, 2, 3], ...o }),
         [[0, { mood: 'happy', armR: 60 }], [el + 0.2, { mood: 'tender', armR: 60 }], [sc, { mood: 'sad', look: [-2.4, 0.4], armR: [16, 2, 3] }], [sn, { mood: 'peaceful', look: [0, 1.2], ...PRAY }]]), 'oHidden'))
-    + from(sc, layer(0.85, lit(castShadow(240, 1286, 1.75, 'oHidden') + sisterDC(240, 1286, 1.75, 1, { mood: 'stern', look: [2.4, 0.4], armL: [16, 2, 3], armR: 78 }), 'oHidden')))
+    + from(sc - 0.6, layer(0.85, walk(sc - 0.6, 0.6, -260, lit(castShadow(240, 1286, 1.75, 'oHidden') + sisterDC(240, 1286, 1.75, 1, { mood: 'stern', look: [2.4, 0.4], armL: [16, 2, 3], armR: 78 }), 'oHidden'))))
     + NEAR(foliage('r', 1660, { color: '#2a2634', seed: 6 }));
 }
 
@@ -123,8 +123,8 @@ function scene5() {
   const altar = '<g transform="translate(540,1250)"><rect x="-230" y="-200" width="460" height="200" fill="#e8dcc4"/><rect x="-230" y="-214" width="460" height="18" fill="#c8b48a"/>'
     + '<rect x="-180" y="-170" width="360" height="110" rx="10" fill="#cfe0ee" opacity=".55"/><rect x="-180" y="-170" width="360" height="110" rx="10" fill="none" stroke="#c8963e" stroke-width="5"/>'
     + `<path d="M-150 -90 Q0 -130 150 -90" stroke="#fbf6ea" stroke-width="22" fill="none" stroke-linecap="round" opacity=".9"/>${glow(0, -120, 260, 0.55)}</g>`;
-  return until(hi, layer(0.85, altar) + layer(0.95, PK5.map(([x, y, s, i], k) => from(re + 0.3 + k * 0.3, lit(castShadow(x, y, s, 'oGlory')
-      + sisterDC(x, y, s, i, { flip: true, kneel: true, mood: 'peaceful', ...PRAY }), 'oGlory'))).join('')))
+  return until(hi, layer(0.85, altar) + layer(0.95, PK5.map(([x, y, s, i], k) => lit(castShadow(x, y, s, 'oGlory')
+      + seq((o) => sisterDC(x, y, s, i, { flip: true, ...o }), [[0, { mood: 'happy', look: [2.4, -0.4], armL: [16, 2, 3], armR: [16, 2, 3] }], [re + 0.3 + k * 0.3, { kneel: true, mood: 'peaceful', ...PRAY }]]), 'oGlory')).join('')))
     + from(hi, lit(castShadow(...C5, 'oGlory') + catherineL(...C5, { halo: true, mood: 'tender', look: [0, 0], armL: [16, 2, 3], armR: 70, propR: smallMedal(1.4) }), 'oGlory')
       + glow(C5[0], 760, 260, 0.5))
     + NEAR(bokeh(7, { seed: 17, sides: true }));
@@ -135,7 +135,7 @@ function scene5() {
 const C6 = [470, 1345, 2.25], O6 = [800, 1310, 1.9];
 function scene6() {
   const nv = at(6, 'November'), se = at(6, 'seniors'), pr = at(6, 'pray for us');
-  return from(se - 0.2, layer(0.92, lit(castShadow(...O6, 'oGlory') + oldMan(...O6, { flip: true, mood: 'tender', look: [2.4, 0], armL: [16, 2, 3], armR: [16, 2, 3] }), 'oGlory')))
+  return from(se - 0.8, layer(0.92, walk(se - 0.8, 0.8, 260, lit(castShadow(...O6, 'oGlory') + oldMan(...O6, { flip: true, mood: 'tender', look: [2.4, 0], armL: [16, 2, 3], armR: [16, 2, 3] }), 'oGlory'))))
     + lit(castShadow(...C6, 'oGlory') + seq((o) => catherineL(...C6, { halo: true, armL: [16, 2, 3], ...o }),
       [[0, { mood: 'happy', look: [0, 0], armR: 40, propR: smallMedal(1.3) }], [pr, { mood: 'tender', armR: 40, propR: smallMedal(1.3) }]]), 'oGlory')
     + `<g opacity="0"${fadeIn(nv, 0.7)}>${glow(C6[0], 740, 240, 0.45)}</g>`
@@ -186,8 +186,8 @@ export const STORY = {
       say: ['Her confessor, Father Aladel, did not believe her.', 'He told her to think of other things, and to keep quiet.', 'And she obeyed.'] },
     { kicker: 'ENGHIEN HOSPICE · PARIS', title: 'Millions, Unknown', art: scene3, bg3d: 'oHidden', front3d: true,
       cam: { ...GLIDE, whip: 'r', path: [
-        { at: at(3, 'millions'), to: [540, 860], z: 1.05, frame: [540, 900] },
-        { at: at(3, 'Yet for'), to: [C3[0] + 160, 1000], z: 1.15, frame: [540, 960] }] },
+        { at: at(3, 'millions'), to: [540, 860], z: 1.05, frame: [540, 900] }],
+        zoom: { at: at(3, 'Yet for'), to: [C3[0] + 160, 1000], style: 'cut', z: 1.15, hold: 'end', center: 0.3 } },
       tone: STAND,
       say: ['Still, the medal was made, and millions wore it.', 'Yet for forty-five years she cared for the elderly, unknown.', 'When superiors scolded her unfairly, she still said nothing.'] },
     { kicker: 'PARIS · 1876', title: 'The Secret Told', art: scene4, bg3d: 'oConfess', front3d: true,
@@ -198,8 +198,8 @@ export const STORY = {
       say: ['In her final months, she told her superior the truth.', { text: 'She was the one who had seen Mary.', speed: 0.85 }, 'She died before that year ended.'] },
     { kicker: 'RUE DU BAC CHAPEL', title: 'Under the Altar', art: scene5, bg3d: 'oGlory', front3d: true,
       cam: { ...GLIDE, path: [
-        { at: at(5, 'rests'), to: [540, 1080], depth: 0.85, z: 1.08, frame: [540, 1000] },
-        { at: at(5, 'Her lips'), to: face(...C5), z: 1.3, frame: [520, 860] }] },
+        { at: at(5, 'rests'), to: [540, 1080], depth: 0.85, z: 1.08, frame: [540, 1000] }],
+        zoom: { at: at(5, 'Her lips'), to: face(...C5), style: 'cut', z: 1.3, hold: 'end', center: 0.4 } },
       tone: { speed: 0.95, gap: 0.32, gain: -0.5 },
       say: ['Today she rests beneath an altar in that same chapel.', 'Her lips stayed closed, but her medal spoke for her.'] },
     { kicker: 'FEAST DAY · NOVEMBER 28', title: 'Saint Catherine', art: scene6, bg3d: 'oGlory', front3d: true,
