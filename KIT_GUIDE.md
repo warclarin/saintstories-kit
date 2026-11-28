@@ -23,6 +23,7 @@ Template reel (current house standard: all-3D, cam3d, hd(), Ricks Clips motion, 
 | line times | `node build.mjs stories/<file>.mjs info` (`@<s in scene> (<s in reel>)` per line) |
 | preview | `node build.mjs stories/<file>.mjs preview [t1 t2 …]` → `work/<slug>/preview/contact-sheet.jpg` |
 | cover | `node build.mjs stories/<file>.mjs thumb` → `$SAINTSTORIES_OUT/thumb_<slug>.png` |
+| check | `node build.mjs stories/<file>.mjs check` → must say `CHECK PASS` before render (check.mjs, below §10) |
 | render | `node build.mjs stories/<file>.mjs render --workers 10` (final MP4s; `fast` starved frames on Nov 27: drafts only) |
 | music | `… music prompt` · `… music check [files]` · `… music mix [file]` |
 | tidy | `… clean` |
@@ -212,6 +213,20 @@ Scene: `{ kicker, title, say, art, cam, tone, bg3d, front3d: true, whip? }`. `sa
 - `zoom: { at, to, style: 'cut'|'snap'|'smooth'|'fly', z, in, hold ('end'), out, center, ease, depth }` (or a list). On a quote: the speaker.
 - `shake: { at, amt: 10–24, dur: 0.5–0.8 }` (or list) · `hero: { h: 2.4 }` · `drone: { h: 8, back: 12, dur: 2.8 }` (never scene 0) · `whip: 'r'|'l'` (on the scene, whips the previous one out) · `rack: { at, dur, blur }`.
 
+**Measured camera (since 2026-11-28, from the user's Ricks Clips breakdown)**: one camera per scene, a move about every 2 s
+landing ON the word, each move ~1.3 s with its speed peak at ~40 %, a slow creep between moves (never dead still). Write the
+path with `cammoves.mjs`, which frames by shot size from the subject and sets `dur` (hold, then travel in the last dur s) and
+`drift` (creep) on each key:
+```js
+import { shot, push, pull, crane, truck, follow, spot } from '../cammoves.mjs';
+path: [shot(0, S0, 'FS'), push(at(0, 'word'), S0, 'MS'), spot(at(0, 'fire'), [560, 1010], 120, 'MS', { depth: 0.75 }),
+       pull(at(0, 'This is'), S0, 'FS'), crane(t, P, 'MS', 'up'|'down'), truck(t, P, 'MS', 'l'|'r'), ...follow(t0, t1, A, B)]
+```
+Sizes CU, MCU, MS (head radius on screen 210/160/118 px), FS, WS; P = `[x, feetY, s]`, `{ x, y, s, kneel, depth }`, or an
+object `{ at: [x, y], r, depth }`; `place: 'l'|'c'|'r'`, `frame: [sx, sy]`, `zMul`. Mix: push ~½, pull reveal ~¼, crane and
+truck ~⅛ each. A key at t = 0 is the start pose in hold-and-move mode (the old glide ignored it). Prefer path moves over
+`zoom` (don't stack both). Waive an accepted check issue with `STORY.waive: [{ from, to, rules, why }]`.
+
 Layout (screen px): title band to y≈320 (keep art out of top centre), feet 1250–1345, caption pill y 1464–1556 (keep characters above ~1400), right-edge buttons x > ~900 from y 900 down. Face points for path/zoom: `face(x, y, s, kneel)`.
 
 ## 8. 3D helper library and sets
@@ -320,6 +335,10 @@ Keep this catalog current: when a new reel exports helpers or a new 3D set, add 
 
 ## 10. Before you render (technical checks, in order)
 
+0. `check` says `CHECK PASS`: faces (hd() face markers) never cut by the edge, under the title / caption pill / right
+   buttons / watermark or covered once the camera settles; no scene with a 4 s gap without change; camera still ≤ 25 %,
+   moving ≥ 35 %, a move at least every 4 s; with the MP4: smallest frame, peak, LUFS (reference master −14). Report in
+   work/<slug>/check.txt; fix the cause, or waive it in `STORY.waive` with a reason.
 1. Art run (`info` or `preview`) prints no `[wordTimes] "…" not found` warning (stale anchors fire at the line start).
 2. Narration 55–70 s (`narrate.py` total); climax line has `speed: 0.85` and no `beat`.
 3. Every scene: `bg3d` key present in `BUILD` and in `LIGHT`, `front3d: true`, `tone`, `cam.path` keys timed with `at()`.

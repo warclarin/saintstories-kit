@@ -12,6 +12,7 @@
 //                                                Adds --browser-gpu (Chrome draws on the GPU, ~17% faster) unless you pass
 //                                                --no-browser-gpu. Pass --workers N (10 on a 24-core PC).
 //   node build.mjs <story.mjs> thumb          -> thumb_<slug>.png (1080x1920) + thumb_<slug>_square.png
+//   node build.mjs <story.mjs> check [--step s] -> automated checks (faces, change gaps, camera rest/drift/move, mp4): check.mjs
 //   node build.mjs <story.mjs> clean          -> remove previews and check frames from work/<slug>
 //   node build.mjs <story.mjs> music prompt|check|mix  -> background music made in Gemini: a timed prompt, a score of each
 //                                                track against it, and a mix under the narration (see music.mjs)
@@ -239,7 +240,7 @@ function sceneDiv(i, { start, zero, dur, z, hud = true, shift }) {
       if (!c3) console.warn(`scene ${i}: cam.path needs STORY.cam3d and a bg3d scene; ignored`);
       else {
         const ps = [].concat(c.path).map((q) => { const [x, y] = q.to || [540, 900], [tx, ty] = q.frame || [540, 900];
-          return { at: +q.at || 0, x: +x, y: +y, depth: Math.max(0.3, +q.depth || 1), z: Math.max(0.5, Math.min(2.2, +q.z || 1)), tx: +tx, ty: +ty }; });
+          return { at: +q.at || 0, x: +x, y: +y, depth: Math.max(0.3, +q.depth || 1), z: Math.max(0.5, Math.min(2.2, +q.z || 1)), tx: +tx, ty: +ty, ...(q.dur > 0 ? { dur: +q.dur } : {}), ...(q.drift ? { drift: +q.drift } : {}) }; });
         camAttr += ` data-path='${JSON.stringify(ps)}'`;
       }
     }
@@ -420,7 +421,16 @@ function buildThumb() {
 }
 
 if (cmd === 'html') buildHtml();
-else if (cmd === 'preview') {
+else if (cmd === 'check') {
+  const warns = [], hook = (fn) => (...a) => { const m = a.join(' '); if (/\[wordTimes\]/.test(m)) warns.push(m.slice(0, 120)); fn(...a); };
+  const [ow, ol] = [console.warn, console.log]; console.warn = hook(ow); console.log = hook(ol);
+  buildHtml(); console.warn = ow; console.log = ol;
+  const si = rest.indexOf('--step'), step = si >= 0 ? +rest[si + 1] || 0.2 : 0.2;
+  const { runCheck } = await import('./check.mjs');
+  const r = await runCheck({ dir: OUT, total: TOTAL, starts: STARTS, step, warnings: warns, waive: STORY.waive || [], mp4: path.join(FINAL, `SaintStories_${STORY.name || STORY.slug}.mp4`) });
+  console.log(r.report);
+  process.exitCode = r.ok ? 0 : 1;
+} else if (cmd === 'preview') {
   buildHtml();
   const at = rest.length ? rest.join(',') : STARTS.map((s, i) => (s + 0.6 * DUR[i]).toFixed(2)).join(',');
   const dir = path.join(OUT, 'preview');

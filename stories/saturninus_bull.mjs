@@ -18,6 +18,7 @@ import { senator } from './gelasius.mjs';
 import { wildCow } from './perpetua_arena.mjs';
 import { templeSteps } from './presentation_of_mary.mjs';
 import { idol } from './longinus.mjs';
+import { shot, push, pull, crane, truck, follow, spot } from '../cammoves.mjs';
 
 const SLUG = 'st_saturninus_bull';
 const at = wordTimes(SLUG);
@@ -176,14 +177,14 @@ function scene0() {
 // 1 · SHOT "He was the first bishop of Toulouse, in Roman Gaul.": he walks in along the street, crozier in hand, and looks at us.
 //     SHOT "His path to his tiny church passed the Capitol temple.": the camera goes to the little church (its lamp glows), then
 //     to the temple across the roofs, where two townsmen turn and glare.
-const S1 = [420, 1345, 2.3], T1a = [730, 1262, 1.55], T1b = [850, 1258, 1.5];
+const S1 = [360, 1345, 2.3], T1a = [625, 1262, 1.55], T1b = [740, 1258, 1.5];
 function scene1() {
   const fb = at(1, 'first bishop'), tc = at(1, 'tiny church'), cp = at(1, 'Capitol');
   const tw = (i, P) => layer(0.78, lit(castShadow(...P, 'sCity') + seq((op) => townsman(...P, i, { armL: [16, 2, 3], armR: [16, 2, 3], ...op }),
     [[0, { mood: 'happy', look: [2.4, 0] }], [cp, { mood: 'stern', flip: true, look: [2.4, 0.3] }]]), 'sCity'));
   return MID(tinyChurch(170, 1245, 0.95) + `<g opacity="0"${fadeIn(tc, 0.6)}>${glow(95, 1135, 160, 0.7)}</g>`)
     + tw(0, T1a) + tw(2, T1b)
-    + walk(0, 1.4, 380, lit(castShadow(...S1, 'sCity') + seq((op) => saturninusHD(...S1, { flip: true, armL: [20, 2, 3], propL: CROZ, ...op }),
+    + walk(0, 1.2, 260, lit(castShadow(...S1, 'sCity') + seq((op) => saturninusHD(...S1, { flip: true, armL: [20, 2, 3], propL: CROZ, ...op }),
       [[0, { mood: 'happy', look: [2.4, 0] }], [fb, { mood: 'happy', look: [0, 0] }], [tc, { mood: 'tender', look: [2.4, 0] }], [cp, { mood: 'happy', look: [-2.4, 0] }]]), 'sCity'))
     + NEAR(foliage('l', 1640, { color: '#3a4a2a', seed: 3 }));
 }
@@ -191,27 +192,25 @@ function scene1() {
 // 2 · SHOT "One day, a bull stood ready for sacrifice.": before the Capitol steps, the banded bull and the wreathed priest.
 //     SHOT "A furious crowd seized the bishop.": two townsmen stride in and grab him (rage); he stands firm.
 //     SHOT (human beat) "His priest and two deacons fled.": his three clerics turn and run off left; he watches them go, sad.
-const S2 = [470, 1345, 2.3], B2 = [700, 1300, 2.0], P2 = [830, 1276, 1.75], G2 = [650, 1335, 2.15], G2b = [800, 1310, 2.0];
-const C2 = [[100, 1286, 1.8, 0], [215, 1286, 1.75, 1], [325, 1290, 1.75, 2]];
+const S2 = [540, 1345, 2.3], B2 = [720, 1300, 2.0], G2 = [720, 1335, 2.15];
+const C2 = [[105, 1286, 1.55, 0], [230, 1286, 1.55, 1], [355, 1290, 1.55, 2]];
 function scene2() {
   const bu = at(2, 'bull'), cr = at(2, 'furious crowd'), fl = at(2, 'His priest');
   const clerics = C2.map(([x, y, s, i], k) => layer(0.85, walkOut(fl + 0.25 + k * 0.08, 1.5, -720, lit(castShadow(x, y, s, 'sTemple') + seq((op) => cleric(x, y, s, i, { armL: [16, 2, 3], armR: [16, 2, 3], ...op }),
     [[0, { mood: 'happy', look: [2.4, 0] }], [cr, { mood: 'worried', look: [2.4, 0.2] }], [fl, { mood: 'worried', flip: true, look: [2.4, 0], armL: [40, 4, 0.5], armR: [40, 4, 0.5] }]]), 'sTemple')))).join('');
   const grab = (P, i, d, dt) => layer(d, from(cr + dt, walk(cr + dt, 0.6, 420, lit(castShadow(...P, 'sTemple') + townsman(...P, i, { flip: true, look: [2.4, 0.2], armL: [60, 2, 3], armR: [86, 2, 3], mood: 'stern' }), 'sTemple'))));
   return MID(capitol(560, 1245, 0.95))
-    + layer(0.82, lit(castShadow(...P2, 'sTemple') + seq((op) => paganPriest(...P2, { flip: true, armL: [16, 2, 3], ...op }),
-      [[0, { mood: 'happy', look: [2.4, 0.4], armR: [30, 2, 3] }], [bu, { mood: 'stern', look: [2.4, 0.2], armR: [70, 2, 3] }]]), 'sTemple'))
     + layer(0.9, lit(sacBull(...B2, { flip: true }), 'sTemple'))
     + clerics
-    + grab(G2b, 1, 0.92, 0.15) + grab(G2, 0, 1, 0) + rage(...G2, cr + 0.6, { dur: 1.6 }) + steam(...G2b, cr + 0.7, { dur: 1.4 })
-    + lit(castShadow(...S2, 'sTemple') + seq((op) => saturninusHD(...S2, { armL: [20, 2, 3], propL: CROZ, ...op }),
+    + grab(G2, 0, 1, 0) + rage(...G2, cr + 0.6, { dur: 1.6 }) + steam(...G2, cr + 0.9, { dur: 1.5 })
+    + lit(castShadow(...S2, 'sTemple') + seq((op) => saturninusHD(...S2, { armL: [20, 2, 3], ...op }),
       [[0, { mood: 'happy', look: [2.4, 0], armR: [16, 2, 3] }], [cr + 0.6, { mood: 'determined', look: [2.4, 0], armR: [30, 2, 3] }], [fl + 0.3, { mood: 'sad', look: [-2.4, 0.3], armR: [30, 2, 3] }]]), 'sTemple');
 }
 
 // 3 · SHOT "They ordered him to sacrifice it. He answered:": the priest points from the bull to the bishop; the fire burns on the altar.
 //     SHOT (zoom on him, his own voice) "I know only one God, the true God. I know that your gods are demons."
 //     SHOT "So they tied his feet to the bull.": a townsman walks in, kneels and binds a rope from the bull's flank to his feet.
-const S3 = [280, 1345, 2.3], B3 = [660, 1300, 1.8], P3 = [780, 1272, 1.7], K3 = [470, 1322, 2.0];
+const S3 = [280, 1345, 2.3], B3 = [660, 1300, 1.8], P3 = [780, 1272, 1.7], K3 = [500, 1322, 2.0];
 function scene3() {
   const or = at(3, 'ordered'), ik = at(3, 'I know only'), dm = at(3, 'demons'), ti = at(3, 'So they tied'), fe = at(3, 'feet');
   return MID(capitol(560, 1245, 0.95) + altarFire(860, 1245, 0.8))
@@ -231,8 +230,8 @@ function scene3() {
 //     it plunges down the steps dragging the bishop by the feet (shake, speed lines).
 //     SHOT (climax, slow) "He died before the rope snapped.": the rope snaps (a flash of light); the bull bolts away; he lies still
 //     on the steps, peaceful, the halo comes up (bloodless). SHOT "It looked like the gods had won.": the priest on the landing raises his arms.
-const X0 = 280, Y0 = 1010, X1 = 800, Y1 = 1340, ANG = f(Math.atan2(Y1 - Y0, X1 - X0) * 180 / Math.PI), SS = 1.15, BS = 1.5;
-const DRV = [190, Y0, 1.6], PR4 = [70, Y0, 1.6];
+const X0 = 320, Y0 = 1010, X1 = 800, Y1 = 1340, ANG = f(Math.atan2(Y1 - Y0, X1 - X0) * 180 / Math.PI), SS = 1.15, BS = 1.5;
+const DRV = [235, Y0, 1.6], PR4 = [62, Y0, 1.6];
 const lyingSat = (op) => `<g transform="translate(-230,${f(-42 * SS)}) rotate(-90)">${saturninusHD(0, 0, SS, { mitred: false, armL: 150, armR: 160, ...op })}</g>`;
 function scene4() {
   const dr = at(4, 'drove'), sn = at(4, 'rope snapped'), gw = at(4, 'gods had won');
@@ -248,12 +247,12 @@ function scene4() {
     + `${sacBull(0, 0, BS, { snort: false })}${rope(-96 * BS, -84 * BS, -130, -10, 6)}</g></g>`;
   const mx = X1 + (-180 * c - (-60) * s), my = Y1 + (-180 * s + (-60) * c);
   return lit(sideSteps(X0, Y0, X1, Y1, 9), 'sDrag')
-    + until(sn, lit(drag, 'sDrag')) + from(sn, lit(rest, 'sDrag')) + from(sn, lit(bolt, 'sDrag'))
-    + lit(castShadow(...PR4, 'sDrag') + seq((op) => paganPriest(...PR4, { look: [2.4, 0.6], armL: [16, 2, 3], ...op }),
-      [[0, { mood: 'stern', armR: [40, 2, 3] }], [gw, { mood: 'stern', look: [2.4, -0.4], armL: [140, 3, 2], armR: [140, 3, 2] }]]), 'sDrag')
     + lit(castShadow(...DRV, 'sDrag') + seq((op) => townsman(...DRV, 0, { look: [2.4, 1.2], armL: [16, 2, 3], propR: STICK, ...op }),
       [[0, { mood: 'stern', armR: [150, 2, 3] }], [dr + 0.1, { mood: 'stern', armR: [70, 2, 3] }], [dr + 0.5, { mood: 'stern', armR: [150, 2, 3] }]]), 'sDrag')
+    + lit(castShadow(...PR4, 'sDrag') + seq((op) => paganPriest(...PR4, { look: [2.4, 0.6], armL: [16, 2, 3], ...op }),
+      [[0, { mood: 'stern', armR: [16, 2, 3] }], [gw, { mood: 'stern', look: [2.4, -0.4], armL: [150, 3, 2], armR: [16, 2, 3] }]]), 'sDrag')
     + rage(...DRV, dr, { dur: 1.4 })
+    + until(sn, lit(drag, 'sDrag')) + from(sn, lit(rest, 'sDrag')) + from(sn, lit(bolt, 'sDrag'))
     + speedLines(f(sx + 200), f(sy - 120), { at: dr, dur: 0.8, op: 0.35 })
     + burst(f(mx), f(my), 90, sn, { color: '#fff4d8', rays: 10, sparks: 6, seed: 4 })
     + `<g opacity="0"${fadeIn(sn + 0.4, 1.2)}>${glow(387, 1020, 300, 0.45)}</g>`;
@@ -262,7 +261,7 @@ function scene4() {
 // 5 · SHOT "But two women buried him deep in a wooden coffin.": night; two veiled women walk to the trench where the coffin lies;
 //     on "buried" the coffin sinks and the earth mound rises; they kneel. SHOT "They dragged him down to silence him.": the grave
 //     and its candle. SHOT (quotable) "Now a great basilica in Toulouse bears his name.": Saint-Sernin rises behind them, glowing.
-const W1 = [250, 1345, 2.2], W2 = [790, 1322, 2.0];
+const W1 = [260, 1345, 2.2], W2 = [750, 1322, 2.0];
 function scene5() {
   const bu = at(5, 'coffin'), dg = at(5, 'dragged'), ba = at(5, 'basilica');
   const woman = (P, i, d, dx, lk) => layer(d, walk(0, 1.3, dx, lit(castShadow(...P, 'sBurial') + seq((op) => tolosaWoman(...P, i, { flip: i === 1, ...op }),
@@ -313,60 +312,54 @@ export const STORY = {
   music: { story: 'A lone bishop in Roman Toulouse refuses to sacrifice to the gods and is dragged by a bull down the temple steps; his grave becomes a great basilica.',
     color: 'low brass, war drums, wordless choir', cues: { 4: 'Violent: pounding war drums and a stabbing low-brass figure, then everything drops to one hushed held note', 5: 'Tender and hushed: soft wordless choir over a low string pad, slowly rising with hope', 6: 'Glory: full warm orchestra and wordless choir in a bright major key, resolving gently' } },
   thumb_hook: 'Dragged by a sacrificial bull', thumb_title: 'St. Saturninus', thumb_scene: 3, thumb_t: 8.9, thumb_shift: 0,
-  wm_spots: [[1024, 560, 'r'], [1024, 900, 'r'], [56, 1250, 'l']],
+  wm_spots: [[56, 1250, 'l'], [1024, 480, 'r'], [1024, 1250, 'r']],
+  waive: [{ from: 6.9, to: 8.6, rules: ['covered', 'buttons'], why: 'the saint walks in past the two townsmen as scene 1 opens' }],
   fix: { 'sˈæɾɚnˌɪnəs': 'sˌæɾɚnˈaɪnəs' },
   scenes: [
     { kicker: 'THE CAPITOL · TOULOUSE', title: 'Their Gods Went Silent', art: scene0, bg3d: 'sHook', front3d: true,
-      cam: { ...GLIDE, path: [
-        { at: 0, to: [S0[0] + 120, 1180], z: 1.05, frame: [540, 1080] },
-        { at: at(0, 'silent'), to: [585, 1020], depth: 0.75, z: 1.18, frame: [600, 980] },
-        { at: at(0, 'This is'), to: face(...S0), z: 1.3, frame: [500, 840] }] },
+      cam: { ...GLIDE, path: [   // hook: saint MS at frame 0 -> on him -> the idol and altar -> the dying fire -> back to him
+        shot(0, { x: 585, y: 1345, s: 2.3 }, 'FS'), push(at(0, "bishop's"), { x: 520, y: 1345, s: 2.3 }, 'MS', { zMul: 0.85 }), pull(at(0, 'temple'), { at: [560, 1010], r: 120, depth: 0.75 }, 'MS'),
+        push(at(0, 'silent'), E0, 'MS', { depth: 0.95, place: 'r' }), push(at(0, 'This is'), S0, 'MCU')] },
       tone: HOOK,
       say: ["Pagan priests claimed one bishop's daily walk past their temple struck their gods silent.", 'This is Saint Saturninus.'] },
     { kicker: 'ROMAN GAUL · AROUND 250', title: 'First Bishop of Toulouse', art: scene1, bg3d: 'sCity', front3d: true,
-      cam: { ...GLIDE, path: [
-        { at: 0, to: face(...S1), z: 1.1, frame: [560, 900] },
-        { at: at(1, 'tiny church'), to: [170, 1120], depth: 0.75, z: 1.15, frame: [420, 1000] },
-        { at: at(1, 'Capitol'), to: face(...T1a), depth: 0.85, z: 1.15, frame: [640, 900] }] },
+      cam: { ...GLIDE, path: [   // he walks in -> on him -> crane up over the town -> the tiny church -> the townsmen by the temple
+        shot(0, { x: 480, y: 1345, s: 2.3 }, 'FS'), push(at(1, 'first bishop'), S1, 'MS'), crane(at(1, 'Roman Gaul'), { x: 480, y: 1345, s: 2.3 }, 'FS', 'up'),
+        spot(at(1, 'tiny church'), [170, 1110], 120, 'MS', { depth: 0.75, frame: [420, 1000] }), truck(at(1, 'Capitol'), { x: T1a[0] + 55, y: T1a[1], s: T1a[2], depth: 0.78 }, 'FS', 'c')] },
       tone: HOOK,
       say: ['He was the first bishop of Toulouse, in Roman Gaul.', 'His path to his tiny church passed the Capitol temple.'] },
     { kicker: 'THE CAPITOL TEMPLE', title: 'Seized by the Crowd', art: scene2, bg3d: 'sTemple', front3d: true,
-      cam: { ...GLIDE, path: [
-        { at: 0, to: [600, 1150], z: 1.02, frame: [540, 1060] },
-        { at: at(2, 'bull'), to: [B2[0], 1150], depth: 0.9, z: 1.14, frame: [600, 1060] },
-        { at: at(2, 'furious crowd'), to: face(...S2), z: 1.18, frame: [520, 860] },
-        { at: at(2, 'His priest'), to: [260, 1000], z: 1.08, frame: [460, 960] }] },
+      cam: { ...GLIDE, path: [   // wide on the temple -> the bull -> pull back as the crowd comes -> push on him -> his fleeing clergy
+        shot(0, S2, 'FS'), push(at(2, 'bull'), { at: [B2[0], B2[1] - 120 * B2[2]], r: 110, depth: 0.9 }, 'MS', { frame: [760, 900] }), pull(at(2, 'furious crowd'), S2, 'FS'),
+        push(at(2, 'seized'), S2, 'MS', { place: 'r' }), truck(at(2, 'His priest'), { x: 330, y: 1290, s: 1.55, depth: 0.85 }, 'FS', 'c'), pull(at(2, 'fled'), S2, 'FS')] },
       tone: STAND,
       say: ['One day, a bull stood ready for sacrifice.', 'A furious crowd seized the bishop.', 'His priest and two deacons fled.'] },
     { kicker: 'BEFORE THE ALTAR', title: 'One True God', art: scene3, bg3d: 'sTrial', front3d: true,
-      cam: { ...GLIDE, path: [
-        { at: 0, to: [540, 1100], z: 1.04, frame: [540, 1020] },
-        { at: at(3, 'He answered'), to: face(...S3), z: 1.15, frame: [460, 860] },
-        { at: at(3, 'So they tied'), to: [S3[0] + 80, 1240], z: 1.12, frame: [480, 1180] }],
-        zoom: { at: at(3, 'I know only'), to: face(...S3), style: 'smooth', z: 1.45, in: 0.6, hold: Math.max(0.5, at(3, 'So they tied') - at(3, 'I know only') - 1.0), out: 0.5 } },
+      cam: { ...GLIDE, path: [   // the priest orders -> the bull -> push on him for his answer, closer on "demons" -> pull back -> down to the rope
+        shot(0, { x: P3[0], y: P3[1], s: P3[2], depth: 0.82 }, 'MS', { place: 'r' }), push(at(3, 'sacrifice it'), { at: [B3[0], B3[1] - 120 * B3[2]], r: 110, depth: 0.9 }, 'MS'),
+        push(at(3, 'He answered'), S3, 'MCU'), push(at(3, 'demons'), S3, 'CU', { dur: 0.7 }), spot(at(3, 'So they tied'), [470, 1100], 118, 'MS', { dur: 1.5 }),
+        spot(at(3, 'feet'), [S3[0] + 140, 1250], 120, 'MS', { frame: [540, 1060] })] },
       tone: STAND,
       say: ['They ordered him to sacrifice it. He answered:', { text: 'I know only one God, the true God. I know that your gods are demons.', who: 'saturninus' },
         'So they tied his feet to the bull.'] },
     { kicker: 'THE CAPITOL STEPS', title: 'Down the Steps', art: scene4, bg3d: 'sDrag', front3d: true,
-      cam: { ...GLIDE, shake: { at: at(4, 'drove', 0.05), amt: 16, dur: 0.6 }, path: [
-        { at: 0, to: [520, 1120], z: 1.04, frame: [540, 1060] },
-        { at: at(4, 'rope snapped'), to: [420, 1000], z: 1.14, frame: [500, 980] },
-        { at: at(4, 'gods had won'), to: [260, 880], z: 1.08, frame: [420, 860] }],
-        zoom: { at: at(4, 'rope snapped', 0.05), to: [387, 1020], style: 'snap', z: 1.35, in: 0.22, hold: 1.3, out: 0.5 } },
+      cam: { ...GLIDE, shake: { at: at(4, 'drove', 0.05), amt: 16, dur: 0.6 }, path: [   // the driver -> follow the drag down -> on him as the rope snaps -> the priest
+        shot(0, { x: DRV[0], y: DRV[1], s: DRV[2] }, 'FS', { place: 'l' }),
+        ...follow(at(4, 'drove'), at(4, 'rope snapped'), { at: [470, 1060], r: 130 }, { at: [560, 1180], r: 130 }, 'MS'),
+        push(at(4, 'snapped'), { at: [387, 1020], r: 90 }, 'MS', { dur: 0.7, frame: [540, 960] }), pull(at(4, 'gods had won'), { x: PR4[0], y: PR4[1], s: PR4[2] }, 'FS', { place: 'l' })] },
       tone: DANGER,
       say: ['Then they drove it down the Capitol steps.', { text: 'He died before the rope snapped.', speed: 0.85 }, 'It looked like the gods had won.'] },
     { kicker: 'A SECRET BURIAL', title: 'Buried by Two Women', art: scene5, bg3d: 'sBurial', front3d: true, whip: 'r',
-      cam: { ...GLIDE, path: [
-        { at: 0, to: [520, 1150], z: 1.04, frame: [540, 1060] },
-        { at: at(5, 'dragged'), to: [520, 1260], z: 1.18, frame: [540, 1140] },
-        { at: at(5, 'basilica'), to: [600, 900], depth: 0.75, z: 1.06, frame: [560, 880] }] },
+      cam: { ...GLIDE, path: [   // the two women -> down to the coffin -> the candle on the grave -> wide -> crane up to the basilica
+        shot(0, W1, 'FS', { place: 'l' }), push(at(5, 'two women'), { x: 505, y: 1345, s: 2.2 }, 'FS', { zMul: 1.08 }), spot(at(5, 'coffin'), [520, 1290], 110, 'MS', { frame: [540, 1080], dur: 1.2 }),
+        push(at(5, 'dragged'), { at: [520, 1240], r: 105 }, 'MS', { frame: [540, 1000] }), spot(at(5, 'silence'), [520, 1000], 118, 'MS', { dur: 1.5 }),
+        crane(at(5, 'basilica'), { at: [600, 930], r: 170, depth: 0.75 }, 'MS', 'up'), push(at(5, 'name'), { at: [600, 760], r: 130, depth: 0.75 }, 'MS')] },
       tone: GLORY,
       say: ['But two women buried him deep in a wooden coffin.', 'They dragged him down to silence him.', { text: 'Now a great basilica in Toulouse bears his name.', speed: 0.95, gap: 0.32 }] },
     { kicker: 'FEAST · NOVEMBER 29', title: 'Saint Saturninus', art: scene6, bg3d: 'sGlory', front3d: true,
-      cam: { ...GLIDE, path: [
-        { at: 0, to: [520, 1100], z: 1.03, frame: [540, 1040] },
-        { at: at(6, 'patron'), to: [640, 860], depth: 0.75, z: 1.1, frame: [580, 880] },
-        { at: at(6, 'Saint Saturninus'), to: face(...S6), z: 1.28, frame: [500, 840] }] },
+      cam: { ...GLIDE, path: [   // feast: the saint -> the basilica (patron of Toulouse) -> push on him for the blessing
+        shot(0, S6, 'FS'), push(at(6, 'feast day'), S6, 'MS'), truck(at(6, 'patron'), { at: [640, 900], r: 170, depth: 0.75 }, 'MS', 'r'),
+        pull(at(6, 'Toulouse'), S6, 'FS', { place: 'l' }), push(at(6, 'Saint Saturninus'), S6, 'MS')] },
       tone: LAST,
       say: ['His feast day is November 29.', 'He is the patron of Toulouse.', 'Saint Saturninus, pray for us.'] },
   ],

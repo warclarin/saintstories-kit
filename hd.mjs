@@ -45,7 +45,7 @@ export function hd(x, y, s, o = {}) {
     + `<linearGradient id="${id}e" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mix(skin, '#fffaf2', 0.45)}"/><stop offset=".38" stop-color="#fffaf2"/><stop offset="1" stop-color="#fbf3ea"/></linearGradient>`
     + '</defs>');
   const EW = `url(#${id}e)`, R = `url(#${id}r)`, FC = `url(#${id}f)`, HC = `url(#${id}h)`, MC = `url(#${id}m)`, BC = `url(#${id}b)`;
-  g.push(`<g transform="translate(${f(x)},${f(y)}) scale(${f(o.flip ? -s : s)},${f(s)})">`);
+  g.push(`<g class="hd" transform="translate(${f(x)},${f(y)}) scale(${f(o.flip ? -s : s)},${f(s)})">`);
   g.push('<ellipse cx="0" cy="2" rx="64" ry="13" fill="#1a0f1a" opacity=".28" filter="url(#soft)"/>');
   g.push(`<g${M.bob(1.8, 2.3 + ph, ph)}><g transform="translate(0,${o.kneel ? 84 : 0})">`);
   // halo: soft glow, double gold ring, fine rays
@@ -307,7 +307,7 @@ export function hd(x, y, s, o = {}) {
   }
   if (o.over) g.push(o.over);
   g.push(arm(1, o.armR ?? 8, o.propR));
-  g.push('</g></g></g>');
+  g.push('<circle class="hdface" cy="-252" r="40" fill="none" pointer-events="none"/></g></g></g>');   // face marker for `build.mjs check`
   return g.join('');
 }
 

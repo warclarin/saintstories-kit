@@ -482,14 +482,34 @@ export function makeRig(cv, build = BUILD, { dof = 2, shared = false } = {}) {
   if (pathK.length) {
     const keys = pathK.filter((k) => k.at > 0.01).sort((a, b) => a.at - b.at);
     const PT = [cam0.position.clone()], TT = [0], FD = [plane];
-    for (const k of keys) {
+    const keyPos = (k) => {
       const zd = plane / (k.depth || 1), d = zd / (k.z || 1);
       const S = cam0.localToWorld(new THREE.Vector3((k.x - W / 2) / f0 * zd, -(k.y + shift - H / 2) / f0 * zd, -zd));
       const L = new THREE.Vector3(((k.tx ?? 540) - W / 2) / f0 * d, -((k.ty ?? 900) + shift - H / 2) / f0 * d, -d).applyQuaternion(cam0.quaternion);
-      PT.push(S.clone().sub(L)); TT.push(k.at); FD.push(d);
-    }
+      return [S.clone().sub(L), d];
+    };
+    for (const k of keys) { const [p, d] = keyPos(k); PT.push(p); TT.push(k.at); FD.push(d); }
+    // hold-and-move (opt-in, 2026-11-28, measured camera standard): when any key has `dur`, the camera HOLDS on each key and
+    // only travels during the last `dur` seconds before the next key's time (speed peak at 40 %, zero at both ends); a key
+    // without dur travels over the whole gap. A key at t = 0 then sets the start pose, and `drift` (units/s) on a key creeps the
+    // camera forward while it rests there. Paths without dur keep the old never-stopping glide.
+    const restMode = keys.some((k) => k.dur > 0);
+    const k0 = pathK.find((k) => !(k.at > 0.01));
+    if (restMode && k0) { const [p, d] = keyPos(k0); PT[0] = p; FD[0] = d; }
+    const DU = [0, ...keys.map((k) => (k.dur > 0 ? k.dur : 0))], DR = [+(k0?.drift) || 0, ...keys.map((k) => +k.drift || 0)];
+    const fwd = new THREE.Vector3(0, 0, -1).applyQuaternion(cam0.quaternion);
+    const restAt = (t) => {   // { u, drift } for rest-and-move
+      const n = TT.length; let i = 0; while (i < n - 1 && t >= TT[i + 1]) i++;
+      if (i >= n - 1) return { u: 1, drift: DR[n - 1] * (t - TT[n - 1]) };
+      const dep = DU[i + 1] ? Math.max(TT[i], TT[i + 1] - DU[i + 1]) : TT[i];
+      if (t < dep) return { u: i / (n - 1), drift: DR[i] * (t - TT[i]) };
+      const x = (t - dep) / Math.max(1e-3, TT[i + 1] - dep), y = 1 - x,   // measured ease: speed peaks at ~40 % (soft start, longer settle) = I_x(3, 4)
+        e = 20 * x ** 3 * y ** 3 + 15 * x ** 4 * y ** 2 + 6 * x ** 5 * y + x ** 6;
+      return { u: (i + e) / (n - 1), drift: DR[i] * (dep - TT[i]) * (1 - e) };
+    };
     const curve = PT.length > 2 ? new THREE.CatmullRomCurve3(PT, false, 'centripetal') : null;
     const warpU = (t) => {   // monotone cubic time warp: path position 0..1 from the key times (from the animated-3D-story rules)
+      if (restMode) return restAt(t).u;
       const T = TT, n = T.length; if (t <= T[0]) return 0; if (t >= T[n - 1]) return 1;
       const sec = []; for (let i = 0; i < n - 1; i++) sec.push((1 / (n - 1)) / (T[i + 1] - T[i]));
       const m = [0]; for (let i = 1; i < n - 1; i++) m.push(2 * sec[i - 1] * sec[i] / (sec[i - 1] + sec[i])); m.push(0);
@@ -500,6 +520,7 @@ export function makeRig(cv, build = BUILD, { dof = 2, shared = false } = {}) {
     pathPos = (t) => {
       const u = warpU(t), n = PT.length, s2 = u * (n - 1), i = Math.min(n - 2, Math.floor(s2)), fr = s2 - i;
       const pos = curve ? curve.getPoint(u) : PT[0].clone().lerp(PT[1], u);
+      if (restMode) { const dr = restAt(t).drift; if (dr) pos.addScaledVector(fwd, dr); }
       return { pos, focus: FD[i] + (FD[i + 1] - FD[i]) * fr };
     };
   }
