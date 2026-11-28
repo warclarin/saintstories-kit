@@ -309,6 +309,7 @@ Import with `import { name } from './<file>.mjs'`. hd()-based helpers are marked
 - **roch_dog**: roch, gottardo; staff, breadDog, leanTo, sickbed
 - **rufus_simon_of_cyrene** (hd): rufusHD, simonCyrene, legionary, paulHD; thornCrown, carriedCross, gospelBook
 - **santo_nino_cebu**: santoNino, juana, camus, legazpi, augustinian, dancer; blessingHand, pineBox, cebuBasilica, magellanCross, charredHut
+- **saturninus_bull** (hd): saturninusHD, paganPriest (wreathed toga), townsman(x, y, s, i), cleric(x, y, s, i), tolosaWoman(x, y, s, i); sacBull (banded bull), capitol (temple front + steps), sideSteps (staircase side view), sernin (Saint-Sernin, Toulouse), altarFire(outAt), woodCoffin; 3D `TOLOSA` (roma overrides: Roman provincial town)
 - **sebastian_left_for_dead**: sebastian, sebastianArmor, diocletian; arrow, arrows, stake
 - **stephen_the_younger_coin** (hd): stephenHD, emperorC5, byzMonk(x, y, s, i); solidus, iconPanel('christ'|'mary', s), diptych, goldBag, spear, whip, club, prisonWall, stemma, loros
 - **takayama_ukon_exile**: ukon, samurai, hideyoshi; swordCross, tenshu, nobori, snowRoofs, sakura
