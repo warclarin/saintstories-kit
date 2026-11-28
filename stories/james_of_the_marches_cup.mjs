@@ -113,10 +113,16 @@ export const castShadow = (x, y, s, mode) => {
 // 0 · HOOK. SHOT "Tradition says heretics slipped poison into a wandering friar's cup, yet he preached nearly forty more years.": James in
 //     the torchlit hall holds up his chalice; on "poison" a snake rises out of it; the queen watches from the right.  SHOT "This is
 //     Saint James of the Marches.": he turns to us, calm, halo.
-const S0 = [380, 1345, 2.3], Q0 = [760, 1310, 1.95];
+const S0 = [380, 1345, 2.3], Q0 = [690, 1286, 1.8], K0 = [550, 1245, 1.55];
+/** A stone pillar with a burning torch, close to the camera (a foreground card for depth). x = its inner edge. */
+const nearPillar = (x = 70, side = -1) => { const x0 = side < 0 ? x - 260 : x, w = 260;
+  return `<g><rect x="${x0}" y="-200" width="${w}" height="2400" fill="#2a1e18"/><rect x="${side < 0 ? x - 40 : x}" y="-200" width="40" height="2400" fill="#4a3628" opacity=".9"/>`
+    + `<rect x="${x0}" y="1180" width="${w}" height="30" fill="#3a2a20"/><g transform="translate(${x + side * -6},860)"><rect x="-6" y="0" width="12" height="90" fill="#5a3a22"/>`
+    + `<circle cy="-14" r="120" fill="url(#sunGlow)" opacity=".55"/><g${M.flick(0.5, 0, 0.7)}><path d="M0 -50 Q-16 -20 -10 0 L10 0 Q16 -20 0 -50Z" fill="#ffb040"/><path d="M0 -30 Q-7 -14 -4 0 L4 0 Q7 -14 0 -30Z" fill="#fff0b0"/></g></g></g>`; };
 function scene0() {
   const po = at(0, 'poison'), pr = at(0, 'preached'), ti = at(0, 'This is');
-  return layer(0.92, lit(castShadow(...Q0, 'jHook') + seq((op) => dorothea(...Q0, { flip: true, look: [2.4, 0.2], armL: [16, 2, 3], armR: [24, 2, 3], ...op }),
+  return layer(0.75, lit(castShadow(...K0, 'jHook') + tvrtko(...K0, { flip: true, mood: 'stern', look: [2.4, 0.2], armL: [16, 2, 3], armR: [16, 2, 3] }), 'jHook'))
+    + layer(0.85, lit(castShadow(...Q0, 'jHook') + seq((op) => dorothea(...Q0, { flip: true, look: [2.4, 0.2], armL: [16, 2, 3], armR: [24, 2, 3], ...op }),
       [[0, { mood: 'stern' }], [po + 0.3, { mood: 'surprised' }], [ti, { mood: 'stern' }]]), 'jHook'))
     + lit(castShadow(...S0, 'jHook') + seq((op) => jamesHD(...S0, op),
       [[0, { mood: 'determined', look: [-1.6, -1.2], armR: [16, 2, 3], armL: 112, propL: held(snakeCup(1.15, false), 112, -6) }],
@@ -124,6 +130,7 @@ function scene0() {
         [pr, { mood: 'determined', look: [2.4, 0], armR: 128, armL: 112, propL: held(snakeCup(1.15), 112, -6) }],
         [ti, { mood: 'happy', look: [0, 0], armR: [16, 2, 3], armL: 44, propL: held(snakeCup(1.05), 44, -4), halo: ti + 0.2 }]]), 'jHook')
     + speedLines(S0[0] - 130, 760, { at: po + 0.1, dur: 0.7, r0: 160, r1: 640, op: 0.35, color: '#e8ffd8', seed: 2 })
+    + layer(1.35, nearPillar(-40, -1))
     + NEAR(bokeh(6, { seed: 5, sides: true, op: [0.2, 0.4] }));
 }
 
@@ -244,8 +251,9 @@ export const STORY = {
   scenes: [
     { kicker: 'BOSNIA · 1430s', title: 'Poison in the Cup', art: scene0, bg3d: 'jHook', front3d: true,
       cam: { ...GLIDE, path: [
-        { at: at(0, 'poison'), to: [S0[0] - 100, 760], z: 1.25, frame: [540, 900] },
-        { at: at(0, 'This is'), to: face(...S0), z: 1.3, frame: [520, 860] }] },
+        { at: 0, to: [S0[0] + 40, 1000], z: 1.0, frame: [480, 1000] },
+        { at: at(0, 'poison'), to: [S0[0] - 100, 760], z: 1.2, frame: [560, 900] },
+        { at: at(0, 'This is'), to: face(...S0), z: 1.3, frame: [600, 860] }] },
       tone: HOOK,
       say: ["Tradition says heretics slipped poison into a wandering friar's cup, yet he preached nearly forty more years.", 'This is Saint James of the Marches.'] },
     { kicker: 'BOSNIA · 1435', title: 'Far From Home', art: scene1, bg3d: 'jRoad', front3d: true,
