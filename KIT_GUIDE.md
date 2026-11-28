@@ -271,6 +271,7 @@ Import with `import { name } from './<file>.mjs'`. hd()-based helpers are marked
 - **catherine_of_siena_avignon**: catherine, littleCatherine, gregory, cardinal; thornCrown, tiaraIcon, kingCrown, letter, dyeLine, hallWall
 - **cecilia_life** (hd): ceciliaHD, valerianHD, tiburtiusHD, angelHD; peristyle, steam, bathRim, maderno, churchIcon
 - **cecilia_wedding_angel**: cecilia, valerian, tiburtius, urban, angel, wings; wreath, organ, lyre, tambourine, notes, domusWall, column, oilLamp, garland, curtain, aqueduct, stonePine, roundTomb, milestone, santaCecilia
+- **catherine_laboure_secret** (hd, reuses miraculous_medal characters and SETS): nearColumn (pale chapel column foreground card)
 - **charbel**: charbel; prayerRope, oilLamp, cedarFlag, cedar, lebanonRange, stoneVillage, grotto, cow, annaya, hermitage, tomb, sickBed
 - **charles_borromeo**: charles; biretta, mozzetta, pectoral, rope, archCross, chalice, tiara, bedCart, humilitas, duomo
 - **clement_anchor** (hd): clementHD, cyrilHD; anchor, pickaxe, spring, splash, relicBundle
@@ -296,7 +297,7 @@ Import with `import { name } from './<file>.mjs'`. hd()-based helpers are marked
 - **martin_de_porres**: martin; broom, mortar, bandage, slate, lima, cloister, dog, cat, mouse
 - **martin_of_tours**: roman, rider, horse; CLOAK, cloakBack, cloakFront, cuirass, romanHelmet, crozier, gate, tent, stoneHut, barn, romChurch, goose, boat
 - **miguel_pro_firing_squad** (hd): miguelHD, soldierMX, policeMX, photographer, rebozoWoman; kepi, fedora, flatCap, stole, crucifixHand, rifle, newspaper, boxCamera, ironBars, churchDoor, homeAltar, vivaBanner
-- **miraculous_medal** (hd): mary, catherineL, girlCath, aladel, sisterDC, parisian, oldMan, maryStatue; globe, rays, medalOval, medalBack, medalCoin, smallMedal
+- **miraculous_medal** (hd): vision(gx, gy, gr, s, mode, {raysOn, steps}) (Mary on the globe with rays), mary, catherineL, girlCath, aladel, sisterDC, parisian, oldMan, maryStatue; globe, rays, medalOval, medalBack, medalCoin, smallMedal
 - **moses_black_basket**: moses, monk, brother; leakBasket, torch, sandPiles, cell, desertChurch
 - **nicholas**: bishopNicholas; goldBag, goldBallsBook, redCope, lycianTown, rockTombs, cypress
 - **padre_pio**: pio, villager; MITT, STIGMA, capuchinCape, ticket, crucifix, altar, confessionalBack, confessionalFront, graceFriary, gargano, stoneRoom

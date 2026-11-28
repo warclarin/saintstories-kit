@@ -254,7 +254,7 @@ export const castShadow = (x, y, s, mode) => {
   return `<ellipse cx="${f(x + dx * s)}" cy="${f(y + dy * s)}" rx="${f(rx * s)}" ry="${f(ry * s)}" fill="#140c14" opacity=".26" filter="url(#blur6)" transform="rotate(${rot} ${f(x)} ${f(y)})"/>`;
 };
 /** Our Lady of the medal standing on the globe with rays from her rings (globe centre gx, gy, radius gr; Mary scale s). */
-const vision = (gx, gy, gr, s, mode, { raysOn = 0, steps = [[0, {}]], rayOp = 0.75 } = {}) => {
+export const vision = (gx, gy, gr, s, mode, { raysOn = 0, steps = [[0, {}]], rayOp = 0.75 } = {}) => {
   const my = gy - gr * 0.78, AR = 34;
   const [lx, ly] = hand(gx, my, s, -1, AR), [rx, ry] = hand(gx, my, s, 1, AR);
   const rr = rays(lx, ly + 10, { len: (gy - ly) * 0.95, dir: 0.32, spread: 0.6, op: rayOp, seed: 2 }) + rays(rx, ry + 10, { len: (gy - ry) * 0.95, dir: -0.32, spread: 0.6, op: rayOp, seed: 5 });
